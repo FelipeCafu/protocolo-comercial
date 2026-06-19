@@ -3919,13 +3919,13 @@
 <!-- ===== HEADER / FOOTER / QUIZ MATURIDADE (Grupo Velo) ===== -->
 <style>
   .pc-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:linear-gradient(180deg,rgba(8,8,10,.82),rgba(8,8,10,0));backdrop-filter:blur(6px)}
-  .pc-header__logo{font-family:inherit;font-weight:800;letter-spacing:.04em;font-size:15px;color:#fff;text-decoration:none;text-transform:uppercase}
+  .pc-header__logo{font-family:var(--font-display);font-weight:800;letter-spacing:.04em;font-size:15px;color:#fff;text-decoration:none;text-transform:uppercase}
   .pc-header__logo span{color:#EE5A24}
   .pc-quizbtn{font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:9px 18px;cursor:pointer;transition:.2s;text-transform:uppercase}
   .pc-quizbtn:hover{transform:translateY(-1px);filter:brightness(1.08)}
   @media(max-width:600px){.pc-header{padding:10px 16px}.pc-quizbtn{font-size:11px;padding:8px 13px}.pc-header__logo{font-size:13px}}
   .pc-footer{background:#0a0a0c;color:rgba(255,255,255,.62);padding:54px 24px 30px;text-align:center;border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
-  .pc-footer__brand{font-weight:800;letter-spacing:.05em;font-size:22px;color:#fff;text-transform:uppercase;margin-bottom:8px}
+  .pc-footer__brand{font-family:var(--font-display);font-weight:800;letter-spacing:.05em;font-size:22px;color:#fff;text-transform:uppercase;margin-bottom:8px}
   .pc-footer__brand span{color:#EE5A24}
   .pc-footer p{font-size:14px;max-width:520px;margin:0 auto 22px;line-height:1.6}
   .pc-footer__links{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:26px;font-size:13.5px}
@@ -3937,29 +3937,34 @@
   /* QUIZ */
   .mat-modal{position:fixed;inset:0;z-index:200;background:rgba(6,6,9,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
   .mat-modal.open{display:flex}
-  .mat-box{width:100%;max-width:560px;background:#121216;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:38px 34px;color:#fff;position:relative;max-height:92vh;overflow:auto}
+  .mat-box{font-family:var(--font-body);width:100%;max-width:560px;background:#121216;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:38px 34px;color:#fff;position:relative;max-height:92vh;overflow:auto}
   .mat-x{position:absolute;top:14px;right:18px;background:none;border:0;color:rgba(255,255,255,.6);font-size:26px;cursor:pointer}
-  .mat-eyebrow{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#EE5A24;margin-bottom:8px}
+  .mat-eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#EE5A24;margin-bottom:8px}
   .mat-prog{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin:18px 0 26px;overflow:hidden}
   .mat-prog i{display:block;height:100%;background:#EE5A24;width:0;transition:width .35s}
-  .mat-q{font-size:21px;font-weight:700;line-height:1.3;margin-bottom:22px}
+  .mat-q{font-family:var(--font-display);font-size:21px;font-weight:700;line-height:1.3;margin-bottom:22px}
   .mat-opts{display:flex;flex-direction:column;gap:11px}
   .mat-opt{text-align:left;font:inherit;font-size:14.5px;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:15px 18px;cursor:pointer;transition:.2s}
   .mat-opt:hover{border-color:#EE5A24;background:rgba(238,90,36,.12)}
-  .mat-intro h3,.mat-result h3{font-size:25px;font-weight:800;margin-bottom:10px;line-height:1.2}
+  .mat-intro h3,.mat-result h3{font-family:var(--font-display);font-size:25px;font-weight:800;margin-bottom:10px;line-height:1.2}
   .mat-intro p{color:rgba(255,255,255,.72);font-size:15px;line-height:1.6;margin-bottom:26px}
-  .mat-start,.mat-cta{font:inherit;font-weight:700;font-size:15px;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:15px 30px;cursor:pointer;width:100%;transition:.2s}
+  .mat-start,.mat-cta{font-family:var(--font-display);font-weight:700;font-size:15px;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:15px 30px;cursor:pointer;width:100%;transition:.2s}
   .mat-start:hover,.mat-cta:hover{filter:brightness(1.08)}
-  .mat-score{font-size:74px;font-weight:800;line-height:1;color:#EE5A24;text-align:center;margin:6px 0}
-  .mat-level{text-align:center;font-size:22px;font-weight:800;margin-bottom:10px}
+  .mat-score{font-family:var(--font-display);font-size:74px;font-weight:800;line-height:1;color:#EE5A24;text-align:center;margin:6px 0}
+  .mat-level{font-family:var(--font-display);text-align:center;font-size:22px;font-weight:800;margin-bottom:10px}
   .mat-result p{color:rgba(255,255,255,.78);font-size:15px;line-height:1.65;text-align:center;margin-bottom:24px}
   .mat-meter{height:10px;border-radius:8px;background:linear-gradient(90deg,#b53a26,#caa024,#1f9d62);margin:14px 0 22px;position:relative}
   .mat-meter i{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:3px;box-shadow:0 0 8px #fff}
+  .mat-fab{position:fixed;right:22px;bottom:94px;z-index:90;display:flex;align-items:center;gap:11px;background:#EE5A24;color:#fff;border:0;border-radius:40px;padding:13px 22px 13px 17px;cursor:pointer;box-shadow:0 14px 34px -8px rgba(238,90,36,.75);font-family:var(--font-display);animation:fabFloat 3.4s ease-in-out infinite;transition:transform .2s}
+  .mat-fab:hover{transform:scale(1.06)}
+  .mat-fab svg{width:27px;height:27px;flex-shrink:0}
+  .mat-fab span{font-size:12.5px;font-weight:800;line-height:1.05;text-align:left;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+  @keyframes fabFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @media(max-width:600px){.mat-fab span{display:none}.mat-fab{padding:14px;right:16px;bottom:82px}}
 </style>
 
 <header class="pc-header">
   <a href="#" class="pc-header__logo">O Protocolo <span>Comercial</span></a>
-  <button class="pc-quizbtn" onclick="document.getElementById('matModal').classList.add('open')">Teste sua maturidade</button>
 </header>
 
 <div class="mat-modal" id="matModal">
@@ -3970,6 +3975,10 @@
   </div>
 </div>
 
+<button class="mat-fab" onclick="document.getElementById('matModal').classList.add('open')" aria-label="Teste sua maturidade comercial">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M12 15l4.6-3.2"/><circle cx="12" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg>
+  <span>Teste sua maturidade</span>
+</button>
 <footer class="pc-footer">
   <div class="pc-footer__brand">O Protocolo <span>Comercial</span></div>
   <p>Mentoria B2B que transforma times comerciais em máquinas de fechamento. Por Felipe Cafu · Brasília-DF.</p>
