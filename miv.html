@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Identidade Visual — O Protocolo Comercial</title>
+    <meta name="description" content="Manual de Identidade Visual da marca O Protocolo Comercial.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           VARIABLES & RESET — BRUTALIST PALETTE
+           ============================================ */
+        :root {
+            --bg: #0C0C0C;
+            --bg-concrete: #161616;
+            --bg-slab: #1E1E1E;
+            --bg-panel: #252525;
+            --bg-steel: #2E2E2E;
+            --orange: #FF6B2B;
+            --white: #F0EDE8;
+            --gray-100: #B8B4AD;
+            --gray-200: #8A8680;
+            --gray-300: #5C5955;
+            --gray-400: #3A3835;
+            --concrete-line: rgba(240, 237, 232, 0.06);
+            --concrete-line-strong: rgba(240, 237, 232, 0.12);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--white);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            background-color: var(--bg);
+            /* Static Grid Overlay applied to body */
+            background-image: 
+                repeating-linear-gradient(90deg, var(--concrete-line) 0, var(--concrete-line) 1px, transparent 1px, transparent 120px),
+                repeating-linear-gradient(0deg, var(--concrete-line) 0, var(--concrete-line) 1px, transparent 1px, transparent 120px);
+            background-attachment: fixed;
+        }
+
+        ::selection {
+            background: var(--orange);
+            color: var(--bg);
+        }
+
+        /* Typography */
+        .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--orange);
+        }
+        .eyebrow::before {
+            content: '';
+            display: block;
+            width: 32px;
+            height: 2px;
+            background: var(--orange);
+        }
+
+        .headline {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(32px, 5vw, 64px);
+            line-height: 1.0;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .headline span { color: var(--orange); }
+
+        .subheadline {
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--gray-100);
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+
+        p {
+            font-family: var(--font-body);
+            color: var(--gray-100);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 48px;
+        }
+
+        section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--concrete-line-strong);
+            position: relative;
+        }
+        section:last-child {
+            border-bottom: none;
+        }
+        
+        /* Brackets - Static */
+        section::before, section::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 3;
+            pointer-events: none;
+        }
+        section::before {
+            top: 20px;
+            left: 20px;
+            border-top: 2px solid var(--orange);
+            border-left: 2px solid var(--orange);
+            opacity: 0.2;
+        }
+        section::after {
+            bottom: 20px;
+            right: 20px;
+            border-bottom: 2px solid var(--orange);
+            border-right: 2px solid var(--orange);
+            opacity: 0.2;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        /* Elements */
+        .color-swatch {
+            border: 1px solid var(--concrete-line-strong);
+            padding: 24px;
+            background: var(--bg-slab);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .color-box {
+            height: 120px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .color-info {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--gray-200);
+        }
+        .color-info strong {
+            color: var(--white);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .type-sample {
+            padding: 48px;
+            background: var(--bg-concrete);
+            border: 1px solid var(--concrete-line-strong);
+            margin-bottom: 24px;
+        }
+        .type-sample h3 {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--orange);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .font-display { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--white); }
+        .font-body { font-family: var(--font-body); font-size: 18px; font-weight: 400; color: var(--gray-100); }
+        .font-mono { font-family: var(--font-mono); font-size: 14px; font-weight: 400; color: var(--gray-200); }
+        
+        .logo-box {
+            background: var(--bg-concrete);
+            padding: 60px;
+            border: 1px solid var(--concrete-line-strong);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .logo-box.light {
+            background: var(--white);
+        }
+        .logo-box img {
+            max-width: 100%;
+            max-height: 200px;
+            height: auto;
+        }
+
+        .dos-donts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .rule-card {
+            padding: 32px;
+            border: 1px solid var(--concrete-line-strong);
+            background: var(--bg-slab);
+        }
+        .rule-card.do { border-top: 4px solid var(--orange); }
+        .rule-card.dont { border-top: 4px solid #E53935; }
+        .rule-card h4 {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .rule-card.do h4 { color: var(--orange); }
+        .rule-card.dont h4 { color: #E53935; }
+        .rule-visual {
+            height: 120px;
+            background: var(--bg-concrete);
+            border: 1px dashed var(--gray-300);
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            color: var(--gray-200);
+            font-size: 12px;
+        }
+
+        /* Cover Specific */
+        .cover-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--concrete-line-strong);
+        }
+        .cover-stamp {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--gray-300);
+            margin-top: 60px;
+            border-top: 1px solid var(--concrete-line-strong);
+            padding-top: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .dos-donts { grid-template-columns: 1fr; gap: 40px; }
+            .container { padding: 0 24px; }
+            section { padding: 60px 0; }
+        }
+
+        /* Print Styles for PDF */
+        @page {
+            size: A4;
+            margin: 0; /* Ensures no white borders */
+        }
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body {
+                background-color: var(--bg) !important;
+                margin: 0;
+                padding: 0;
+            }
+            section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 60px 0 !important;
+            }
+            .cover-section {
+                height: 100vh !important;
+                min-height: 100vh !important;
+                page-break-after: always;
+                display: flex;
+                align-items: center;
+                border-bottom: none !important;
+            }
+            .container {
+                padding: 0 40px !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- COVER SECTION -->
+        <section class="cover-section">
+            <div>
+                <div class="eyebrow">Manual de Identidade Visual</div>
+                <img src="logo.png" alt="O Protocolo Comercial Logo" style="max-width: 100%; max-height: 240px; margin-bottom: 24px; display: block;">
+                <p class="subheadline">Diretrizes da marca, tipografia, cores e uso do sistema visual brutalista.</p>
+                <div class="cover-stamp">VERSÃO 1.0 — ATUALIZADO 2026</div>
+            </div>
+        </section>
+
+        <!-- CONCEPT SECTION -->
+        <section>
+            <div class="grid-2">
+                <div>
+                    <div class="eyebrow">Conceito</div>
+                    <h2 class="headline">Brutalismo<br><span>Técnico</span></h2>
+                </div>
+                <div>
+                    <p>A identidade visual d'O Protocolo Comercial é baseada nos princípios do brutalismo digital e da estética tech corporativa.</p>
+                    <p>O foco é a <strong>funcionalidade primária, a franqueza dos materiais e o contraste absoluto</strong>. Usamos uma paleta restrita baseada em tons de concreto e asfalto, pontuada por um laranja saturado e agressivo para indicar ação e atenção.</p>
+                    <p>É uma linguagem visual que não pede desculpas, feita para transmitir autoridade, processo e previsibilidade.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOGO SECTION -->
+        <section>
+            <div class="eyebrow">Logotipo</div>
+            <h2 class="headline">A Marca<br><span>Principal</span></h2>
+            <p class="subheadline">O uso correto do logotipo nos ambientes digitais e impressos.</p>
+
+            <div class="logo-box">
+                <!-- Fallback to text if img not styled perfectly, but using image path from dir -->
+                <img src="logo.png" alt="O Protocolo Comercial Logo" style="max-height: 150px;">
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <h3 style="font-family: var(--font-display); margin-bottom: 16px;">Uso em Fundo Escuro</h3>
+                    <div class="logo-box">
+                        <img src="logo.png" alt="O Protocolo Comercial Logo Branco" style="max-height: 80px;">
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-family: var(--font-display); margin-bottom: 16px; color: var(--gray-100)">Uso em Fundo Claro</h3>
+                    <div class="logo-box light">
+                        <img src="logo_dark.png" alt="O Protocolo Comercial Logo Escuro" style="max-height: 80px;">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLOR PALETTE SECTION -->
+        <section>
+            <div class="eyebrow">Cores</div>
+            <h2 class="headline">Paleta<br><span>Cromática</span></h2>
+            <p class="subheadline">As cores que compõem a fundação visual da marca. O laranja é usado apenas para destaque.</p>
+
+            <div class="grid-3">
+                <div class="color-swatch">
+                    <div class="color-box" style="background: var(--orange);"></div>
+                    <div class="color-info">
+                        <strong>Laranja Protocolo</strong>
+                        HEX: #FF6B2B<br>
+                        RGB: 255, 107, 43
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: var(--bg);"></div>
+                    <div class="color-info">
+                        <strong>Asfalto Base</strong>
+                        HEX: #0C0C0C<br>
+                        RGB: 12, 12, 12
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: var(--bg-slab);"></div>
+                    <div class="color-info">
+                        <strong>Concreto Interface</strong>
+                        HEX: #1E1E1E<br>
+                        RGB: 30, 30, 30
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: var(--white);"></div>
+                    <div class="color-info">
+                        <strong>Branco Neutro</strong>
+                        HEX: #F0EDE8<br>
+                        RGB: 240, 237, 232
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: var(--gray-300);"></div>
+                    <div class="color-info">
+                        <strong>Cinza Linha</strong>
+                        HEX: #5C5955<br>
+                        RGB: 92, 89, 85
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TYPOGRAPHY SECTION -->
+        <section>
+            <div class="eyebrow">Tipografia</div>
+            <h2 class="headline">Famílias<br><span>Tipográficas</span></h2>
+            <p class="subheadline">Três famílias trabalham em conjunto para criar a hierarquia visual brutalista.</p>
+
+            <div class="type-sample">
+                <h3>Fonte Display — Space Grotesk</h3>
+                <div class="font-display">O CONHECIMENTO LIBERTA. O PROCESSO ESCALA.</div>
+                <p style="margin-top: 16px;">Usada estritamente para títulos principais (Headlines). Deve ser aplicada em All Caps (maiúsculas) na maioria dos casos mercadológicos para reforçar impacto.</p>
+            </div>
+
+            <div class="type-sample">
+                <h3>Fonte Body — Inter</h3>
+                <div class="font-body">A mentoria para donos de negócio B2B que querem estruturar times comerciais com processo, previsibilidade e escala real.</div>
+                <p style="margin-top: 16px;">Usada para leitura longa, parágrafos, subheadlines e botões. Foco em legibilidade e clareza absoluta.</p>
+            </div>
+
+            <div class="type-sample">
+                <h3>Fonte Mono — JetBrains Mono</h3>
+                <div class="font-mono">IDENTIFICADOR_SISTEMA_1.0 // OVERRIDE_INIT</div>
+                <p style="margin-top: 16px;">Usada para Eyebrows, selos, contadores, notas técnicas e elementos de interface secundários. Reforça o aspecto tecnológico do método.</p>
+            </div>
+        </section>
+
+        <!-- GRAPHIC ELEMENTS SECTION -->
+        <section>
+            <div class="eyebrow">Elementos Gráficos</div>
+            <h2 class="headline">Grid &<br><span>Grafismos</span></h2>
+            
+            <div class="grid-2">
+                <div>
+                    <p><strong>O Grid Visível:</strong> As linhas divisórias não são apenas guias de design, elas fazem parte da estética. Usamos `border: 1px solid` ou o overlay de background para expor a estrutura da página.</p>
+                    <p><strong>Brackets (Colchetes de canto):</strong> Elementos que demarcam limites do container. Usados em cantos de imagens, seções ou áreas de destaque. Cor: Laranja Protocolo com opacidade variável.</p>
+                </div>
+                <div style="background: var(--bg-concrete); padding: 40px; position: relative; border: 1px solid var(--concrete-line-strong);">
+                    <!-- Decorative brackets -->
+                    <div style="position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; border-top: 2px solid var(--orange); border-left: 2px solid var(--orange);"></div>
+                    <div style="position: absolute; bottom: 10px; right: 10px; width: 20px; height: 20px; border-bottom: 2px solid var(--orange); border-right: 2px solid var(--orange);"></div>
+                    
+                    <div style="font-family: var(--font-mono); color: var(--gray-200); font-size: 12px; text-align: center;">
+                        <br>ÁREA DE DEMONSTRAÇÃO<br>DO ELEMENTO BRACKET<br><br>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOS AND DONTS SECTION -->
+        <section>
+            <div class="eyebrow">Regras</div>
+            <h2 class="headline">O Que Fazer e<br><span>O Que Evitar</span></h2>
+
+            <div class="dos-donts">
+                <div class="rule-card do">
+                    <h4>Faça: Contraste Alto</h4>
+                    <p>Mantenha sempre texto claro sobre fundo escuro para garantir legibilidade e alinhamento com o estilo Brutalista Digital.</p>
+                    <div class="rule-visual" style="background: var(--bg); border: 1px solid #333; color: var(--white);">
+                        <span style="font-family: var(--font-display); font-size: 16px;">TEXTO LEGÍVEL</span>
+                    </div>
+                </div>
+                <div class="rule-card dont">
+                    <h4>Não Faça: Baixo Contraste</h4>
+                    <p>Nunca use cinza escuro sobre fundo preto para textos de leitura. O sacrifício da leitura pela estética é proibido.</p>
+                    <div class="rule-visual" style="background: var(--bg); border: 1px solid #333; color: #1a1a1a;">
+                        <span style="font-family: var(--font-display); font-size: 16px;">TEXTO ILEGÍVEL</span>
+                    </div>
+                </div>
+                <div class="rule-card do">
+                    <h4>Faça: Laranja Pontual</h4>
+                    <p>Use o Laranja Protocolo para call-to-actions, hovers ou pequenos realces (Eyebrows).</p>
+                    <div class="rule-visual" style="background: var(--bg-concrete); border: 1px solid var(--concrete-line-strong);">
+                        <span style="color: var(--orange); font-family: var(--font-mono);">> ACESSAR AGORA</span>
+                    </div>
+                </div>
+                <div class="rule-card dont">
+                    <h4>Não Faça: Fundo Laranja</h4>
+                    <p>Não utilize o laranja como cor de fundo para blocos grandes de texto ou seções inteiras. Ele fatiga a visão.</p>
+                    <div class="rule-visual" style="background: var(--orange); color: var(--white); border: none;">
+                        <span style="font-family: var(--font-body);">Bloco de texto longo...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
