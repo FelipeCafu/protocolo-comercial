@@ -3180,7 +3180,7 @@
                             style="object-fit: contain; padding: 20px; width: 100%; height: 100%; filter: brightness(0) invert(1);">
                     </div>
                     <div class="case-card__body">
-                        <div class="case-card__metric">+340%</div>
+                        <div class="case-card__metric">96%</div>
                         <div class="case-card__title">Carteira ativa</div>
                         <div class="case-card__desc" style="display:flex; flex-direction:column; gap:6px;">
                             <span style="display:flex;align-items:center;gap:8px;"><span
@@ -3189,7 +3189,7 @@
                                     style="color:var(--orange);font-size:16px;">▸</span> Maior conversão com equipe
                                 menor — folha −30%</span>
                             <span style="display:flex;align-items:center;gap:8px;"><span
-                                    style="color:var(--orange);font-size:16px;">▸</span> +340% na carteira ativa após
+                                    style="color:var(--orange);font-size:16px;">▸</span> 96% de carteira ativa após
                                 implantação do Protocolo</span>
                         </div>
                     </div>
@@ -3201,8 +3201,8 @@
                             style="object-fit: contain; padding: 35px; width: 100%; height: 100%; filter: brightness(0) invert(1);">
                     </div>
                     <div class="case-card__body">
-                        <div class="case-card__metric">R$2.4M</div>
-                        <div class="case-card__title">Faturamento anual</div>
+                        <div class="case-card__metric">4 meses</div>
+                        <div class="case-card__title">Ponto de equilíbrio</div>
                         <div class="case-card__desc" style="display:flex; flex-direction:column; gap:6px;">
                             <span style="display:flex;align-items:center;gap:8px;"><span
                                     style="color:var(--orange);font-size:16px;">▸</span> Ponto de equilíbrio em apenas 4
@@ -3219,15 +3219,15 @@
                 <!-- MELHOR AMIGO -->
                 <div class="case-card reveal reveal-delay-4">
                     <div class="case-card__photo">
-                        <img src="logo mellhoraumigo.png" alt="Melhor Amigo Petshop" loading="lazy"
+                        <img src="logo mellhoraumigo.png" alt="Melhor Aumigo Petshop" loading="lazy"
                             style="object-fit: contain; padding: 35px; width: 100%; height: 100%; filter: brightness(0) invert(1);">
                     </div>
                     <div class="case-card__body">
-                        <div class="case-card__metric">270%</div>
+                        <div class="case-card__metric">+300%</div>
                         <div class="case-card__title">Aumento no faturamento</div>
                         <div class="case-card__desc" style="display:flex; flex-direction:column; gap:6px;">
                             <span style="display:flex;align-items:center;gap:8px;"><span
-                                    style="color:var(--orange);font-size:16px;">▸</span> 270% de aumento no
+                                    style="color:var(--orange);font-size:16px;">▸</span> +300% de aumento no
                                 faturamento</span>
                             <span style="display:flex;align-items:center;gap:8px;"><span
                                     style="color:var(--orange);font-size:16px;">▸</span> 90% de taxa de recompra</span>
@@ -3461,7 +3461,7 @@
                 <div class="impacto__quote reveal">"O mercado não paga correria.<br>Paga <em>protocolo.</em>"</div>
                 <div class="impacto__metrics reveal reveal-delay-2">
                     <div class="impacto__metric">
-                        <div class="impacto__metric-value">+10MM</div>
+                        <div class="impacto__metric-value">+20MM</div>
                         <div class="impacto__metric-label">VENDAS ANUAIS</div>
                     </div>
                     <div class="impacto__metric">
@@ -3915,6 +3915,107 @@
         })();
     </script>
 
+
+<!-- ===== HEADER / FOOTER / QUIZ MATURIDADE (Grupo Velo) ===== -->
+<style>
+  .pc-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:linear-gradient(180deg,rgba(8,8,10,.82),rgba(8,8,10,0));backdrop-filter:blur(6px)}
+  .pc-header__logo{font-family:inherit;font-weight:800;letter-spacing:.04em;font-size:15px;color:#fff;text-decoration:none;text-transform:uppercase}
+  .pc-header__logo span{color:#EE5A24}
+  .pc-quizbtn{font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:9px 18px;cursor:pointer;transition:.2s;text-transform:uppercase}
+  .pc-quizbtn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+  @media(max-width:600px){.pc-header{padding:10px 16px}.pc-quizbtn{font-size:11px;padding:8px 13px}.pc-header__logo{font-size:13px}}
+  .pc-footer{background:#0a0a0c;color:rgba(255,255,255,.62);padding:54px 24px 30px;text-align:center;border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
+  .pc-footer__brand{font-weight:800;letter-spacing:.05em;font-size:22px;color:#fff;text-transform:uppercase;margin-bottom:8px}
+  .pc-footer__brand span{color:#EE5A24}
+  .pc-footer p{font-size:14px;max-width:520px;margin:0 auto 22px;line-height:1.6}
+  .pc-footer__links{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:26px;font-size:13.5px}
+  .pc-footer__links a{color:rgba(255,255,255,.7);text-decoration:none}.pc-footer__links a:hover{color:#EE5A24}
+  .velo-badge{display:inline-flex;align-items:center;gap:11px;text-decoration:none;color:rgba(255,255,255,.72);font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.2);border-radius:30px;padding:9px 18px;transition:.25s}
+  .velo-badge:hover{border-color:#EE5A24;color:#fff;transform:translateY(-2px)}
+  .velo-badge img{height:21px;width:auto}
+  .pc-footer__copy{margin-top:24px;font-size:12px;color:rgba(255,255,255,.4)}
+  /* QUIZ */
+  .mat-modal{position:fixed;inset:0;z-index:200;background:rgba(6,6,9,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+  .mat-modal.open{display:flex}
+  .mat-box{width:100%;max-width:560px;background:#121216;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:38px 34px;color:#fff;position:relative;max-height:92vh;overflow:auto}
+  .mat-x{position:absolute;top:14px;right:18px;background:none;border:0;color:rgba(255,255,255,.6);font-size:26px;cursor:pointer}
+  .mat-eyebrow{font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#EE5A24;margin-bottom:8px}
+  .mat-prog{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin:18px 0 26px;overflow:hidden}
+  .mat-prog i{display:block;height:100%;background:#EE5A24;width:0;transition:width .35s}
+  .mat-q{font-size:21px;font-weight:700;line-height:1.3;margin-bottom:22px}
+  .mat-opts{display:flex;flex-direction:column;gap:11px}
+  .mat-opt{text-align:left;font:inherit;font-size:14.5px;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:15px 18px;cursor:pointer;transition:.2s}
+  .mat-opt:hover{border-color:#EE5A24;background:rgba(238,90,36,.12)}
+  .mat-intro h3,.mat-result h3{font-size:25px;font-weight:800;margin-bottom:10px;line-height:1.2}
+  .mat-intro p{color:rgba(255,255,255,.72);font-size:15px;line-height:1.6;margin-bottom:26px}
+  .mat-start,.mat-cta{font:inherit;font-weight:700;font-size:15px;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:15px 30px;cursor:pointer;width:100%;transition:.2s}
+  .mat-start:hover,.mat-cta:hover{filter:brightness(1.08)}
+  .mat-score{font-size:74px;font-weight:800;line-height:1;color:#EE5A24;text-align:center;margin:6px 0}
+  .mat-level{text-align:center;font-size:22px;font-weight:800;margin-bottom:10px}
+  .mat-result p{color:rgba(255,255,255,.78);font-size:15px;line-height:1.65;text-align:center;margin-bottom:24px}
+  .mat-meter{height:10px;border-radius:8px;background:linear-gradient(90deg,#b53a26,#caa024,#1f9d62);margin:14px 0 22px;position:relative}
+  .mat-meter i{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:3px;box-shadow:0 0 8px #fff}
+</style>
+
+<header class="pc-header">
+  <a href="#" class="pc-header__logo">O Protocolo <span>Comercial</span></a>
+  <button class="pc-quizbtn" onclick="document.getElementById('matModal').classList.add('open')">Teste sua maturidade</button>
+</header>
+
+<div class="mat-modal" id="matModal">
+  <div class="mat-box">
+    <button class="mat-x" onclick="document.getElementById('matModal').classList.remove('open')">&times;</button>
+    <div class="mat-eyebrow">Diagnóstico · Maturidade comercial</div>
+    <div id="matStage"></div>
+  </div>
+</div>
+
+<footer class="pc-footer">
+  <div class="pc-footer__brand">O Protocolo <span>Comercial</span></div>
+  <p>Mentoria B2B que transforma times comerciais em máquinas de fechamento. Por Felipe Cafu · Brasília-DF.</p>
+  <div class="pc-footer__links">
+    <a href="#" onclick="document.getElementById('matModal').classList.add('open');return false">Teste sua maturidade</a>
+    <a href="#" onclick="(function(){var s=document.querySelectorAll('.section');s[s.length-1].scrollIntoView({behavior:'smooth'})})();return false">Agendar diagnóstico</a>
+  </div>
+  <a class="velo-badge" href="https://grupovelo.com.br" target="_blank" rel="noopener" title="Conheça o Grupo Velo"><span>Uma empresa do</span><img src="grupo-velo-logo.png" alt="Grupo Velo"></a>
+  <div class="pc-footer__copy">© 2026 O Protocolo Comercial · Uma empresa do Grupo Velo</div>
+</footer>
+
+<script>
+(function(){
+  var Q=[
+   {q:'Como funciona hoje o seu processo comercial?',a:[['Cada vendedor faz do seu jeito; nada documentado',0],['Existe um roteiro básico, mas pouco seguido',1],['Processo definido e seguido pela maioria',2],['Processo documentado, treinado e medido',3]]},
+   {q:'Se você (dono) parar de vender, a empresa...',a:[['Para de faturar — sou o principal vendedor',0],['Cai bastante, mas sobrevive',1],['Mantém o ritmo com o time',2],['Cresce sozinha — o time é autônomo',3]]},
+   {q:'Você consegue prever o faturamento do mês?',a:[['Não — é sempre uma surpresa',0],['Mais ou menos, no feeling',1],['Sim, com boa margem de acerto',2],['Sim, com metas e pipeline previsíveis',3]]},
+   {q:'Como está o follow-up dos seus leads?',a:[['Quase não fazemos follow-up',0],['Fazemos, mas sem cadência definida',1],['Cadência definida na maioria dos casos',2],['Cadência + CRM com tudo registrado',3]]},
+   {q:'A rotatividade (turnover) do time comercial é...',a:[['Alta — treino e perco o tempo todo',0],['Média — perco alguns por ano',1],['Baixa — o time é estável',2],['Baixa, com plano de carreira claro',3]]},
+   {q:'Seu faturamento nos últimos 12 meses...',a:[['Caiu ou ficou estagnado',0],['Cresceu, mas o custo cresceu junto',1],['Cresceu com a margem mantida',2],['Cresceu com margem e previsibilidade',3]]}
+  ];
+  var LV=[
+   {min:0,n:'Comercial Artesanal',d:'Sua operação depende de sorte e do seu esforço pessoal. Sem processo, cada mês é uma incógnita — e o crescimento tem teto. É exatamente aqui que O Protocolo gera o maior salto.'},
+   {min:26,n:'Comercial em Estruturação',d:'Você já tem alguns pilares, mas falta padronização e previsibilidade. Com o método certo, esse comercial vira uma máquina previsível em poucos meses.'},
+   {min:51,n:'Comercial Previsível',d:'Boa base! Há processo e alguma previsibilidade. O Protocolo leva sua operação ao próximo nível: escala com margem e autonomia do time.'},
+   {min:76,n:'Máquina de Vendas',d:'Parabéns — seu comercial já opera em alto nível. O Protocolo ajuda a blindar, escalar e manter esse padrão à medida que você cresce.'}
+  ];
+  var stage=document.getElementById('matStage'),i=0,score=0;
+  function intro(){i=0;score=0;stage.innerHTML='<div class="mat-intro"><h3>Qual a maturidade do seu comercial?</h3><p>6 perguntas rápidas. No final, você recebe uma nota de 0 a 100 baseada nos pilares que o mercado cobra — processo, previsibilidade, pessoas e crescimento.</p><button class="mat-start" id="matStart">Começar diagnóstico →</button></div>';document.getElementById('matStart').onclick=render;}
+  function render(){
+    var q=Q[i];
+    var opts=q.a.map(function(o,k){return '<button class="mat-opt" data-v="'+o[1]+'">'+o[0]+'</button>'}).join('');
+    stage.innerHTML='<div class="mat-prog"><i style="width:'+Math.round(i/Q.length*100)+'%"></i></div><div class="mat-q">'+(i+1)+'. '+q.q+'</div><div class="mat-opts">'+opts+'</div>';
+    [].forEach.call(stage.querySelectorAll('.mat-opt'),function(b){b.onclick=function(){score+=parseInt(b.getAttribute('data-v'),10);i++;if(i<Q.length)render();else result();};});
+  }
+  function result(){
+    var pct=Math.round(score/(Q.length*3)*100);
+    var lv=LV[0];for(var k=0;k<LV.length;k++){if(pct>=LV[k].min)lv=LV[k];}
+    stage.innerHTML='<div class="mat-result"><div class="mat-eyebrow" style="text-align:center">Sua maturidade comercial</div><div class="mat-score">'+pct+'<span style="font-size:28px">/100</span></div><div class="mat-meter"><i style="left:calc('+pct+'% - 2px)"></i></div><div class="mat-level">'+lv.n+'</div><p>'+lv.d+'</p><button class="mat-cta" id="matCta">Quero implementar O Protocolo →</button><button class="mat-start" style="background:transparent;border:1px solid rgba(255,255,255,.2);margin-top:10px" id="matAgain">Refazer</button></div>';
+    document.getElementById('matCta').onclick=function(){document.getElementById('matModal').classList.remove('open');var ss=document.querySelectorAll('.section');if(ss.length)ss[ss.length-1].scrollIntoView({behavior:'smooth'});};
+    document.getElementById('matAgain').onclick=intro;
+  }
+  intro();
+  var m=document.getElementById('matModal');m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});
+})();
+</script>
 </body>
 
 </html>
