@@ -3919,14 +3919,14 @@
 <!-- ===== HEADER / FOOTER / QUIZ MATURIDADE (Grupo Velo) ===== -->
 <style>
   .pc-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:linear-gradient(180deg,rgba(8,8,10,.82),rgba(8,8,10,0));backdrop-filter:blur(6px)}
-  .pc-header__logo{font-family:var(--font-display);font-weight:800;letter-spacing:.04em;font-size:15px;color:#fff;text-decoration:none;text-transform:uppercase}
-  .pc-header__logo span{color:#EE5A24}
+  .pc-header__logo{display:flex;align-items:center;text-decoration:none}
+  .pc-header__logo img{height:26px;width:auto;display:block}
   .pc-quizbtn{font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:9px 18px;cursor:pointer;transition:.2s;text-transform:uppercase}
   .pc-quizbtn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-  @media(max-width:600px){.pc-header{padding:10px 16px}.pc-quizbtn{font-size:11px;padding:8px 13px}.pc-header__logo{font-size:13px}}
+  @media(max-width:600px){.pc-header{padding:10px 16px}.pc-header__logo img{height:22px}}
   .pc-footer{background:#0a0a0c;color:rgba(255,255,255,.62);padding:54px 24px 30px;text-align:center;border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:2}
-  .pc-footer__brand{font-family:var(--font-display);font-weight:800;letter-spacing:.05em;font-size:22px;color:#fff;text-transform:uppercase;margin-bottom:8px}
-  .pc-footer__brand span{color:#EE5A24}
+  .pc-footer__brand{display:flex;justify-content:center;margin-bottom:14px}
+  .pc-footer__brand img{height:38px;width:auto}
   .pc-footer p{font-size:14px;max-width:520px;margin:0 auto 22px;line-height:1.6}
   .pc-footer__links{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:26px;font-size:13.5px}
   .pc-footer__links a{color:rgba(255,255,255,.7);text-decoration:none}.pc-footer__links a:hover{color:#EE5A24}
@@ -3955,16 +3955,17 @@
   .mat-result p{color:rgba(255,255,255,.78);font-size:15px;line-height:1.65;text-align:center;margin-bottom:24px}
   .mat-meter{height:10px;border-radius:8px;background:linear-gradient(90deg,#b53a26,#caa024,#1f9d62);margin:14px 0 22px;position:relative}
   .mat-meter i{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:3px;box-shadow:0 0 8px #fff}
-  .mat-fab{position:fixed;right:22px;bottom:94px;z-index:90;display:flex;align-items:center;gap:11px;background:#EE5A24;color:#fff;border:0;border-radius:40px;padding:13px 22px 13px 17px;cursor:pointer;box-shadow:0 14px 34px -8px rgba(238,90,36,.75);font-family:var(--font-display);animation:fabFloat 3.4s ease-in-out infinite;transition:transform .2s}
-  .mat-fab:hover{transform:scale(1.06)}
-  .mat-fab svg{width:27px;height:27px;flex-shrink:0}
-  .mat-fab span{font-size:12.5px;font-weight:800;line-height:1.05;text-align:left;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+  .mat-fab{position:fixed;right:26px;bottom:28px;z-index:90;height:60px;width:60px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;white-space:nowrap;background:#EE5A24;color:#fff;border:0;border-radius:40px;padding:0;cursor:pointer;box-shadow:0 16px 36px -8px rgba(238,90,36,.8);font-family:var(--font-display);animation:fabFloat 3.4s ease-in-out infinite;transition:width .3s ease}
+  .mat-fab:hover{width:252px}
+  .mat-fab svg{width:28px;height:28px;flex-shrink:0;margin:0 16px}
+  .mat-fab span{font-size:12.5px;font-weight:800;line-height:1.05;text-align:left;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;opacity:0;transition:opacity .2s;padding-right:24px}
+  .mat-fab:hover span{opacity:1}
   @keyframes fabFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  @media(max-width:600px){.mat-fab span{display:none}.mat-fab{padding:14px;right:16px;bottom:82px}}
+  @media(max-width:600px){.mat-fab{right:16px;bottom:80px}}
 </style>
 
 <header class="pc-header">
-  <a href="#" class="pc-header__logo">O Protocolo <span>Comercial</span></a>
+  <a href="#" class="pc-header__logo"><img src="brandlogo.png" alt="O Protocolo Comercial"></a>
 </header>
 
 <div class="mat-modal" id="matModal">
@@ -3980,7 +3981,7 @@
   <span>Teste sua maturidade</span>
 </button>
 <footer class="pc-footer">
-  <div class="pc-footer__brand">O Protocolo <span>Comercial</span></div>
+  <div class="pc-footer__brand"><img src="brandlogo.png" alt="O Protocolo Comercial"></div>
   <p>Mentoria B2B que transforma times comerciais em máquinas de fechamento. Por Felipe Cafu · Brasília-DF.</p>
   <div class="pc-footer__links">
     <a href="#" onclick="document.getElementById('matModal').classList.add('open');return false">Teste sua maturidade</a>
