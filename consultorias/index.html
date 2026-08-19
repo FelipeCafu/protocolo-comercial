@@ -337,7 +337,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase) — nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(r=>{if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}}
@@ -784,7 +784,7 @@ const NAV=[
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},
- {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
  {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"}
 ];
@@ -835,9 +835,9 @@ function go(view){
   document.querySelectorAll(".nav-item[data-view]").forEach(e=>e.classList.toggle("active",e.dataset.view===view));
   const nav=activeNav().find(n=>n.id===view);
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
-  if(["sdr","closer","cs"].includes(SESSION.role)&&!quizPassedToday()&&!["treino","scripts"].includes(view))return renderLockGate();
+  if(["sdr","closer","cs"].includes(SESSION.role)&&!quizPassedToday()&&!["treino","scripts","academy"].includes(view))return renderLockGate();
   ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,
-    treino:vTreino,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
+    treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
 }
 const M=()=>document.getElementById("main");
@@ -1399,6 +1399,385 @@ function scriptTabsFor(){
   const perm=map[SESSION.role]||["visao"];
   return all.filter(t=>perm.includes(t[0]));
 }
+/* ===== ACADEMIA DE VENDAS — treinamento ao vivo (3h) ===== */
+let ACAD_TAB="agenda";
+const ACAD_AGENDA=[
+ ["00:00","10 min","🚀 Abertura — o combinado","Por que estamos aqui: amanhã você liga. Regras da sala.","abertura"],
+ ["00:10","25 min","🧭 Módulo 1 — O jogo comercial","Processo vence talento · os 3 papéis · o funil do Líderes · o que um bom comercial tem.","m1"],
+ ["00:35","20 min","🤝 Módulo 2 — Rapport e voz","Conexão real em 30 segundos · tom, ritmo e pausa · a regra 70/30. <b>Dinâmica 1</b>.","m2"],
+ ["00:55","35 min","❓ Módulo 3 — Perguntas que vendem","SPIN e BANT/PDMAF: o que são, por que funcionam, quando usar. <b>Dinâmica 2</b>.","m3"],
+ ["01:30","10 min","☕ Intervalo","Café. Celular liberado por 10 minutos — depois volta pro bolso.","pausa"],
+ ["01:40","20 min","🖥️ Módulo 4 — O sistema na prática","Tour pelo CRM: lead, funil, tarefas, script, prova. <b>Dinâmica 3</b>.","m4"],
+ ["02:00","30 min","🛡️ Módulo 5 — Objeções","Anatomia da objeção · método ACRD · as 11 do Líderes. <b>Dinâmica 4: Matriz</b>.","m5"],
+ ["02:30","30 min","🎭 Módulo 6 — Role-play de ligação","Simulação em trios com personas reais do nosso ICP. <b>Dinâmica 5</b>.","m6"],
+ ["03:00","10 min","✅ Módulo 7 — Compromisso","Sua meta de amanhã, assinada. Onde consultar quando travar.","m7"]
+];
+function acadHeader(){
+ return `<div class="view-title"><h1>Academia de Vendas</h1><span class="pill pri">Treinamento ao vivo · 3h</span></div>
+ <p class="view-sub">Do zero à primeira ligação. Ao final deste treinamento você sabe <b>para quem ligar</b>, <b>o que perguntar</b>, <b>como contornar o não</b> e <b>o que registrar</b> — e liga amanhã.</p>
+ <div class="flex wrap" style="margin-bottom:14px">${[["agenda","📋 Roteiro"],["conteudo","📚 Conteúdo"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
+}
+function acadAgenda(){
+ return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Roteiro do treinamento</h2>
+ <p class="mut" style="margin:0 0 14px;font-size:13px">3 horas. Metade é prática — quem só assiste, esquece; quem faz, lembra.</p>
+ <div style="display:flex;flex-direction:column;gap:0">
+ ${ACAD_AGENDA.map((a,i)=>`<div style="display:flex;gap:14px;padding:13px 0;border-bottom:${i<ACAD_AGENDA.length-1?'1px solid var(--brand-line)':'none'}">
+   <div style="min-width:58px;font-family:var(--mono);font-size:13px;color:var(--brand-accent);font-weight:700">${a[0]}</div>
+   <div style="min-width:56px"><span class="pill">${a[1]}</span></div>
+   <div style="flex:1"><b style="font-size:14px">${a[2]}</b><div class="mut" style="font-size:13px;margin-top:3px">${a[3]}</div></div>
+ </div>`).join("")}</div></div>
+ <div class="card"><h2 style="margin:0 0 8px;font-size:15px">Como conduzir (para quem apresenta)</h2>
+ <div class="grid2">
+  <div><b style="font-size:13px">Regra dos 20 minutos</b><p class="mut" style="font-size:13px;margin:4px 0 0">Ninguém presta atenção em palestra por mais de 20 min seguidos. Por isso todo módulo termina em prática. Se passou de 20 min falando, pare e faça alguém falar.</p></div>
+  <div><b style="font-size:13px">Pergunte antes de ensinar</b><p class="mut" style="font-size:13px;margin:4px 0 0">Antes de dar a resposta, pergunte à turma o que eles fariam. O cérebro grava melhor o que ele tentou responder e errou do que o que ouviu pronto.</p></div>
+  <div><b style="font-size:13px">Nome na mesa</b><p class="mut" style="font-size:13px;margin:4px 0 0">Chame pelo nome. Em role-play, ninguém "assiste": ou está ligando, ou é o cliente, ou está observando com a ficha na mão.</p></div>
+  <div><b style="font-size:13px">Termine com compromisso público</b><p class="mut" style="font-size:13px;margin:4px 0 0">Cada pessoa diz em voz alta quantas ligações fará amanhã e registra na aba Compromissos. Meta dita em voz alta na frente dos pares tem outra força.</p></div>
+ </div></div>`;
+}
+function acadConteudo(){
+ return `
+ <div class="card"><span class="pill pri">Módulo 1</span><h2 style="margin:8px 0 6px;font-size:16px">O jogo comercial</h2>
+  <h3 style="font-size:14px;margin:14px 0 4px">Processo vence talento</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Todo time tem aquele vendedor "nato" que fecha sem saber explicar como. O problema é que ele não escala e não ensina. Processo é o contrário: é chato, é repetível — e é o que faz um time inteiro performar. Você não precisa ser o melhor falador da sala. Precisa <b>seguir o roteiro, fazer as perguntas e registrar</b>.</p>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Um número para guardar: a maioria das vendas B2B não se perde na hora do preço — se perde antes, na <b>qualificação mal feita</b> (você foi para a reunião com quem não decide, não tem dor ou não tem momento) e no <b>follow-up que não aconteceu</b>. As duas coisas são processo, não talento.</p>
+  <h3 style="font-size:14px;margin:16px 0 4px">Por que separamos SDR, Closer e CS</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Quando a mesma pessoa prospecta, apresenta e cuida do cliente, ela sempre escolhe a tarefa mais confortável — e prospectar é a mais desconfortável. Resultado: agenda vazia daqui a 30 dias. Separando:</p>
+  <div class="grid3">
+   <div class="card" style="margin:0"><b style="font-size:13px">🎯 SDR</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">Encontra e qualifica. <b>Não vende</b> — vende a reunião. Sucesso dele = reunião acontecida com gente certa.</p></div>
+   <div class="card" style="margin:0"><b style="font-size:13px">🤝 Closer</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">Diagnostica e fecha. Recebe o lead já qualificado. Sucesso = adesão assinada.</p></div>
+   <div class="card" style="margin:0"><b style="font-size:13px">💎 CS</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">Faz o cliente ter resultado e ficar. Sucesso = renovação, upgrade e <b>indicação</b> — que volta para o SDR.</p></div>
+  </div>
+  <p class="mut" style="font-size:13px;margin:10px 0 0">Repare que isso fecha um ciclo: o CS alimenta o SDR com indicações. Indicação é o lead mais barato e que mais converte que existe. Um time que não pede indicação está comprando lead caro à toa.</p>
+  <h3 style="font-size:14px;margin:16px 0 4px">O que um bom comercial tem (e dá para treinar)</h3>
+  <div class="grid2">
+   <div><b style="font-size:13px">🔁 Consistência</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Faz o número de tentativas todo dia, inclusive no dia ruim. Vendas é lei dos grandes números aplicada à disciplina.</p></div>
+   <div><b style="font-size:13px">👂 Escuta</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Fala 30%, ouve 70%. Quem fala demais está se vendendo, não entendendo o cliente.</p></div>
+   <div><b style="font-size:13px">🧠 Curiosidade real</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Quer mesmo saber do negócio do outro. Isso não se finge — e é o que gera as boas perguntas.</p></div>
+   <div><b style="font-size:13px">🛡️ Resiliência</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Não leva o "não" para o pessoal. O não é sobre o momento dele, não sobre você.</p></div>
+   <div><b style="font-size:13px">📝 Registro</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">O que não está no CRM não existe. Sua memória não escala e some quando você tira férias.</p></div>
+   <div><b style="font-size:13px">🎓 Domínio do produto</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Saber o que o Líderes entrega de cor. Insegurança na voz o cliente escuta na hora.</p></div>
+  </div>
+ </div>
+
+ <div class="card"><span class="pill pri">Módulo 2</span><h2 style="margin:8px 0 6px;font-size:16px">Rapport: conexão em 30 segundos</h2>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Rapport não é puxar o saco nem falar do tempo. É fazer a pessoa sentir, rápido, que <b>vale a pena continuar essa conversa</b>. Nos primeiros segundos o cliente decide inconscientemente se você é (a) mais um vendedor chato ou (b) alguém que pode ajudar. Três coisas decidem isso — e nenhuma delas é o seu argumento.</p>
+  <h3 style="font-size:14px;margin:14px 0 4px">1. Tonalidade (o que mais pesa no telefone)</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 6px">No telefone ele não vê seu rosto. Sobra a voz. A mesma frase muda de sentido conforme o tom:</p>
+  <ul class="mut" style="font-size:13px;margin:0 0 8px;padding-left:18px">
+   <li><b>Tom de autoridade tranquila:</b> frase que <i>desce</i> no final. "Oi João, aqui é a Ana do Líderes do Brasil." — afirmação, não pergunta. Quem sobe o tom no final parece pedir licença para existir.</li>
+   <li><b>Ritmo:</b> comece um pouco mais rápido (mostra que você respeita o tempo dele) e desacelere quando ele começar a se abrir.</li>
+   <li><b>Pausa:</b> a arma mais subestimada. Fez a pergunta? Cale a boca. O silêncio incomoda você, não ele — e é nele que vem a resposta boa.</li>
+   <li><b>Sorriso:</b> sorria de verdade enquanto fala. Muda a ressonância da voz e o outro percebe.</li>
+  </ul>
+  <h3 style="font-size:14px;margin:14px 0 4px">2. Espelhamento leve</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Se ele fala devagar e pausado, não atropele. Se ele é direto e seco, seja direto e seco. E use <b>as palavras dele</b>: se ele disse "tá osso segurar a equipe", você repete "esse osso de segurar a equipe" — não traduz para "gestão de pessoas". Repetir o vocabulário do cliente é a forma mais rápida de ele sentir que você entendeu.</p>
+  <h3 style="font-size:14px;margin:14px 0 4px">3. A regra 70/30</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Ele fala 70% do tempo, você 30%. Se inverter, você está apresentando cedo demais. Vendedor que fala muito acha que está convencendo; na prática está entregando argumentos antes de saber quais importam — e cada argumento errado é uma objeção que você mesmo criou.</p>
+  <div style="background:var(--brand-panel2);border-left:3px solid var(--brand-accent);padding:10px 14px;border-radius:6px;margin-top:10px">
+   <b style="font-size:13px">O erro nº 1 do iniciante</b><p class="mut" style="font-size:13px;margin:4px 0 0">Perguntar "tem 2 minutinhos?" ou "é um bom momento?". Você acabou de entregar de bandeja a saída mais fácil. Não peça permissão: seja breve, útil e já emende na primeira pergunta.</p>
+  </div>
+ </div>
+
+ <div class="card"><span class="pill pri">Módulo 3</span><h2 style="margin:8px 0 6px;font-size:16px">Perguntas que vendem: SPIN e BANT</h2>
+  <p class="mut" style="font-size:13px;margin:0 0 10px">Existe uma diferença entre <b>interrogar</b> e <b>diagnosticar</b>. O médico não te vende remédio na porta do consultório — ele pergunta, examina, e aí receita. Se ele receitasse antes, você não confiaria. Venda é igual: <b>quem pergunta, conduz</b>.</p>
+
+  <h3 style="font-size:14px;margin:16px 0 6px">🔵 SPIN Selling — o que é e por que funciona</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Criado por Neil Rackham nos anos 80 a partir da observação de <b>mais de 35 mil visitas de vendas reais</b>. Ele queria descobrir o que os melhores vendedores de vendas complexas faziam de diferente. Descobriu que não era fechar melhor — era <b>perguntar diferente</b>. São 4 tipos de pergunta, nesta ordem:</p>
+  <div class="grid2">
+   <div class="card" style="margin:0"><b style="font-size:13px">S — Situação</b><p class="mut" style="font-size:12.5px;margin:4px 0 6px">Entender o contexto. <i>"Como está o time comercial hoje?" · "Você costuma trocar ideia com outros donos?"</i></p><p style="font-size:12px;margin:0;color:var(--brand-accent)"><b>Cuidado:</b> é a mais fácil e a mais perigosa. Pergunta de situação demais cansa e faz você parecer um formulário. Pesquise antes o que der para pesquisar e faça só as que faltam.</p></div>
+   <div class="card" style="margin:0"><b style="font-size:13px">P — Problema</b><p class="mut" style="font-size:12.5px;margin:4px 0 6px">Trazer a dor à tona. <i>"Qual seu maior desafio hoje?" · "O que mais te tira o sono?" · "Sente que decide muita coisa sozinho?"</i></p><p style="font-size:12px;margin:0;color:var(--brand-accent)"><b>Por quê:</b> ninguém compra solução para problema que não admitiu ter. Aqui ele admite.</p></div>
+   <div class="card" style="margin:0"><b style="font-size:13px">I — Implicação</b><p class="mut" style="font-size:12.5px;margin:4px 0 6px">Mostrar o custo de não resolver. <i>"E isso te custa o quê — tempo, dinheiro, oportunidade?" · "Se seguir assim mais um ano, onde você chega?"</i></p><p style="font-size:12px;margin:0;color:var(--brand-accent)"><b>É a mais poderosa e a mais pulada.</b> Foi a que mais separou os campeões dos medianos na pesquisa. É aqui que a dor deixa de ser um incômodo e vira prioridade — e é aqui que o cliente solta números sozinho, inclusive faturamento.</p></div>
+   <div class="card" style="margin:0"><b style="font-size:13px">N — Necessidade de solução</b><p class="mut" style="font-size:12.5px;margin:4px 0 6px">Fazer ele descrever o ganho. <i>"Se você tivesse ao lado um grupo de donos que já passou por isso, o que mudaria?"</i></p><p style="font-size:12px;margin:0;color:var(--brand-accent)"><b>Por quê:</b> quando ele diz o benefício com a própria boca, ele se convence. Argumento seu ele contesta; argumento dele, não.</p></div>
+  </div>
+  <div style="background:var(--brand-panel2);border-left:3px solid var(--brand-accent);padding:10px 14px;border-radius:6px;margin-top:10px">
+   <b style="font-size:13px">A regra de ouro do SPIN</b><p class="mut" style="font-size:13px;margin:4px 0 0">É uma <b>conversa</b>, não um checklist. Reaja ao que ele diz, use as palavras dele, e só então avance. Se soar como formulário, você perdeu.</p>
+  </div>
+
+  <h3 style="font-size:14px;margin:18px 0 6px">🟡 BANT — a qualificação clássica</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Criado pela IBM. É um filtro rápido para responder "vale a pena investir tempo nesse lead?". Quatro caixas:</p>
+  <div class="grid2">
+   <div><b style="font-size:13px">B — Budget (orçamento)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Tem capacidade de investir? No nosso caso não se pergunta "quanto você tem" — se percebe pelo porte e pelo que ele conta na Implicação.</p></div>
+   <div><b style="font-size:13px">A — Authority (autoridade)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">É ele quem decide? Se tem sócio, o sócio precisa estar na reunião. Reunião com quem não decide é reunião perdida.</p></div>
+   <div><b style="font-size:13px">N — Need (necessidade)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Tem uma dor real que a gente resolve? Não invente dor — descubra.</p></div>
+   <div><b style="font-size:13px">T — Timing (momento)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">É agora ou é "ano que vem"? Momento errado é o não mais comum disfarçado.</p></div>
+  </div>
+  <p class="mut" style="font-size:13px;margin:10px 0 0"><b>A crítica ao BANT:</b> ele é centrado em você, não no cliente — parece uma peneira de RH. Serve para decidir prioridade, não para conduzir a conversa. Por isso a gente usa BANT <b>na cabeça</b> e SPIN <b>na boca</b>.</p>
+
+  <h3 style="font-size:14px;margin:18px 0 6px">🟢 PDMAF — a nossa versão</h3>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">No Líderes usamos os 5 selos abaixo. Só agende reunião com os cinco marcados:</p>
+  <div class="grid3">
+   <div><b style="font-size:13px">P — Perfil</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">É dono ou sócio, dentro do ICP.</p></div>
+   <div><b style="font-size:13px">D — Dor</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Reconheceu uma dor real, com as palavras dele.</p></div>
+   <div><b style="font-size:13px">M — Momento</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Está aberto a resolver agora.</p></div>
+   <div><b style="font-size:13px">A — Autoridade</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Decide sozinho ou traz o sócio junto.</p></div>
+   <div><b style="font-size:13px">F — Fit</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Faz sentido para a comunidade e ela para ele.</p></div>
+  </div>
+
+  <h3 style="font-size:14px;margin:18px 0 6px">Outras técnicas que valem conhecer</h3>
+  <div class="grid2">
+   <div><b style="font-size:13px">GPCT</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Goals, Plans, Challenges, Timeline. Evolução do BANT focada no objetivo do cliente, não no seu. Útil quando o cliente já sabe o que quer.</p></div>
+   <div><b style="font-size:13px">Escuta ativa</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Repetir em outras palavras o que ele disse: "Então, se entendi, o problema não é vender — é que trava tudo em você, é isso?" Ele confirma e se sente entendido.</p></div>
+   <div><b style="font-size:13px">Prova social</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Gente decide olhando gente parecida. "Tem um dono de [ramo parecido] no grupo que chegou com esse mesmo problema." Vale mais que qualquer adjetivo.</p></div>
+   <div><b style="font-size:13px">Ancoragem</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Apresente sempre o plano maior primeiro (Premium Board), depois o Master. O segundo número sempre parece menor depois de um maior.</p></div>
+   <div><b style="font-size:13px">Escassez honesta</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Vagas e turmas são reais — use isso, nunca invente. Escassez falsa destrói confiança e a cidade é pequena.</p></div>
+   <div><b style="font-size:13px">Duas opções (alternativa)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Nunca pergunte "quer marcar?". Pergunte "prefere terça 9h ou quinta 16h?". Você tira o sim/não e deixa só o quando.</p></div>
+  </div>
+ </div>
+
+ <div class="card"><span class="pill pri">Módulo 5</span><h2 style="margin:8px 0 6px;font-size:16px">Objeções: o não que não é não</h2>
+  <p class="mut" style="font-size:13px;margin:0 0 8px">Quase toda objeção é uma de três coisas: <b>medo</b> (de errar, de gastar mal), <b>dúvida</b> (não entendeu o valor) ou <b>confusão</b> (não é o momento na cabeça dele). Nenhuma das três se resolve discutindo. Se resolve perguntando.</p>
+  <h3 style="font-size:14px;margin:14px 0 6px">Método ACRD</h3>
+  <div class="grid2">
+   <div><b style="font-size:13px">A — Acolher</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">"Entendo, faz sentido." Nunca "mas". O "mas" apaga tudo que veio antes e vira briga.</p></div>
+   <div><b style="font-size:13px">C — Confirmar</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">"Só pra eu entender: é o tema que não faz sentido ou é o momento?" Descobre a objeção real por trás da dita.</p></div>
+   <div><b style="font-size:13px">R — Reformular</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Devolva o valor sob outro ângulo, curto. Nada de discurso de 2 minutos.</p></div>
+   <div><b style="font-size:13px">D — Devolver a pergunta</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Termine sempre com uma pergunta, para a bola voltar para ele: "faz sentido?" · "prefere terça ou quinta?"</p></div>
+  </div>
+  <p class="mut" style="font-size:13px;margin:12px 0 0"><b>A objeção dita quase nunca é a real.</b> "Tá caro" costuma ser "não entendi o valor". "Vou pensar" costuma ser "tenho uma dúvida que não falei". Sua função é achar a de verdade — e só se acha perguntando.</p>
+  <p class="mut" style="font-size:13px;margin:8px 0 0">As <b>11 objeções mais comuns do Líderes</b> já estão respondidas em <b>Script de Vendas → SDR → passo 7</b>. Na Dinâmica 4 vocês vão preencher a matriz com as que aparecerem de verdade no dia a dia de vocês.</p>
+ </div>`;
+}
+const ACAD_PERSONAS=[
+ ["🧍 Carlos, 48 — o empresário solitário","Dono de uma construtora, 22 funcionários, fatura ~R$4M/ano. Decide tudo sozinho desde que se separou do sócio há 3 anos. Cansado, desconfiado de 'grupinho'.","Só se abre se você for direto e não parecer vendedor. Se sentir script decorado, corta.","Solidão do topo — não tem com quem trocar. <b>Encaixe:</b> Sociedade dos 12 + Board."],
+ ["🚀 Juliana, 35 — quer escalar","Sócia de uma clínica com 3 unidades, ~R$2,5M/ano. Bateu num teto e sabe disso. Já fez curso demais e está cética com 'mais um'.","Vai perguntar resultado concreto e quem mais está no grupo. Quer nome, não promessa.","Teto de crescimento e falta de rede qualificada. <b>Encaixe:</b> networking mensal + indicações entre membros."],
+ ["🌱 Rafael, 29 — em ascensão","Dono de uma agência, 6 pessoas, ~R$600k/ano. Animado, fala muito, tem pouco tempo e pouco caixa. Vai puxar preço cedo.","Fácil de engajar, difícil de qualificar. Cuidado para não vender para quem não decide o caixa.","Quer aprender com quem já chegou lá. <b>Encaixe:</b> O MAPA + mentorias. Plano Master."],
+ ["👑 Ricardo, 55 — o estabelecido","Dono de uma rede de lojas, ~R$20M/ano. Tem agenda cheia, secretária filtrando, e já é convidado para tudo. Só entra onde tem gente do nível dele.","Atende por 40 segundos. Ou você é relevante nos primeiros 15, ou acabou.","Status, legado e pares do mesmo nível. <b>Encaixe:</b> High Table (Premium Board)."]
+];
+const ACAD_DINAMICAS=[
+ ["1","🎤 A frase e três intenções","8 min","Duplas","Módulo 2 — Rapport",
+  "Treinar tonalidade: perceber que a MESMA frase muda tudo conforme a voz.",
+  ["Em duplas. A pessoa A diz a frase: <i>\"Oi João, aqui é a Ana do Líderes do Brasil, a comunidade de empresários de Brasília.\"</i>",
+   "Diga 3 vezes, com 3 intenções: (1) <b>inseguro</b>, subindo o tom no final, pedindo licença; (2) <b>robô</b>, lendo o script; (3) <b>autoridade tranquila</b>, tom descendo, sorrindo, sem pressa.",
+   "A pessoa B fecha os olhos e diz qual das três ela atenderia — e por quê.",
+   "Trocam. Depois 2 duplas apresentam a versão 3 para a sala."],
+  "Todo mundo percebe que a versão 3 é a única que soa como gente. É a voz que vai ser usada amanhã."],
+ ["2","❓ Construindo o SPIN do nosso cliente","12 min","Trios","Módulo 3 — Perguntas",
+  "Sair com um banco de perguntas REAIS, escritas por eles, para o ICP do Líderes.",
+  ["Cada trio sorteia uma das 4 personas (ao lado, na aba Dinâmicas).",
+   "Escrevam <b>2 perguntas de cada tipo</b> do SPIN para aquela persona — 8 perguntas no total. Usem o vocabulário que ESSA pessoa usaria.",
+   "Atenção especial na <b>Implicação</b>: a pergunta tem que doer um pouco. \"Isso te custa o quê?\" é melhor que \"isso é ruim?\".",
+   "Cada trio lê as 2 melhores em voz alta. As melhores da sala vão para o Script de Vendas."],
+  "Um banco de perguntas construído por eles — que eles usam de verdade, porque escreveram."],
+ ["3","🖥️ Meu primeiro lead","10 min","Individual","Módulo 4 — O sistema",
+  "Ninguém sai daqui sem ter mexido no CRM com as próprias mãos.",
+  ["Abra <b>CRM &amp; Funis</b> e crie um lead com um empresário real que você conhece (pode ser um conhecido).",
+   "Preencha: organização, ramo, pessoa de contato e uma anotação com a dor que você imagina que ele tem.",
+   "Mova o card para a próxima etapa e veja a cor mudar.",
+   "Agende uma atividade para amanhã: <b>ligar</b>. Depois abra <b>Tarefas / Agenda</b> e confirme que ela apareceu."],
+  "Cada pessoa termina com pelo menos 1 lead real e 1 tarefa agendada para amanhã. A agenda de amanhã já nasce cheia."],
+ ["4","🛡️ Matriz de Objeções","15 min","Grupo todo","Módulo 5 — Objeções",
+  "Mapear as objeções REAIS que eles ouvem, e ter resposta pronta para cada uma.",
+  ["Rodada rápida: cada pessoa diz <b>uma frase</b> que já ouviu de um empresário para não continuar a conversa.",
+   "Vá registrando na aba <b>Matriz de Objeções</b> (aqui do lado) — objeção, o que está por trás dela e a resposta.",
+   "Para cada uma, pergunte à sala: <i>isso é medo, dúvida ou confusão?</i> A resposta muda conforme a categoria.",
+   "Construam a resposta juntos usando <b>ACRD</b>. Salve — fica na nuvem para todos consultarem."],
+  "A matriz preenchida fica no sistema. Quando alguém travar numa ligação amanhã, abre e lê."],
+ ["5","🎭 Role-play: a ligação de verdade","30 min","Trios","Módulo 6 — Simulação",
+  "Ligar antes de ligar. Errar aqui, onde não custa cliente.",
+  ["Trios com 3 papéis: <b>SDR</b> (liga), <b>Empresário</b> (recebe a ficha da persona e interpreta), <b>Observador</b> (fica calado e anota na ficha).",
+   "<b>3 rodadas de 7 minutos</b> — a cada rodada todos trocam de papel. Cada um passa por SDR uma vez.",
+   "O Empresário deve dar pelo menos <b>uma objeção</b> — mas não pode ser impossível: seja um cliente realista, não um monstro.",
+   "Ao fim de cada rodada, <b>2 minutos de feedback</b> do Observador: primeiro o que funcionou, depois UMA coisa a melhorar. Só uma.",
+   "Ao final, 2 trios fazem a ligação na frente da sala."],
+  "Todo mundo já fez uma ligação completa, levou uma objeção na cara e recebeu feedback — antes do cliente real."]
+];
+function acadDinamicas(){
+ return `
+ <div class="card"><h2 style="margin:0 0 4px;font-size:15px">As 5 dinâmicas</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 4px">Metade do treinamento é isto. Quem só ouve esquece em dois dias; quem pratica leva para a ligação.</p></div>
+ ${ACAD_DINAMICAS.map(d=>`<div class="card">
+  <div class="flex" style="align-items:center;gap:8px;margin-bottom:6px">
+   <span class="pill pri">Dinâmica ${d[0]}</span><span class="pill">⏱ ${d[2]}</span><span class="pill">👥 ${d[3]}</span><span class="mut" style="font-size:12px">${d[4]}</span>
+  </div>
+  <h2 style="margin:0 0 4px;font-size:16px">${d[1]}</h2>
+  <p class="mut" style="font-size:13px;margin:0 0 10px"><b>Objetivo:</b> ${d[5]}</p>
+  <ol style="font-size:13px;margin:0 0 10px;padding-left:20px;line-height:1.7">${d[6].map(p=>`<li>${p}</li>`).join("")}</ol>
+  <div style="background:var(--brand-panel2);border-left:3px solid var(--brand-ok);padding:9px 13px;border-radius:6px">
+   <b style="font-size:12.5px">O que sai daqui:</b> <span class="mut" style="font-size:12.5px">${d[7]}</span></div>
+ </div>`).join("")}
+ <div class="card"><h2 style="margin:0 0 4px;font-size:15px">🃏 Fichas de persona — para o role-play</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 12px">Quem faz o papel de empresário recebe uma destas. São as 4 personas reais do nosso ICP — não invente um cliente que não existe.</p>
+ <div class="grid2">${ACAD_PERSONAS.map(p=>`<div class="card" style="margin:0">
+  <b style="font-size:14px">${p[0]}</b>
+  <p class="mut" style="font-size:12.5px;margin:6px 0 6px"><b>Quem é:</b> ${p[1]}</p>
+  <p class="mut" style="font-size:12.5px;margin:0 0 6px"><b>Como se comporta na ligação:</b> ${p[2]}</p>
+  <p style="font-size:12.5px;margin:0;color:var(--brand-accent)">${p[3]}</p>
+ </div>`).join("")}</div></div>
+ <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📋 Ficha do Observador</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 10px">Quem observa não fica de espectador: marca abaixo enquanto assiste, e dá o feedback no final.</p>
+ <div class="grid2">
+  ${[["A abertura foi afirmativa (sem \"tem 2 minutinhos?\")"],["Emendou direto na primeira pergunta"],["Falou menos que o cliente (regra 70/30)"],["Fez pergunta de Problema"],["Fez pergunta de Implicação (a que dói)"],["Usou as palavras do próprio cliente"],["Fez pausa depois de perguntar (não atropelou)"],["Confirmou se é o dono / quem decide"],["Acolheu a objeção sem usar \"mas\""],["Ofereceu 2 opções de horário"],["Confirmou dia e hora no final"],["Soou como gente, não como script"]].map(c=>`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:5px 0"><input type="checkbox" style="margin-top:3px"> <span>${c[0]}</span></label>`).join("")}
+ </div>
+ <p class="mut" style="font-size:12.5px;margin:12px 0 0"><b>No feedback:</b> diga primeiro <b>duas coisas que funcionaram</b>, depois <b>uma só</b> para melhorar. Feedback com 5 críticas ninguém aplica — com uma, todo mundo aplica.</p>
+ </div>`;
+}
+function acadBolso(){
+ return `
+ <div class="card"><h2 style="margin:0 0 4px;font-size:15px">📞 Script de bolso — a ligação de amanhã</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 4px">Imprima ou deixe aberto na tela durante as ligações. É o roteiro inteiro em uma página. O completo, com os 8 passos, está em <b>Script de Vendas</b>.</p></div>
+
+ <div class="card"><span class="pill pri">1</span> <b style="font-size:15px">Abertura — afirme, não peça licença</b>
+  <p class="mut" style="font-size:13px;margin:8px 0 4px">Escolha pela origem do lead e <b>emende direto</b> na pergunta 2. Não pergunte "pode falar?".</p>
+  <div style="background:var(--brand-panel2);padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.75">
+   🤝 <b>Indicação:</b> "Oi [nome]! Aqui é o/a [seu nome] do Líderes do Brasil. Quem me falou de você foi o [indicador] — disse que você manda muito bem no [ramo]."<br>
+   📩 <b>Inbound:</b> "Oi [nome], aqui é o/a [seu nome] do Líderes do Brasil. Vi que você [se inscreveu no encontro] — já aproveito e te explico rapidinho."<br>
+   ❄️ <b>Frio:</b> "Oi [nome], aqui é o/a [seu nome] do Líderes do Brasil, a maior comunidade de empresários de Brasília. Vou ser bem direto pra respeitar seu tempo."
+  </div>
+ </div>
+
+ <div class="card"><span class="pill pri">2</span> <b style="font-size:15px">Pré-qualificação — leve, uma emendando na outra</b>
+  <div style="background:var(--brand-panel2);padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.8">
+   "Só pra eu te situar: você é o <b>dono / sócio</b> do negócio, né?"<br>
+   "E o que a empresa faz, qual seu <b>ramo</b>?"<br>
+   "Vocês tocam aqui de <b>Brasília</b> mesmo?"<br>
+   "E como está o <b>momento</b> — crescendo, estável, ou apertado?"
+  </div>
+  <p style="font-size:12.5px;margin:8px 0 0;color:var(--brand-accent)">⚠️ <b>Não pergunte faturamento agora.</b> Ele nem te conhece. Isso aparece sozinho na Implicação.</p>
+  <p class="mut" style="font-size:12.5px;margin:6px 0 0">Não é dono? Agradeça e peça o contato de quem decide.</p>
+ </div>
+
+ <div class="card"><span class="pill pri">3</span> <b style="font-size:15px">SPIN — a conversa que vende</b>
+  <div style="background:var(--brand-panel2);padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.8">
+   <b>S</b> "Como tá o time comercial hoje? Você costuma trocar ideia com outros donos?"<br>
+   <b>P</b> "Qual seu maior desafio hoje? O que mais te tira o sono?" · "Sente que decide muita coisa sozinho?"<br>
+   <b>I</b> "E isso, no fim, te custa o quê — tempo, dinheiro, oportunidade?" ← <b>a que mais importa</b><br>
+   <b>N</b> "Se você tivesse do seu lado um grupo de donos que já passou por isso, o que mudaria pra você?"
+  </div>
+  <p class="mut" style="font-size:12.5px;margin:8px 0 0">Pergunte e <b>cale a boca</b>. A pausa é sua aliada.</p>
+ </div>
+
+ <div class="card"><span class="pill pri">4</span> <b style="font-size:15px">Confira o PDMAF (na sua cabeça)</b>
+  <p class="mut" style="font-size:13px;margin:6px 0 0"><b>P</b>erfil · <b>D</b>or · <b>M</b>omento · <b>A</b>utoridade · <b>F</b>it — <b>só agende com os 5.</b> Agendar sem os 5 é entupir a agenda do Closer com reunião que não fecha.</p>
+ </div>
+
+ <div class="card"><span class="pill pri">5</span> <b style="font-size:15px">Ponte + agendamento — devolva o que ele disse</b>
+  <div style="background:var(--brand-panel2);padding:11px 14px;border-radius:8px;font-size:13px;line-height:1.75">
+   "[nome], deixa eu te falar por que faz TANTO sentido: você é <b>dono</b>, me disse que sofre com <b>[repita a dor com as palavras dele]</b> e que agora é a hora de resolver. É exatamente pra isso que existe o Líderes.<br><br>
+   Vou te colocar com o [Closer] numa conversa de 30 minutos, sem compromisso — ele te mostra como funciona e vocês veem juntos se faz sentido.<br><br>
+   <b>Prefere terça às 9h ou quinta às 16h?</b>"
+  </div>
+  <p style="font-size:12.5px;margin:8px 0 0;color:var(--brand-ok)">✅ <b>Sempre duas opções de horário.</b> Ao mover o lead para "Reunião Agendada" no CRM, o sistema cria sozinho as tarefas anti-no-show.</p>
+ </div>
+
+ <div class="card"><span class="pill pri">6</span> <b style="font-size:15px">Feche no WhatsApp — na hora, sem esperar</b>
+  <p class="mut" style="font-size:13px;margin:6px 0 8px">Mande (1) confirmação com dia, hora e nome do Closer; (2) um "como funciona o Líderes" curto + <b>uma prova social</b> (foto do último encontro).</p>
+  <p style="font-size:12.5px;margin:0;color:var(--brand-accent)">Quem não manda o WhatsApp na hora tem o dobro de no-show. Isso não é opinião, é o que acontece.</p>
+ </div>
+
+ <div class="card"><span class="pill pri">7</span> <b style="font-size:15px">Se travar</b>
+  <p class="mut" style="font-size:13px;margin:6px 0 0">Objeção → <b>ACRD</b> (acolhe, confirma, reformula, devolve pergunta). As 11 respostas prontas estão em <b>Script de Vendas → SDR → passo 7</b> e na <b>Matriz de Objeções</b>.<br>Não atendeu → siga a <b>cadência</b> em Prospecção &amp; Cadências. Nunca deixe o lead sem próximo passo agendado.</p>
+ </div>
+
+ <div class="card"><h2 style="margin:0 0 8px;font-size:15px">🎯 Seus números de referência (SDR)</h2>
+  <div class="grid3">
+   <div><b style="font-size:20px;color:var(--brand-accent)">40-60</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">tentativas por dia</p></div>
+   <div><b style="font-size:20px;color:var(--brand-accent)">8-12</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">conexões por dia</p></div>
+   <div><b style="font-size:20px;color:var(--brand-accent)">2-3</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">reuniões agendadas por dia</p></div>
+  </div>
+  <p class="mut" style="font-size:12.5px;margin:10px 0 0">Se as tentativas caem, tudo cai depois — só que você só descobre 3 semanas depois, quando a agenda do Closer esvazia. Por isso a métrica que você controla todo dia é <b>tentativa</b>.</p>
+ </div>`;
+}
+const OBJ_SEED=[
+ {id:"o1",obj:"Me manda por WhatsApp",tras:"Dúvida — quer se livrar sem dizer não",resp:"Mando sim! Mas em 30s no telefone eu te explico melhor que qualquer texto — e já vejo se faz sentido pra você. Posso?",cat:"duvida",by:"playbook"},
+ {id:"o2",obj:"Não tenho interesse",tras:"Confusão — não sabe do que se trata",resp:"Tranquilo. Só pra eu não te incomodar à toa: é o tema (crescer / ter uma rede de donos) que não faz sentido, ou é o momento?",cat:"confusao",by:"playbook"},
+ {id:"o3",obj:"Tô sem tempo agora",tras:"Momento — mas pode ser fuga",resp:"Justamente por isso liguei rápido. Te tomo 2 minutos agora, ou prefere que eu te ligue hoje 17h ou amanhã 9h?",cat:"confusao",by:"playbook"},
+ {id:"o4",obj:"Quanto custa?",tras:"Dúvida — quer ancorar antes de ver valor",resp:"Tem caminhos pra momentos diferentes, e quem te mostra o que encaixa é o especialista na reunião — porque depende do seu objetivo.",cat:"duvida",by:"playbook"},
+ {id:"o5",obj:"Preciso ver com meu sócio",tras:"Autoridade — decisor 2 fora da conversa",resp:"Perfeito, decisão de sócio se toma junto. Já reservo a vaga e a gente coloca ele na conversa também. Qual o melhor dia pra vocês dois?",cat:"medo",by:"playbook"},
+ {id:"o6",obj:"Já participo de outro grupo (BNI etc.)",tras:"Dúvida — não vê diferença",resp:"Massa! Sinal de que você valoriza rede. O Líderes é diferente: é curado por donos do seu nível e foca em fazer negócio entre os membros.",cat:"duvida",by:"playbook"},
+ {id:"o7",obj:"Não é meu momento",tras:"Momento — dor não virou prioridade",resp:"Entendo. Deixa eu te perguntar: o [dor que ele citou] costuma melhorar sozinho esperando? Às vezes o melhor momento é justamente quando aperta.",cat:"confusao",by:"playbook"}
+];
+function objMatrix(){return DB.getObj(T(),"objMatrix",OBJ_SEED);}
+function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
+function acadAddObj(){
+ const o=(document.getElementById("mxObj").value||"").trim();
+ if(!o)return alert("Escreva a objeção que você ouviu.");
+ const m=objMatrix();
+ m.push({id:DB.uid(),obj:o,tras:(document.getElementById("mxTras").value||"").trim(),
+   resp:(document.getElementById("mxResp").value||"").trim(),cat:document.getElementById("mxCat").value,by:SESSION.name});
+ saveObjMatrix(m);vAcademy();
+}
+function acadDelObj(id){
+ if(!confirm("Remover esta objeção da matriz?"))return;
+ saveObjMatrix(objMatrix().filter(x=>x.id!==id));vAcademy();
+}
+function acadEditObj(id,campo,el){
+ const m=objMatrix();const i=m.findIndex(x=>x.id===id);
+ if(i<0)return;m[i][campo]=el.innerText.trim();saveObjMatrix(m);
+}
+function acadObjecoes(){
+ const m=objMatrix();
+ const CAT={medo:["😨 Medo","bad"],duvida:["🤔 Dúvida","warn"],confusao:["🌀 Confusão","pri"]};
+ return `
+ <div class="card"><h2 style="margin:0 0 4px;font-size:15px">🛡️ Matriz de Objeções</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 4px">O que a sala ouve de verdade, com resposta pronta. <b>Salva na nuvem</b> — todo mundo vê e usa. Clique em qualquer texto para editar.</p>
+ <p class="mut" style="font-size:12.5px;margin:6px 0 0">Toda objeção é <b>medo</b> (de errar/gastar mal), <b>dúvida</b> (não viu valor) ou <b>confusão</b> (não é hora na cabeça dele). Classificar ajuda a escolher a resposta.</p></div>
+
+ <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Adicionar objeção que você já ouviu</h3>
+  <div class="grid2" style="gap:10px">
+   <div><label class="mut" style="font-size:12px">A frase que o cliente diz</label><input id="mxObj" placeholder='Ex.: "Já tenho muito compromisso"' style="width:100%"></div>
+   <div><label class="mut" style="font-size:12px">O que está por trás</label><input id="mxTras" placeholder="Ex.: medo de mais uma agenda que não usa" style="width:100%"></div>
+  </div>
+  <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como responder (ACRD: acolhe → confirma → reformula → devolve pergunta)</label>
+   <textarea id="mxResp" rows="2" placeholder="Ex.: Entendo — e é justamente por isso que a gente curou pra ser 1 encontro por mês. Se fosse só 1 manhã e voltasse com 2 contatos bons, valeria?" style="width:100%"></textarea></div>
+  <div class="flex" style="margin-top:10px;align-items:center;gap:10px">
+   <select id="mxCat"><option value="medo">😨 Medo</option><option value="duvida" selected>🤔 Dúvida</option><option value="confusao">🌀 Confusão</option></select>
+   <button class="btn gold sm" onclick="acadAddObj()">Adicionar à matriz</button>
+   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span>
+  </div>
+ </div>
+
+ ${m.map(o=>`<div class="card" style="padding:14px 16px">
+   <div class="flex" style="align-items:center;gap:8px;margin-bottom:6px">
+    <span class="pill ${(CAT[o.cat]||CAT.duvida)[1]}">${(CAT[o.cat]||CAT.duvida)[0]}</span>
+    <span class="mut" style="font-size:11.5px">${o.by==="playbook"?"do playbook":"por "+o.by}</span>
+    <div style="flex:1"></div>
+    <button class="btn ghost sm" onclick="acadDelObj('${o.id}')">✕</button>
+   </div>
+   <div style="font-size:14px;font-weight:700;margin-bottom:4px">“<span contenteditable onblur="acadEditObj('${o.id}','obj',this)">${o.obj}</span>”</div>
+   <div class="mut" style="font-size:12.5px;margin-bottom:6px"><b>Por trás:</b> <span contenteditable onblur="acadEditObj('${o.id}','tras',this)">${o.tras||"— clique para preencher —"}</span></div>
+   <div style="background:var(--brand-panel2);padding:9px 13px;border-radius:7px;font-size:13px;line-height:1.6">
+    <b style="font-size:12px;color:var(--brand-ok)">RESPOSTA</b><br><span contenteditable onblur="acadEditObj('${o.id}','resp',this)">${o.resp||"— clique para escrever a resposta —"}</span></div>
+  </div>`).join("")}`;
+}
+function acadSaveCommit(){
+ const c=DB.getObj(T(),"trainCommit",{});
+ c[SESSION.name]={lig:+document.getElementById("cmLig").value||0,hora:document.getElementById("cmHora").value||"",
+   foco:(document.getElementById("cmFoco").value||"").trim(),quando:new Date().toLocaleString("pt-BR")};
+ DB.set(T(),"trainCommit",c);vAcademy();
+}
+function acadCompromisso(){
+ const c=DB.getObj(T(),"trainCommit",{});const meu=c[SESSION.name]||{};
+ return `
+ <div class="card"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de amanhã</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 12px">Treinamento sem compromisso vira conversa boa e nada muda. Escreva o seu — fica salvo e o gestor acompanha.</p>
+ <div class="grid3" style="gap:12px">
+  <div><label class="mut" style="font-size:12px">Ligações que farei amanhã</label><input id="cmLig" type="number" value="${meu.lig||30}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Meu horário de prospecção (bloqueado)</label><input id="cmHora" value="${meu.hora||"09:00 às 11:30"}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">O que vou treinar em mim</label><input id="cmFoco" value="${meu.foco||""}" placeholder="Ex.: fazer a pausa depois de perguntar" style="width:100%"></div>
+ </div>
+ <div style="margin-top:12px"><button class="btn gold sm" onclick="acadSaveCommit()">Assinar meu compromisso</button>
+ ${meu.quando?`<span class="mut" style="font-size:12px;margin-left:10px">assinado em ${meu.quando}</span>`:""}</div>
+ </div>
+ ${isAdmin()?`<div class="card"><h3 style="margin:0 0 10px;font-size:14px">Compromissos do time</h3>
+  ${Object.keys(c).length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Ligações/dia</th><th>Horário</th><th>Foco de treino</th></tr></thead><tbody>
+  ${Object.entries(c).map(([n,v])=>`<tr><td><b>${n}</b></td><td>${v.lig}</td><td>${v.hora||"—"}</td><td class="mut">${v.foco||"—"}</td></tr>`).join("")}
+  </tbody></table>`:`<p class="mut" style="font-size:13px">Ninguém assinou ainda.</p>`}
+ </div>`:""}
+ <div class="card"><h2 style="margin:0 0 8px;font-size:15px">🧭 Travou? Onde procurar</h2>
+ <div class="grid2">
+  <div><b style="font-size:13px">Esqueci o que falar</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Academia → <b>Script de bolso</b>, ou <b>Script de Vendas</b> para o roteiro completo dos 8 passos.</p></div>
+  <div><b style="font-size:13px">Levei uma objeção nova</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Matriz de Objeções</b> — e registre a nova lá para ajudar o time.</p></div>
+  <div><b style="font-size:13px">Ele não atendeu</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Prospecção &amp; Cadências</b> — o que fazer no D0, D1, D3… até o D12.</p></div>
+  <div><b style="font-size:13px">O que faço hoje?</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Tarefas / Agenda</b> — atrasadas em vermelho, hoje em verde.</p></div>
+  <div><b style="font-size:13px">Esqueci sobre o produto</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Script de Vendas → ICP &amp; Empresa</b> — planos, benefícios e personas.</p></div>
+  <div><b style="font-size:13px">Quero melhorar</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Treinamento &amp; Prova</b> — 4 perguntas por dia. É rápido e mantém afiado.</p></div>
+ </div></div>`;
+}
+function vAcademy(){
+ M().innerHTML=acadHeader()+({agenda:acadAgenda,conteudo:acadConteudo,dinamicas:acadDinamicas,
+   bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadAgenda)();
+}
+
 function vScripts(){
   const tabs=scriptTabsFor();
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=(isAdmin()?"visao":SESSION.role);
