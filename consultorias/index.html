@@ -243,6 +243,104 @@ small.mut{color:var(--brand-muted)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;background:var(--brand-panel);border:1px solid var(--brand-line);border-left:4px solid var(--brand-ok);padding:12px 18px;border-radius:12px;box-shadow:var(--shadow);font-size:13.5px;opacity:0;transition:.25s}
 .toast.show{opacity:1;bottom:34px}
 @media(max-width:900px){#app{grid-template-columns:1fr}.sidebar{display:none}.searchbox{display:none}.ld-grid{grid-template-columns:1fr}}
+
+/* ===== APRESENTAÇÃO (deck) ===== */
+#deck{position:fixed;inset:0;z-index:9999;background:#0a0f22;display:none;flex-direction:column;font-family:var(--font)}
+#deck *{box-sizing:border-box}
+.dk-top{position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08)}
+.dk-prog{height:100%;background:linear-gradient(90deg,var(--brand-accent),#8aa0e8);transition:width .25s}
+.dk-bar-top{display:flex;align-items:center;gap:8px;padding:12px 20px 8px;flex-wrap:wrap}
+.dk-chip{font-size:11.5px;font-family:var(--mono);color:#93a3c9;background:rgba(255,255,255,.06);padding:5px 10px;border-radius:20px}
+.dk-chip.dk-time{color:#e7b53c}.dk-chip.dk-run{color:#3fcf8e}
+.dk-btn{font-size:11.5px;color:#93a3c9;background:rgba(255,255,255,.06);border:0;padding:6px 11px;border-radius:20px;cursor:pointer;font-family:inherit}
+.dk-btn:hover{background:rgba(255,255,255,.13);color:#fff}.dk-btn b{opacity:.5;font-weight:600}
+.dk-btn.dk-x:hover{background:#ff5d73;color:#fff}
+.dk-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 48px;overflow-y:auto}
+.dk-slide{width:100%;max-width:1180px;color:#eaf0ff}
+.dk-notes{background:#141b35;border-top:2px solid var(--brand-accent);padding:13px 24px;font-size:14px;line-height:1.6;color:#c3cfeb}
+.dk-notes b{color:var(--brand-accent)}
+.dk-nav{display:flex;align-items:center;justify-content:center;gap:20px;padding:10px 0 16px}
+.dk-arrow{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer}
+.dk-arrow:hover:not(:disabled){background:var(--brand-accent);color:#0a0f22}
+.dk-arrow:disabled{opacity:.2;cursor:default}
+.dk-mut{color:#7d8bb0;font-size:12px}
+/* tipografia dos slides */
+.dk-h1{font-size:clamp(30px,4.4vw,56px);line-height:1.12;margin:0 0 16px;font-weight:800;letter-spacing:-.5px}
+.dk-h2{font-size:clamp(22px,2.8vw,36px);margin:0 0 18px;font-weight:800;letter-spacing:-.3px}
+.dk-lead{font-size:clamp(16px,1.7vw,22px);color:#b9c6e6;margin:0 0 18px;line-height:1.5}
+.dk-sub{font-size:15.5px;color:#93a3c9;margin:0 0 18px;line-height:1.6}
+.dk-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--brand-accent);margin-bottom:14px}
+.dk-hero,.dk-ask,.dk-dyn{text-align:center;padding:20px 0}
+.dk-dyn{text-align:left}.dk-dyn .dk-h1{text-align:center}.dk-dyn .dk-lead{text-align:center}
+.dk-badges{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+.dk-badges span{background:rgba(255,255,255,.07);padding:8px 16px;border-radius:24px;font-size:13.5px;color:#c3cfeb}
+.dk-punch{background:linear-gradient(90deg,rgba(231,181,60,.14),rgba(231,181,60,.03));border-left:4px solid var(--brand-accent);padding:15px 20px;border-radius:8px;font-size:clamp(15px,1.6vw,19px);line-height:1.55;margin-top:20px}
+.dk-alert{background:rgba(255,93,115,.11);border-left:4px solid #ff5d73;padding:13px 18px;border-radius:8px;margin-top:16px;font-size:14.5px;line-height:1.55}
+.dk-alert b{color:#ff8a9b}
+.dk-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0}
+.dk-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.dk-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+.dk-grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 20px;margin:18px 0}
+.dk-card{background:rgba(255,255,255,.055);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,.07)}
+.dk-card>b{font-size:16px;display:block;margin-bottom:6px}
+.dk-card p{font-size:14px;color:#b9c6e6;margin:0;line-height:1.5}
+.dk-card.dk-warn{background:rgba(255,93,115,.08);border-color:rgba(255,93,115,.2)}
+.dk-card.dk-ok{background:rgba(63,207,142,.09);border-color:rgba(63,207,142,.22)}
+.dk-ic{font-size:26px;margin-bottom:8px}
+.dk-tag{display:inline-block;margin-top:9px;font-size:12px;color:var(--brand-accent);background:rgba(231,181,60,.12);padding:4px 10px;border-radius:14px}
+.dk-good,.dk-bad{border-radius:12px;padding:18px}
+.dk-good{background:rgba(63,207,142,.1);border:1px solid rgba(63,207,142,.25)}
+.dk-bad{background:rgba(255,93,115,.09);border:1px solid rgba(255,93,115,.22)}
+.dk-good>b,.dk-bad>b{font-size:16px;display:block;margin-bottom:8px}
+.dk-good ul,.dk-bad ul{margin:0;padding-left:18px;font-size:14px;color:#b9c6e6;line-height:1.75}
+.dk-good p,.dk-bad p{font-size:14.5px;color:#c3cfeb;margin:0;line-height:1.6}
+.dk-good span,.dk-bad span{display:block;margin-top:9px;font-size:12.5px;color:#93a3c9;font-style:italic}
+.dk-grid6>div>b{font-size:15px;display:block;margin-bottom:4px}
+.dk-grid6 div p,.dk-grid4 div p{font-size:13.5px;color:#b9c6e6;margin:0;line-height:1.5}
+.dk-grid4>div>b{font-size:15px;display:block;margin-bottom:5px}
+.dk-list{font-size:clamp(14.5px,1.5vw,17px);line-height:1.85;padding-left:24px;margin:16px 0}
+.dk-list li{margin-bottom:9px}
+.dk-list b{color:#fff}.dk-list u{text-decoration-color:var(--brand-accent)}
+.dk-timeline{display:flex;flex-direction:column;gap:0;margin-top:16px}
+.dk-timeline>div{display:flex;gap:16px;align-items:baseline;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.dk-timeline span{font-family:var(--mono);font-size:13px;color:var(--brand-accent);min-width:56px}
+.dk-timeline>div>b{font-size:16px;min-width:230px}
+.dk-timeline p{font-size:14px;color:#93a3c9;margin:0}
+.dk-cycle{display:flex;align-items:center;justify-content:center;gap:10px;margin:26px 0;flex-wrap:wrap}
+.dk-step{background:rgba(255,255,255,.06);border-radius:12px;padding:16px 20px;text-align:center;min-width:150px}
+.dk-step.dk-hl{background:rgba(231,181,60,.16);border:1px solid rgba(231,181,60,.4)}
+.dk-step span{display:block;font-family:var(--mono);font-size:12px;color:var(--brand-accent)}
+.dk-step>b{display:block;font-size:17px;margin:4px 0 2px}
+.dk-step p{font-size:13px;color:#93a3c9;margin:0}
+.dk-arrow-i,.dk-cycle .dk-arrow{background:none;width:auto;height:auto}
+.dk-cycle .dk-arrow{font-size:22px;color:#5b6a92}
+.dk-spin{display:flex;gap:14px;justify-content:center;margin:24px 0}
+.dk-spin span{width:74px;height:74px;border-radius:16px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:var(--brand-accent)}
+.dk-letter{width:76px;height:76px;border-radius:18px;background:rgba(231,181,60,.15);color:var(--brand-accent);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;margin-bottom:14px}
+.dk-letter.dk-hot{background:rgba(255,93,115,.18);color:#ff8a9b}
+.dk-say{background:rgba(255,255,255,.055);border-radius:12px;padding:18px 22px;margin:14px 0}
+.dk-say b{font-size:13px;color:var(--brand-accent);display:block;margin-bottom:8px;font-family:var(--mono);letter-spacing:1px}
+.dk-say p{font-size:clamp(15px,1.6vw,19px);line-height:1.85;margin:0;color:#eaf0ff}
+.dk-pdmaf{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0}
+.dk-pdmaf div{background:rgba(255,255,255,.06);border-radius:12px;padding:16px;text-align:center}
+.dk-pdmaf span{display:block;font-size:30px;font-weight:800;color:var(--brand-accent)}
+.dk-pdmaf>div>b{display:block;font-size:15px;margin:5px 0 3px}
+.dk-pdmaf p{font-size:12.5px;color:#93a3c9;margin:0;line-height:1.45}
+.dk-bar{display:flex;height:52px;border-radius:10px;overflow:hidden;margin:18px 0;font-size:15px;font-weight:700}
+.dk-bar-a{flex:7;background:rgba(63,207,142,.28);display:flex;align-items:center;justify-content:center}
+.dk-bar-b{flex:3;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center}
+.dk-quote{background:rgba(255,255,255,.06);border-left:4px solid var(--brand-accent);padding:18px 22px;border-radius:8px;font-size:clamp(16px,1.8vw,21px);line-height:1.6;margin:18px 0;text-align:center;font-style:italic}
+.dk-dialog{display:flex;flex-direction:column;gap:11px;margin:18px 0}
+.dk-cli{background:rgba(255,93,115,.11);padding:14px 18px;border-radius:12px 12px 12px 3px;font-size:16px;max-width:76%}
+.dk-you{background:rgba(63,207,142,.11);padding:14px 18px;border-radius:12px 12px 3px 12px;font-size:15.5px;max-width:82%;align-self:flex-end;line-height:1.55}
+.dk-you>span:first-child{background:var(--brand-accent);color:#0a0f22;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;margin-right:10px;vertical-align:-6px}
+.dk-check{display:grid;grid-template-columns:1fr 1fr;gap:9px 26px;font-size:15px;margin:18px 0;line-height:1.6}
+.dk-nums{display:flex;gap:20px;justify-content:center;margin:26px 0;flex-wrap:wrap}
+.dk-nums div{text-align:center;background:rgba(255,255,255,.06);border-radius:14px;padding:22px 34px}
+.dk-nums>div>b{display:block;font-size:44px;color:var(--brand-accent);line-height:1}
+.dk-nums span{font-size:13.5px;color:#93a3c9}
+@media(max-width:900px){.dk-cols,.dk-grid4,.dk-grid6,.dk-pdmaf,.dk-two,.dk-check{grid-template-columns:1fr}.dk-stage{padding:10px 18px}}
+
 </style>
 </head>
 <body data-brand="protocolo">
@@ -1399,8 +1497,443 @@ function scriptTabsFor(){
   const perm=map[SESSION.role]||["visao"];
   return all.filter(t=>perm.includes(t[0]));
 }
+/* ===== MODO APRESENTAÇÃO — a aula slide a slide ===== */
+let DECK_I=0, DECK_NOTES=true, DECK_T0=null;
+const S=(bloco,tempo,titulo,corpo,nota)=>({bloco,tempo,titulo,corpo,nota});
+const DECK=[
+/* ---------- 0. ABERTURA (10 min) ---------- */
+S("Abertura","0:00","Academia de Vendas",
+ `<div class="dk-hero"><div class="dk-eyebrow">Líderes do Brasil · O Protocolo Comercial</div>
+  <h1 class="dk-h1">Academia de Vendas</h1>
+  <p class="dk-lead">Do zero à sua primeira ligação — em 3 horas.</p>
+  <div class="dk-badges"><span>3 horas</span><span>Metade prática</span><span>Amanhã você liga</span></div></div>`,
+ "Abra em pé, com energia. Diga: 'Hoje não é palestra. Hoje é treino. Quem sai daqui, sai ligando amanhã.' Não comece se alguém estiver no celular."),
+S("Abertura","0:01","Por que estamos aqui",
+ `<h2 class="dk-h2">Por que estamos aqui</h2>
+  <div class="dk-cols">
+   <div class="dk-card"><div class="dk-ic">🎯</div><b>O problema</b><p>O Líderes tem um produto que muda a vida de empresário. Mas o empresário não sabe que existe.</p></div>
+   <div class="dk-card"><div class="dk-ic">📞</div><b>A ponte</b><p>Alguém precisa ligar, conversar e trazer essa pessoa. Essa pessoa é você.</p></div>
+   <div class="dk-card"><div class="dk-ic">🧭</div><b>O que muda hoje</b><p>Você sai daqui com roteiro, perguntas e resposta pronta pro "não". Sem improviso.</p></div>
+  </div>
+  <div class="dk-punch">No fim de hoje você vai saber: <b>para quem ligar</b>, <b>o que perguntar</b>, <b>como contornar o não</b> e <b>o que registrar</b>.</div>`,
+ "Pergunte à sala: 'quem aqui já ligou pra um cliente e travou?' Deixe 2-3 pessoas responderem. Valide: 'travar é normal — o que resolve não é coragem, é roteiro.'"),
+S("Abertura","0:04","As 5 regras da sala",
+ `<h2 class="dk-h2">As 5 regras da sala</h2>
+  <ol class="dk-list">
+   <li><b>Celular no bolso.</b> Só sai no intervalo. Quem responde mensagem perde o fio e atrapalha o trio.</li>
+   <li><b>Ninguém assiste.</b> Em toda dinâmica você é uma das três coisas: quem liga, o cliente, ou quem observa.</li>
+   <li><b>Errar aqui é de graça.</b> É melhor travar na frente da gente do que na frente do cliente. Vai errar — e tudo bem.</li>
+   <li><b>Pergunta na hora.</b> Não guarde dúvida para o final. Se você não entendeu, mais alguém também não.</li>
+   <li><b>Sai com compromisso.</b> No final cada um diz em voz alta quantas ligações fará amanhã. E registra no sistema.</li>
+  </ol>`,
+ "Leia uma a uma, devagar. Na regra 3, conte um erro seu de venda — isso destrava a sala. Peça um 'combinado?' e espere a sala responder em voz alta."),
+S("Abertura","0:08","Como vai ser",
+ `<h2 class="dk-h2">Como vai ser</h2>
+  <div class="dk-timeline">
+   <div><span>25min</span><b>O jogo comercial</b><p>Como funciona uma área comercial e onde você entra</p></div>
+   <div><span>20min</span><b>Rapport e voz</b><p>Como não parecer telemarketing nos 10 primeiros segundos</p></div>
+   <div><span>35min</span><b>Perguntas que vendem</b><p>SPIN e BANT — as perguntas que fazem o cliente se convencer</p></div>
+   <div><span>20min</span><b>O sistema</b><p>Onde você registra e onde acha o que fazer hoje</p></div>
+   <div><span>30min</span><b>Objeções</b><p>O que dizer quando ele diz não</p></div>
+   <div><span>30min</span><b>Role-play</b><p>Você liga de verdade, aqui, agora</p></div>
+  </div>`,
+ "Mostre que metade é prática. Diga: 'se em algum momento eu falar mais de 20 minutos seguidos, me interrompam.'")
+];
+DECK.push(
+/* ---------- 1. O JOGO COMERCIAL (25 min) ---------- */
+S("Módulo 1","0:10","Pergunta para a sala",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 1 · O jogo comercial</div>
+  <h1 class="dk-h1">Pensa no último produto caro<br>que <u>você</u> comprou.</h1>
+  <p class="dk-lead">O que fez você comprar? E o que quase fez você desistir?</p></div>`,
+ "NÃO responda. Deixe 3-4 pessoas falarem. Vai aparecer: confiança, indicação de alguém, o vendedor entendeu meu problema. Anote no quadro. Use isso o dia todo: 'lembra o que a Ana falou?'"),
+S("Módulo 1","0:13","Processo vence talento",
+ `<h2 class="dk-h2">Processo vence talento</h2>
+  <div class="dk-two">
+   <div class="dk-bad"><b>O vendedor "nato"</b><ul><li>Fecha e não sabe explicar como</li><li>Não ensina ninguém</li><li>Se sai da empresa, leva tudo</li><li>Dia ruim = mês ruim</li></ul></div>
+   <div class="dk-good"><b>O time com processo</b><ul><li>Todo mundo sabe o próximo passo</li><li>Dá para ensinar e repetir</li><li>O conhecimento fica na empresa</li><li>Dia ruim? O processo segura</li></ul></div>
+  </div>
+  <div class="dk-punch">Você não precisa ser o melhor falador da sala.<br>Precisa <b>seguir o roteiro, fazer as perguntas e registrar</b>.</div>`,
+ "Essa é a mensagem mais importante do dia. Diga: 'ninguém aqui precisa virar outra pessoa. Precisa seguir o processo.' Isso tira a pressão de quem é tímido."),
+S("Módulo 1","0:17","Onde a venda se perde de verdade",
+ `<h2 class="dk-h2">Onde a venda se perde de verdade</h2>
+  <div class="dk-cols">
+   <div class="dk-card dk-warn"><b>❌ Qualificação mal feita</b><p>Você foi conversar com quem não decide, não tem dor, ou não é o momento. A reunião até acontece — e morre ali.</p></div>
+   <div class="dk-card dk-warn"><b>❌ Follow-up que não aconteceu</b><p>O cliente disse "me liga semana que vem" e ninguém ligou. A maioria das vendas perdidas morre aqui, no silêncio.</p></div>
+   <div class="dk-card dk-ok"><b>✅ As duas são processo</b><p>Nenhuma das duas é falta de talento. As duas se resolvem com roteiro e com registro no CRM.</p></div>
+  </div>
+  <div class="dk-punch">Quase nunca se perde no preço. Perde-se <b>antes</b>.</div>`,
+ "Pergunte: 'quantos leads vocês têm parados esperando um retorno que nunca veio?' Silêncio incômodo aqui é bom — é o que vende o CRM pra eles."),
+S("Módulo 1","0:20","Os três papéis",
+ `<h2 class="dk-h2">Por que separamos SDR, Closer e CS</h2>
+  <p class="dk-sub">Quando a mesma pessoa faz tudo, ela sempre escolhe a tarefa mais confortável. E prospectar é a mais desconfortável. Resultado: agenda vazia daqui a 30 dias.</p>
+  <div class="dk-cols">
+   <div class="dk-card"><div class="dk-ic">🎯</div><b>SDR</b><p>Encontra e qualifica.<br><u>Não vende o produto</u> — vende a reunião.</p><span class="dk-tag">Sucesso: reunião acontecida com a pessoa certa</span></div>
+   <div class="dk-card"><div class="dk-ic">🤝</div><b>Closer</b><p>Diagnostica e fecha.<br>Recebe o lead já qualificado.</p><span class="dk-tag">Sucesso: adesão assinada</span></div>
+   <div class="dk-card"><div class="dk-ic">💎</div><b>CS</b><p>Faz o cliente ter resultado e ficar.</p><span class="dk-tag">Sucesso: renovação, upgrade e indicação</span></div>
+  </div>`,
+ "Pergunte quem é o quê na sala. Se alguém acumula papéis, reconheça: 'você faz dois — então bloqueie horário separado pra cada um, senão a prospecção some.'"),
+S("Módulo 1","0:24","O ciclo que se alimenta",
+ `<h2 class="dk-h2">O ciclo que se alimenta sozinho</h2>
+  <div class="dk-cycle">
+   <div class="dk-step"><span>1</span><b>SDR</b><p>prospecta e agenda</p></div><div class="dk-arrow">→</div>
+   <div class="dk-step"><span>2</span><b>Closer</b><p>fecha a adesão</p></div><div class="dk-arrow">→</div>
+   <div class="dk-step"><span>3</span><b>CS</b><p>entrega resultado</p></div><div class="dk-arrow">→</div>
+   <div class="dk-step dk-hl"><span>4</span><b>Indicação</b><p>volta pro SDR</p></div>
+  </div>
+  <div class="dk-punch">Indicação é o lead <b>mais barato e que mais converte</b> que existe.<br>Time que não pede indicação está comprando lead caro à toa.</div>`,
+ "Aqui cabe uma pergunta: 'quantos de vocês pediram uma indicação essa semana?' Normalmente ninguém. Combine: toda entrega boa termina com pedido de indicação."),
+S("Módulo 1","0:28","O que um bom comercial tem",
+ `<h2 class="dk-h2">O que um bom comercial tem <span class="dk-mut">(e tudo isso se treina)</span></h2>
+  <div class="dk-grid6">
+   <div><b>🔁 Consistência</b><p>Faz o número de tentativas todo dia — inclusive no dia ruim.</p></div>
+   <div><b>👂 Escuta</b><p>Fala 30%, ouve 70%. Quem fala demais está se vendendo, não entendendo.</p></div>
+   <div><b>🧠 Curiosidade real</b><p>Quer mesmo saber do negócio do outro. Isso não se finge.</p></div>
+   <div><b>🛡️ Resiliência</b><p>Não leva o não pro pessoal. O não é sobre o momento dele.</p></div>
+   <div><b>📝 Registro</b><p>O que não está no CRM não existe. Sua memória não escala.</p></div>
+   <div><b>🎓 Domínio do produto</b><p>Saber o Líderes de cor. Insegurança na voz o cliente escuta.</p></div>
+  </div>`,
+ "Peça pra cada um dizer em qual das seis ele é mais fraco. Isso vira o 'foco de treino' que ele registra no final do dia."),
+/* ---------- 2. RAPPORT (20 min) ---------- */
+S("Módulo 2","0:35","Os 10 primeiros segundos",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 2 · Rapport e voz</div>
+  <h1 class="dk-h1">Nos primeiros 10 segundos<br>ele decide uma coisa só:</h1>
+  <p class="dk-lead">"é mais um vendedor chato" <b>ou</b> "essa pessoa pode me ajudar"</p>
+  <div class="dk-punch">E não é o seu argumento que decide isso. É a sua <b>voz</b>.</div></div>`,
+ "Faça a demonstração: diga a mesma frase de abertura duas vezes — uma insegura, uma firme. Pergunte qual eles atenderiam. O contraste ensina mais que explicação."),
+S("Módulo 2","0:38","Tonalidade: o que pesa no telefone",
+ `<h2 class="dk-h2">Tonalidade — no telefone, é tudo que ele tem de você</h2>
+  <div class="dk-grid4">
+   <div><b>↘️ Tom que desce</b><p>"Oi João, aqui é a Ana do Líderes do Brasil." <u>Afirmação</u>, não pergunta. Quem sobe o tom no fim parece pedir licença pra existir.</p></div>
+   <div><b>⏩ Ritmo</b><p>Comece um pouco mais rápido (mostra que respeita o tempo dele). Desacelere quando ele começar a se abrir.</p></div>
+   <div><b>⏸️ Pausa</b><p>A arma mais subestimada. Perguntou? <b>Cale a boca.</b> O silêncio incomoda você, não ele.</p></div>
+   <div><b>😊 Sorriso</b><p>Sorria de verdade enquanto fala. Muda a ressonância da voz — e o outro percebe.</p></div>
+  </div>`,
+ "Insista na pausa. É o erro mais comum do iniciante: perguntar e já emendar a resposta. Faça um teste: pergunte algo à sala e fique 5 segundos calado. Todo mundo sente o desconforto."),
+S("Módulo 2","0:42","Espelhamento e as palavras dele",
+ `<h2 class="dk-h2">Fale a língua dele</h2>
+  <div class="dk-two">
+   <div class="dk-bad"><b>❌ Traduzir para o "corporativês"</b><p>Cliente: <i>"tá osso segurar a equipe"</i><br>Você: <i>"entendo, um desafio de gestão de pessoas"</i></p><span>Ele sente que você não escutou — escutou e traduziu.</span></div>
+   <div class="dk-good"><b>✅ Devolver as palavras dele</b><p>Cliente: <i>"tá osso segurar a equipe"</i><br>Você: <i>"esse osso de segurar a equipe é o que mais te consome hoje?"</i></p><span>Ele sente que você entendeu. E continua falando.</span></div>
+  </div>
+  <div class="dk-punch">Se ele fala devagar, não atropele. Se ele é seco e direto, seja seco e direto.</div>`,
+ "Peça um exemplo real: 'me dá uma frase que um empresário falaria'. Pegue a frase e devolva na hora, espelhada. Faça isso 2 vezes com a sala."),
+S("Módulo 2","0:46","A regra 70/30 e o erro nº 1",
+ `<h2 class="dk-h2">Regra 70/30</h2>
+  <div class="dk-bar"><div class="dk-bar-a">Ele fala 70%</div><div class="dk-bar-b">Você 30%</div></div>
+  <p class="dk-sub">Se inverter, você está apresentando cedo demais — entregando argumento antes de saber qual importa. E <b>cada argumento errado vira uma objeção que você mesmo criou</b>.</p>
+  <div class="dk-alert"><b>⚠️ O erro nº 1 do iniciante</b><p>Perguntar <i>"tem 2 minutinhos?"</i> ou <i>"é um bom momento?"</i><br>Você acabou de entregar de bandeja a saída mais fácil. <b>Não peça permissão</b>: seja breve, útil, e já emende na primeira pergunta.</p></div>`,
+ "Essa frase — 'tem 2 minutinhos' — provavelmente está na boca de metade da sala. Peça pra levantar a mão quem usa. Sem julgamento: 'a partir de hoje, morreu.'"),
+S("Módulo 2","0:50","DINÂMICA 1",
+ `<div class="dk-dyn"><div class="dk-eyebrow">Dinâmica 1 · 8 minutos · em duplas</div>
+  <h1 class="dk-h1">🎤 A frase e três intenções</h1>
+  <div class="dk-quote">"Oi João, aqui é a Ana do Líderes do Brasil,<br>a comunidade de empresários de Brasília."</div>
+  <ol class="dk-list">
+   <li>Pessoa <b>A</b> diz a frase <b>3 vezes</b>: (1) inseguro, subindo o tom, pedindo licença · (2) robô, lendo · (3) <b>autoridade tranquila</b>: tom descendo, sorrindo, sem pressa.</li>
+   <li>Pessoa <b>B</b> fecha os olhos e diz qual das três atenderia — e por quê.</li>
+   <li><b>Trocam.</b> Depois 2 duplas apresentam a versão 3 para a sala.</li>
+  </ol></div>`,
+ "Marque 8 minutos no relógio e circule pela sala. Escolha as 2 melhores duplas para apresentar. Feche: 'essa terceira voz é a que vocês usam amanhã.'")
+);
+DECK.push(
+/* ---------- 3. PERGUNTAS QUE VENDEM (35 min) ---------- */
+S("Módulo 3","0:55","Quem pergunta, conduz",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 3 · Perguntas que vendem</div>
+  <h1 class="dk-h1">O médico não te vende remédio<br>na porta do consultório.</h1>
+  <p class="dk-lead">Ele pergunta, examina, e só então receita.<br>Se receitasse antes, você não confiaria nele.</p>
+  <div class="dk-punch">Venda é igual. <b>Quem pergunta, conduz.</b></div></div>`,
+ "Deixe o silêncio depois dessa frase. Depois pergunte: 'quantos de vocês já começaram uma ligação falando do produto?' Todo mundo. Sem culpa — só mostre que agora é diferente."),
+S("Módulo 3","0:58","SPIN — de onde veio",
+ `<h2 class="dk-h2">SPIN Selling</h2>
+  <div class="dk-two">
+   <div class="dk-card"><b>De onde veio</b><p>Neil Rackham, anos 80. Observou <b>mais de 35.000 visitas de vendas reais</b> pra descobrir o que os melhores vendedores faziam de diferente.</p></div>
+   <div class="dk-card dk-ok"><b>O que ele descobriu</b><p>Não era fechar melhor. Não era falar melhor.<br>Era <b>perguntar diferente</b>.</p></div>
+  </div>
+  <div class="dk-spin"><span>S</span><span>P</span><span>I</span><span>N</span></div>
+  <p class="dk-sub" style="text-align:center">Situação · Problema · Implicação · Necessidade — nessa ordem, mas <b>como conversa</b>.</p>`,
+ "Dê o contexto histórico rápido — dá autoridade ao método. Mas não se alongue: o valor está nos 4 slides seguintes."),
+S("Módulo 3","1:01","S — Situação",
+ `<div class="dk-letter">S</div><h2 class="dk-h2">Situação — entender o contexto</h2>
+  <div class="dk-say"><b>Como soa:</b><p>"Como tá o time comercial hoje?"<br>"Você costuma trocar ideia com outros donos?"<br>"Vocês tocam aqui de Brasília mesmo?"</p></div>
+  <div class="dk-alert"><b>⚠️ Cuidado</b><p>É a pergunta mais fácil — e a mais perigosa. <b>Situação demais cansa</b> e faz você parecer um formulário. Pesquise antes o que der (Instagram, site, LinkedIn) e pergunte só o que falta.</p></div>`,
+ "Diga: 'antes de ligar, 3 minutos no Instagram dele já respondem metade das perguntas de situação. Use esse tempo.'"),
+S("Módulo 3","1:05","P — Problema",
+ `<div class="dk-letter">P</div><h2 class="dk-h2">Problema — trazer a dor à tona</h2>
+  <div class="dk-say"><b>Como soa:</b><p>"E qual seu maior desafio hoje?"<br>"O que mais te tira o sono no negócio?"<br>"Sente que decide muita coisa sozinho?"</p></div>
+  <div class="dk-punch">Ninguém compra solução para problema que <b>não admitiu ter</b>.<br>É aqui que ele admite — com a boca dele.</div>`,
+ "Peça pra sala completar: 'que outra pergunta de problema faria sentido pro empresário de Brasília?' Anote as boas — vão pro banco de perguntas na dinâmica 2."),
+S("Módulo 3","1:09","I — Implicação (a mais importante)",
+ `<div class="dk-letter dk-hot">I</div><h2 class="dk-h2">Implicação — o custo de <u>não</u> resolver</h2>
+  <div class="dk-say"><b>Como soa:</b><p>"E isso, no fim, te custa o quê — tempo, dinheiro, oportunidade?"<br>"Se seguir assim mais um ano, onde você chega?"<br>"Quanto já deixou na mesa por não ter com quem trocar essa decisão?"</p></div>
+  <div class="dk-two">
+   <div class="dk-good"><b>Por que é a mais poderosa</b><p>Foi a que <b>mais separou os campeões dos medianos</b> na pesquisa. É aqui que a dor deixa de ser incômodo e vira <b>prioridade</b>.</p></div>
+   <div class="dk-good"><b>Bônus</b><p>É aqui que ele solta números sozinho — <b>inclusive faturamento</b>. Você nunca precisou perguntar.</p></div>
+  </div>
+  <div class="dk-alert"><b>E é a mais pulada de todas.</b> O vendedor com pressa ouve a dor e já parte pra solução. Não pule.</div>`,
+ "Este é o slide mais importante do módulo. Fique nele. Faça a sala repetir em voz alta: 'isso te custa o quê?'"),
+S("Módulo 3","1:13","N — Necessidade de solução",
+ `<div class="dk-letter">N</div><h2 class="dk-h2">Necessidade — faça ele descrever o ganho</h2>
+  <div class="dk-say"><b>Como soa:</b><p>"Se você tivesse do seu lado um grupo de donos que já passou exatamente por isso, o que mudaria pra você?"<br>"O que você faria com esse tempo de volta?"</p></div>
+  <div class="dk-punch">Quando <b>ele</b> diz o benefício com a própria boca, ele se convence.<br>Argumento seu ele contesta. Argumento dele, não.</div>`,
+ "Amarre: 'repare que até agora você não falou NADA do Líderes. E ele já quer.' Isso costuma cair a ficha na sala."),
+S("Módulo 3","1:17","BANT — a peneira",
+ `<h2 class="dk-h2">BANT <span class="dk-mut">— criado pela IBM</span></h2>
+  <p class="dk-sub">Um filtro rápido pra responder: <b>vale a pena investir meu tempo nesse lead?</b></p>
+  <div class="dk-grid4">
+   <div><b>B — Budget</b><p>Tem capacidade de investir? Aqui a gente não pergunta "quanto você tem" — percebe pelo porte e pelo que ele contou.</p></div>
+   <div><b>A — Authority</b><p>É ele quem decide? Tem sócio? <b>Reunião com quem não decide é reunião perdida.</b></p></div>
+   <div><b>N — Need</b><p>Tem dor real que a gente resolve? Não invente dor — descubra.</p></div>
+   <div><b>T — Timing</b><p>É agora ou é "ano que vem"? Momento errado é o não mais comum disfarçado.</p></div>
+  </div>
+  <div class="dk-alert"><b>A crítica honesta ao BANT:</b> ele é centrado em <u>você</u>, não no cliente — parece peneira de RH. Serve pra priorizar, não pra conduzir a conversa.</div>
+  <div class="dk-punch">Por isso: <b>BANT na cabeça, SPIN na boca.</b></div>`,
+ "Essa frase — BANT na cabeça, SPIN na boca — é a que eles têm que levar. Repita duas vezes."),
+S("Módulo 3","1:21","PDMAF — o nosso selo",
+ `<h2 class="dk-h2">PDMAF — os 5 selos do Líderes</h2>
+  <p class="dk-sub">Enquanto conversa, vá marcando na cabeça. <b>Só agende reunião com os cinco.</b></p>
+  <div class="dk-pdmaf">
+   <div><span>P</span><b>Perfil</b><p>é dono ou sócio, dentro do ICP</p></div>
+   <div><span>D</span><b>Dor</b><p>reconheceu dor real, com as palavras dele</p></div>
+   <div><span>M</span><b>Momento</b><p>está aberto a resolver agora</p></div>
+   <div><span>A</span><b>Autoridade</b><p>decide sozinho ou traz o sócio</p></div>
+   <div><span>F</span><b>Fit</b><p>faz sentido pra ele e ele pra comunidade</p></div>
+  </div>
+  <div class="dk-punch">Agendar sem os 5 = entupir a agenda do Closer com reunião que não fecha.<br>Você não está ajudando. Está atrapalhando.</div>`,
+ "Seja firme aqui. SDR que agenda qualquer um infla o número dele e destrói o do Closer. A meta é reunião QUALIFICADA."),
+S("Módulo 3","1:25","DINÂMICA 2",
+ `<div class="dk-dyn"><div class="dk-eyebrow">Dinâmica 2 · 12 minutos · em trios</div>
+  <h1 class="dk-h1">❓ Construindo o SPIN do nosso cliente</h1>
+  <ol class="dk-list">
+   <li>Cada trio <b>sorteia uma das 4 personas</b> (Carlos, Juliana, Rafael ou Ricardo — estão na aba Dinâmicas).</li>
+   <li>Escrevam <b>2 perguntas de cada tipo</b> — S, P, I e N. São 8 no total. Usem o vocabulário que <u>essa pessoa</u> usaria.</li>
+   <li>Capricho especial na <b>Implicação</b>: a pergunta tem que doer um pouco. "Isso te custa o quê?" é melhor que "isso é ruim?".</li>
+   <li>Cada trio lê as <b>2 melhores</b> em voz alta. As melhores da sala vão pro Script de Vendas.</li>
+  </ol></div>`,
+ "12 minutos. Circule e ajude os trios travados na Implicação — é sempre onde travam. No final, escreva as melhores no quadro."),
+S("Intervalo","1:30","Intervalo",
+ `<div class="dk-hero"><h1 class="dk-h1">☕ Intervalo</h1>
+  <p class="dk-lead">10 minutos. Celular liberado.</p>
+  <div class="dk-punch">Quando voltar: <b>o celular volta pro bolso</b> — vem a parte prática.</div></div>`,
+ "Marque no relógio e comece de novo NA HORA, mesmo com gente faltando. Quem voltou no horário não pode ser punido esperando."),
+/* ---------- 4. O SISTEMA (20 min) ---------- */
+S("Módulo 4","1:40","O sistema é a sua memória",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 4 · O sistema na prática</div>
+  <h1 class="dk-h1">O que não está no CRM<br>não existe.</h1>
+  <p class="dk-lead">Sua memória não escala, não divide com o time e some quando você tira férias.</p></div>`,
+ "Abra o sistema projetado e faça o tour AO VIVO, não em slide: CRM & Funis, cores dos cards, ficha do lead, Tarefas/Agenda, Script de Vendas, Prospecção & Cadências."),
+S("Módulo 4","1:44","O que registrar sempre",
+ `<h2 class="dk-h2">Depois de toda ligação, 30 segundos:</h2>
+  <div class="dk-grid4">
+   <div><b>📝 O que ele disse</b><p>A dor, <u>com as palavras dele</u>. Não a sua tradução.</p></div>
+   <div><b>🏢 Quem é</b><p>Ramo, porte, se é dono, se tem sócio.</p></div>
+   <div><b>📅 Próximo passo</b><p><b>Sempre</b> com data. Lead sem próximo passo é lead perdido.</p></div>
+   <div><b>🌡️ Temperatura</b><p>Mova o card no funil. A cor avisa o time.</p></div>
+  </div>
+  <div class="dk-punch">Se você não registrar, em 3 dias você não lembra —<br>e vai ligar de novo perguntando a mesma coisa. O cliente percebe.</div>`,
+ "Mostre na tela um lead preenchido e um vazio. A diferença é óbvia e convence sem discurso."),
+S("Módulo 4","1:48","DINÂMICA 3",
+ `<div class="dk-dyn"><div class="dk-eyebrow">Dinâmica 3 · 10 minutos · individual</div>
+  <h1 class="dk-h1">🖥️ Meu primeiro lead</h1>
+  <p class="dk-lead">Ninguém sai daqui sem ter mexido no sistema com as próprias mãos.</p>
+  <ol class="dk-list">
+   <li>Abra <b>CRM &amp; Funis</b> e crie um lead com um empresário <b>real</b> que você conhece.</li>
+   <li>Preencha: organização, ramo, pessoa de contato, e uma anotação com a dor que você imagina que ele tem.</li>
+   <li>Mova o card pra próxima etapa e veja a <b>cor mudar</b>.</li>
+   <li>Agende uma atividade pra <b>amanhã: ligar</b>. Depois abra <b>Tarefas / Agenda</b> e confirme que apareceu.</li>
+  </ol>
+  <div class="dk-punch">Ao fim disso, a sua agenda de amanhã já tem gente pra ligar.</div></div>`,
+ "Circule e ajude quem travar. Meta: TODO MUNDO com pelo menos 1 lead criado e 1 tarefa pra amanhã. Não avance antes disso.")
+);
+DECK.push(
+/* ---------- 5. OBJEÇÕES (30 min) ---------- */
+S("Módulo 5","2:00","O não que não é não",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 5 · Objeções</div>
+  <h1 class="dk-h1">"Não tenho interesse"<br>quase nunca quer dizer<br>não tenho interesse.</h1>
+  <p class="dk-lead">Quer dizer: <i>não entendi</i>, <i>não é a hora</i>, ou <i>tenho medo de errar de novo</i>.</p></div>`,
+ "Pergunte à sala: 'qual a frase que vocês mais ouvem pra encerrar a conversa?' Anote 4-5 no quadro — você vai usar nos próximos slides e na matriz."),
+S("Módulo 5","2:04","Toda objeção é uma de três",
+ `<h2 class="dk-h2">Toda objeção é uma de três coisas</h2>
+  <div class="dk-cols">
+   <div class="dk-card dk-warn"><div class="dk-ic">😨</div><b>MEDO</b><p>De errar, de gastar mal, de já ter se queimado antes.</p><span class="dk-tag">"Preciso ver com meu sócio"</span></div>
+   <div class="dk-card dk-warn"><div class="dk-ic">🤔</div><b>DÚVIDA</b><p>Não entendeu o valor. Não viu o que ganha.</p><span class="dk-tag">"Quanto custa?" · "Já tenho meu grupo"</span></div>
+   <div class="dk-card dk-warn"><div class="dk-ic">🌀</div><b>CONFUSÃO</b><p>Na cabeça dele não é a hora — ou nem entendeu do que se trata.</p><span class="dk-tag">"Não é meu momento" · "Tô sem tempo"</span></div>
+  </div>
+  <div class="dk-punch">Nenhuma das três se resolve <b>discutindo</b>. As três se resolvem <b>perguntando</b>.</div>`,
+ "Pegue as frases que a sala deu no slide anterior e classifique junto com eles: isso é medo, dúvida ou confusão? Já é meio caminho da matriz."),
+S("Módulo 5","2:09","O método ACRD",
+ `<h2 class="dk-h2">ACRD — o que fazer quando vier o não</h2>
+  <div class="dk-grid4">
+   <div><b>A — Acolher</b><p>"Entendo, faz sentido."<br><u>Nunca use "mas"</u> — o "mas" apaga tudo que veio antes e vira briga.</p></div>
+   <div><b>C — Confirmar</b><p>"Só pra eu entender: é o tema que não faz sentido, ou é o momento?"<br>Descobre a objeção <b>real</b>.</p></div>
+   <div><b>R — Reformular</b><p>Devolva o valor por outro ângulo. <b>Curto.</b> Nada de discurso de 2 minutos.</p></div>
+   <div><b>D — Devolver pergunta</b><p>Termine sempre perguntando: "faz sentido?" · "prefere terça ou quinta?"<br>A bola volta pra ele.</p></div>
+  </div>
+  <div class="dk-punch">A objeção dita quase nunca é a real.<br>"Tá caro" = <i>não entendi o valor</i>. "Vou pensar" = <i>tenho uma dúvida que não falei</i>.</div>`,
+ "Demonstre ao vivo: peça uma objeção da sala e responda com ACRD na frente deles, em voz alta. Depois faça 2 pessoas tentarem."),
+S("Módulo 5","2:14","Exemplo completo",
+ `<h2 class="dk-h2">ACRD na prática</h2>
+  <div class="dk-dialog">
+   <div class="dk-cli">— "Olha, eu já participo do BNI, então não preciso."</div>
+   <div class="dk-you"><span>A</span> "Massa! Sinal de que você já valoriza rede — isso é raro."</div>
+   <div class="dk-you"><span>C</span> "Só pra eu entender: o que mais te trouxe resultado lá, o contato ou o conteúdo?"</div>
+   <div class="dk-you"><span>R</span> "É que o Líderes é diferente: é curado por donos do seu nível e o foco é <u>fazer negócio entre os membros</u> — não é revezamento de cartão."</div>
+   <div class="dk-you"><span>D</span> "Se você fosse num encontro e voltasse com 2 conversas boas de gente do seu porte, valeria a manhã?"</div>
+  </div>`,
+ "Leia em voz alta, fazendo as duas vozes. Depois pergunte: 'perceberam que a resposta terminou em pergunta?' É o detalhe que mantém a conversa viva."),
+S("Módulo 5","2:18","DINÂMICA 4",
+ `<div class="dk-dyn"><div class="dk-eyebrow">Dinâmica 4 · 15 minutos · sala toda</div>
+  <h1 class="dk-h1">🛡️ Matriz de Objeções</h1>
+  <p class="dk-lead">Vamos construir agora, juntos, a lista das objeções que <u>vocês</u> ouvem de verdade.</p>
+  <ol class="dk-list">
+   <li>Rodada rápida: cada pessoa diz <b>uma frase</b> que já ouviu de um empresário pra encerrar a conversa.</li>
+   <li>Vamos registrando na aba <b>Matriz de Objeções</b> aqui do sistema.</li>
+   <li>Pra cada uma, a sala responde: <b>isso é medo, dúvida ou confusão?</b></li>
+   <li>Construímos a resposta juntos com <b>ACRD</b> — e salva na nuvem.</li>
+  </ol>
+  <div class="dk-punch">Amanhã, quando alguém travar numa ligação, abre essa tela e lê.</div></div>`,
+ "Você digita enquanto eles falam, projetado. Ver a matriz crescendo na tela dá senso de construção coletiva — eles usam mais porque foi deles."),
+/* ---------- 6. ROLE-PLAY (30 min) ---------- */
+S("Módulo 6","2:30","Agora você liga",
+ `<div class="dk-ask"><div class="dk-eyebrow">Módulo 6 · Role-play</div>
+  <h1 class="dk-h1">Agora você liga.</h1>
+  <p class="dk-lead">Aqui, onde errar não custa cliente.</p>
+  <div class="dk-punch">Ninguém assiste. <b>3 rodadas de 7 minutos</b> — todo mundo passa por SDR uma vez.</div></div>`,
+ "Monte os trios VOCÊ, misturando quem tem experiência com quem não tem. Não deixe formarem sozinhos — sempre juntam os amigos."),
+S("Módulo 6","2:32","Como funciona o role-play",
+ `<h2 class="dk-h2">Os três papéis do trio</h2>
+  <div class="dk-cols">
+   <div class="dk-card"><div class="dk-ic">📞</div><b>SDR</b><p>Liga. Segue o roteiro: abertura → pré-qualificação → SPIN → ponte → agendamento.</p></div>
+   <div class="dk-card"><div class="dk-ic">🧑‍💼</div><b>Empresário</b><p>Recebe a ficha de uma persona e interpreta. <b>Dê pelo menos uma objeção</b> — mas seja realista, não um monstro.</p></div>
+   <div class="dk-card"><div class="dk-ic">👀</div><b>Observador</b><p>Fica <u>calado</u> e marca a ficha. No final dá o feedback.</p></div>
+  </div>
+  <div class="dk-alert"><b>O feedback tem regra:</b> primeiro <b>duas coisas que funcionaram</b>, depois <b>UMA só</b> pra melhorar. Feedback com 5 críticas ninguém aplica.</div>`,
+ "Reforce a regra do feedback. Sem ela, o role-play vira massacre e a pessoa fecha. Com ela, todo mundo sai querendo tentar de novo."),
+S("Módulo 6","2:35","As 4 personas",
+ `<h2 class="dk-h2">Quem você vai ligar <span class="dk-mut">— gente real do nosso ICP</span></h2>
+  <div class="dk-grid4">
+   <div><b>🧍 Carlos, 48</b><p>Construtora, 22 funcionários, ~R$4M/ano. Decide tudo sozinho há 3 anos. Cansado e desconfiado de "grupinho".</p><span class="dk-tag">Corta se sentir script decorado</span></div>
+   <div><b>🚀 Juliana, 35</b><p>Clínica com 3 unidades, ~R$2,5M/ano. Bateu num teto. Cética — já fez curso demais.</p><span class="dk-tag">Quer nome e resultado, não promessa</span></div>
+   <div><b>🌱 Rafael, 29</b><p>Agência, 6 pessoas, ~R$600k/ano. Animado, fala muito, caixa curto.</p><span class="dk-tag">Vai puxar preço cedo</span></div>
+   <div><b>👑 Ricardo, 55</b><p>Rede de lojas, ~R$20M/ano. Agenda cheia, secretária filtrando.</p><span class="dk-tag">Você tem 15 segundos</span></div>
+  </div>`,
+ "Distribua as fichas (aba Dinâmicas tem o detalhe de cada uma). Dê a persona difícil (Ricardo) pra quem já tem experiência."),
+S("Módulo 6","2:38","Ficha do observador",
+ `<h2 class="dk-h2">O que o observador marca</h2>
+  <div class="dk-check">
+   <div>☐ Abertura afirmativa (sem "tem 2 minutinhos?")</div><div>☐ Emendou direto na primeira pergunta</div>
+   <div>☐ Falou menos que o cliente (70/30)</div><div>☐ Fez pergunta de Problema</div>
+   <div>☐ Fez pergunta de <b>Implicação</b> (a que dói)</div><div>☐ Usou as palavras do próprio cliente</div>
+   <div>☐ Fez pausa depois de perguntar</div><div>☐ Confirmou se é o dono / quem decide</div>
+   <div>☐ Acolheu a objeção sem usar "mas"</div><div>☐ Ofereceu 2 opções de horário</div>
+   <div>☐ Confirmou dia e hora no final</div><div>☐ Soou como gente, não como script</div>
+  </div>`,
+ "Está também na aba Dinâmicas pra imprimir. Ao fim das 3 rodadas, chame 2 trios pra ligar na frente da sala — é o momento alto do treinamento."),
+/* ---------- 7. FECHAMENTO (10 min) ---------- */
+S("Fechamento","3:00","O que você leva daqui",
+ `<h2 class="dk-h2">O que você leva daqui</h2>
+  <div class="dk-grid4">
+   <div><b>📞 Um roteiro</b><p>Abertura, perguntas, ponte e agendamento — em Script de bolso.</p></div>
+   <div><b>❓ Perguntas prontas</b><p>O SPIN que vocês mesmos escreveram hoje.</p></div>
+   <div><b>🛡️ Resposta pro não</b><p>A matriz que a sala construiu, salva na nuvem.</p></div>
+   <div><b>🎯 Um lead e uma tarefa</b><p>Já criados no sistema, esperando você amanhã.</p></div>
+  </div>`,
+ "Recapitule rápido. Faça a sala dizer em voz alta: 'BANT na cabeça...' e espere completarem 'SPIN na boca'."),
+S("Fechamento","3:03","Seus números de amanhã",
+ `<h2 class="dk-h2">Seus números <span class="dk-mut">(SDR)</span></h2>
+  <div class="dk-nums">
+   <div><b>40-60</b><span>tentativas por dia</span></div>
+   <div><b>8-12</b><span>conexões por dia</span></div>
+   <div><b>2-3</b><span>reuniões agendadas por dia</span></div>
+  </div>
+  <div class="dk-punch">A única métrica que <u>você</u> controla 100% é <b>tentativa</b>.<br>Se ela cai, tudo cai depois — mas você só descobre 3 semanas depois, quando a agenda esvazia.</div>`,
+ "Seja concreto: 'quantas ligações você faz amanhã?' Não aceite 'umas'. Peça número. É esse número que vai pro compromisso."),
+S("Fechamento","3:06","Seu compromisso",
+ `<div class="dk-dyn"><h1 class="dk-h1">✅ Assine seu compromisso</h1>
+  <p class="dk-lead">Abra a aba <b>Compromissos</b> aqui na Academia e registre:</p>
+  <div class="dk-cols">
+   <div class="dk-card"><b>Quantas ligações</b><p>Amanhã. Número exato.</p></div>
+   <div class="dk-card"><b>Que horário</b><p>Bloqueado na agenda, só pra prospectar.</p></div>
+   <div class="dk-card"><b>O que vou treinar em mim</b><p>Uma coisa só. Ex.: "fazer a pausa depois de perguntar".</p></div>
+  </div>
+  <div class="dk-punch">Depois de registrar, <b>diga em voz alta</b> pra sala.</div></div>`,
+ "Faça a volta na sala, um por um, em voz alta. Meta dita na frente dos pares tem outra força. Anote quem prometeu o quê."),
+S("Fechamento","3:09","Travou? Onde procurar",
+ `<h2 class="dk-h2">Amanhã, se travar:</h2>
+  <div class="dk-grid6">
+   <div><b>Esqueci o que falar</b><p>Academia → <u>Script de bolso</u></p></div>
+   <div><b>Objeção nova</b><p><u>Matriz de Objeções</u> — e registre a nova lá</p></div>
+   <div><b>Não atendeu</b><p><u>Prospecção &amp; Cadências</u></p></div>
+   <div><b>O que faço hoje?</b><p><u>Tarefas / Agenda</u></p></div>
+   <div><b>Dúvida do produto</b><p>Script de Vendas → <u>ICP &amp; Empresa</u></p></div>
+   <div><b>Quero melhorar</b><p><u>Treinamento &amp; Prova</u> — 4 perguntas por dia</p></div>
+  </div>
+  <div class="dk-punch">Tudo isso mora no mesmo lugar: <b>oprotocolocomercial.com.br/consultorias</b></div>`,
+ "Último slide. Feche: 'ninguém aqui precisa decorar nada. Precisa saber ONDE procurar. E agora vocês sabem.' Aplauso e encerra.")
+);
+
+function deckOpen(i){
+ DECK_I=(typeof i==="number")?i:0; if(!DECK_T0)DECK_T0=Date.now();
+ let el=document.getElementById("deck");
+ if(!el){el=document.createElement("div");el.id="deck";document.body.appendChild(el);
+  document.addEventListener("keydown",deckKey);}
+ el.style.display="block";document.body.style.overflow="hidden";deckRender();
+}
+function deckClose(){const el=document.getElementById("deck");if(el)el.style.display="none";document.body.style.overflow="";}
+function deckKey(e){
+ if(!document.getElementById("deck")||document.getElementById("deck").style.display==="none")return;
+ if(e.key==="ArrowRight"||e.key===" "||e.key==="PageDown"){e.preventDefault();deckGo(1);}
+ else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();deckGo(-1);}
+ else if(e.key==="Escape")deckClose();
+ else if(e.key.toLowerCase()==="n"){DECK_NOTES=!DECK_NOTES;deckRender();}
+ else if(e.key.toLowerCase()==="f")deckFull();
+}
+function deckGo(d){DECK_I=Math.max(0,Math.min(DECK.length-1,DECK_I+d));deckRender();}
+function deckFull(){const e=document.getElementById("deck");if(!document.fullscreenElement){(e.requestFullscreen||e.webkitRequestFullscreen).call(e);}else document.exitFullscreen();}
+function deckElapsed(){if(!DECK_T0)return"0:00";const s=Math.floor((Date.now()-DECK_T0)/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
+function deckRender(){
+ const s=DECK[DECK_I],prog=((DECK_I+1)/DECK.length*100).toFixed(1);
+ document.getElementById("deck").innerHTML=`
+  <div class="dk-top"><div class="dk-prog" style="width:${prog}%"></div></div>
+  <div class="dk-bar-top">
+   <span class="dk-chip">${s.bloco}</span>
+   <span class="dk-chip dk-time">⏱ previsto ${s.tempo}</span>
+   <span class="dk-chip dk-run" id="dkRun">▶ decorrido ${deckElapsed()}</span>
+   <div style="flex:1"></div>
+   <span class="dk-chip">${DECK_I+1} / ${DECK.length}</span>
+   <button class="dk-btn" onclick="DECK_NOTES=!DECK_NOTES;deckRender()">${DECK_NOTES?"🙈 ocultar notas":"👁️ ver notas"} <b>(N)</b></button>
+   <button class="dk-btn" onclick="deckFull()">⛶ tela cheia <b>(F)</b></button>
+   <button class="dk-btn dk-x" onclick="deckClose()">✕ sair <b>(Esc)</b></button>
+  </div>
+  <div class="dk-stage"><div class="dk-slide">${s.corpo}</div></div>
+  ${DECK_NOTES?`<div class="dk-notes"><b>🎤 O que você fala aqui:</b> ${s.nota}</div>`:""}
+  <div class="dk-nav">
+   <button class="dk-arrow" onclick="deckGo(-1)" ${DECK_I===0?"disabled":""}>←</button>
+   <span class="dk-mut">use as setas do teclado</span>
+   <button class="dk-arrow" onclick="deckGo(1)" ${DECK_I===DECK.length-1?"disabled":""}>→</button>
+  </div>`;
+ if(!window.__dkTick)window.__dkTick=setInterval(()=>{const r=document.getElementById("dkRun");if(r&&DECK_T0)r.textContent="▶ decorrido "+deckElapsed();},1000);
+}
+function acadSumario(){
+ const blocos=[...new Set(DECK.map(s=>s.bloco))];
+ return `<div class="card"><div class="flex" style="align-items:center;gap:14px;flex-wrap:wrap">
+   <div style="flex:1;min-width:260px"><h2 style="margin:0 0 4px;font-size:16px">🎬 Apresentação do treinamento</h2>
+   <p class="mut" style="font-size:13px;margin:0">${DECK.length} slides · 3 horas · com <b>nota do apresentador</b> em cada tela dizendo o que falar. Navegue com as setas do teclado.</p></div>
+   <button class="btn gold" onclick="deckOpen(0)" style="font-size:15px;padding:12px 22px">▶ Iniciar apresentação</button>
+  </div></div>
+  <div class="card"><h3 style="margin:0 0 10px;font-size:14px">Pular para um bloco</h3>
+   <div class="flex wrap">${blocos.map(b=>{const i=DECK.findIndex(s=>s.bloco===b);return `<span class="chip" onclick="deckOpen(${i})">${b} <span class="mut">· ${DECK[i].tempo}</span></span>`;}).join("")}</div>
+  </div>
+  <div class="card"><h3 style="margin:0 0 10px;font-size:14px">Todos os slides</h3>
+   <div style="display:flex;flex-direction:column">
+   ${DECK.map((s,i)=>`<div onclick="deckOpen(${i})" style="display:flex;gap:12px;padding:9px 6px;border-bottom:1px solid var(--brand-line);cursor:pointer;align-items:center" onmouseover="this.style.background='var(--brand-panel2)'" onmouseout="this.style.background=''">
+     <span class="mut" style="font-family:var(--mono);font-size:12px;min-width:26px">${String(i+1).padStart(2,"0")}</span>
+     <span class="pill" style="min-width:64px;text-align:center">${s.tempo}</span>
+     <span style="font-size:13.5px;flex:1">${s.titulo}</span>
+     <span class="mut" style="font-size:11.5px">${s.bloco}</span></div>`).join("")}
+   </div></div>`;
+}
+
 /* ===== ACADEMIA DE VENDAS — treinamento ao vivo (3h) ===== */
-let ACAD_TAB="agenda";
+let ACAD_TAB="aula";
 const ACAD_AGENDA=[
  ["00:00","10 min","🚀 Abertura — o combinado","Por que estamos aqui: amanhã você liga. Regras da sala.","abertura"],
  ["00:10","25 min","🧭 Módulo 1 — O jogo comercial","Processo vence talento · os 3 papéis · o funil do Líderes · o que um bom comercial tem.","m1"],
@@ -1415,7 +1948,7 @@ const ACAD_AGENDA=[
 function acadHeader(){
  return `<div class="view-title"><h1>Academia de Vendas</h1><span class="pill pri">Treinamento ao vivo · 3h</span></div>
  <p class="view-sub">Do zero à primeira ligação. Ao final deste treinamento você sabe <b>para quem ligar</b>, <b>o que perguntar</b>, <b>como contornar o não</b> e <b>o que registrar</b> — e liga amanhã.</p>
- <div class="flex wrap" style="margin-bottom:14px">${[["agenda","📋 Roteiro"],["conteudo","📚 Conteúdo"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
+ <div class="flex wrap" style="margin-bottom:14px">${[["aula","🎬 Apresentação"],["agenda","📋 Roteiro"],["conteudo","📚 Conteúdo"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
 }
 function acadAgenda(){
  return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Roteiro do treinamento</h2>
@@ -1774,8 +2307,8 @@ function acadCompromisso(){
  </div></div>`;
 }
 function vAcademy(){
- M().innerHTML=acadHeader()+({agenda:acadAgenda,conteudo:acadConteudo,dinamicas:acadDinamicas,
-   bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadAgenda)();
+ M().innerHTML=acadHeader()+({aula:acadSumario,agenda:acadAgenda,conteudo:acadConteudo,dinamicas:acadDinamicas,
+   bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
 }
 
 function vScripts(){
