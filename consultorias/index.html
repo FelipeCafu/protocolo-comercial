@@ -2497,6 +2497,9 @@ for(let i=DECK.length-1;i>=0;i--){ if(_SUBST.includes(DECK[i].titulo)) DECK.spli
 /* ordena pela linha do tempo da aula */
 const _min=t=>{const a=String(t).split(":");return (+a[0])*60+(+a[1]);};
 DECK.sort((a,b)=>_min(a.tempo)-_min(b.tempo));
+/* nenhum slide com fundo claro — ilegível no projetor */
+const _ESC=["escuro","azul","destaque","acao"];
+DECK.forEach((s,i)=>{ if(s.tema==="claro"||!s.tema) s.tema=_ESC[i%4]; });
 function deckOpen(i){
  DECK_I=(typeof i==="number")?i:0; if(!DECK_T0)DECK_T0=Date.now();
  let el=document.getElementById("deck");
