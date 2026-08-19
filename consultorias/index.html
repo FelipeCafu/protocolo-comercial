@@ -420,6 +420,106 @@ small.mut{color:var(--brand-muted)}
 #deck[data-tema="claro"] .dk-d2{color:#16233f}
 @media(max-width:900px){.dk-disp>div{grid-template-columns:1fr}.dk-disp i{text-align:left}}
 
+
+.dk-acrd{display:flex;flex-direction:column;gap:11px;margin:16px 0}
+.dk-acrd>div{display:grid;grid-template-columns:52px 1fr;gap:14px;background:rgba(255,255,255,.05);border-radius:11px;padding:14px 17px;align-items:start;animation:dkUp .4s both}
+.dk-acrd>div:nth-child(2){animation-delay:.1s}.dk-acrd>div:nth-child(3){animation-delay:.2s}.dk-acrd>div:nth-child(4){animation-delay:.3s}
+.dk-acrd>div>span{width:42px;height:42px;border-radius:11px;background:var(--brand-accent);color:#0a0f22;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.dk-acrd>div>b{font-size:17px;grid-column:2}
+.dk-acrd>div>p{grid-column:2;font-size:14px;color:#b9c6e6;margin:4px 0 0;line-height:1.6}
+.dk-script{display:flex;flex-direction:column;gap:9px;margin:14px 0}
+.dk-script>div{display:grid;grid-template-columns:34px 1fr;gap:12px;background:rgba(255,255,255,.05);border-radius:10px;padding:11px 15px;align-items:start;animation:dkUp .35s both}
+.dk-script>div:nth-child(2){animation-delay:.06s}.dk-script>div:nth-child(3){animation-delay:.12s}
+.dk-script>div:nth-child(4){animation-delay:.18s}.dk-script>div:nth-child(5){animation-delay:.24s}.dk-script>div:nth-child(6){animation-delay:.3s}
+.dk-script>div>span{width:26px;height:26px;border-radius:50%;background:var(--brand-accent);color:#0a0f22;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.dk-script>div>b{font-size:14px;grid-column:2;color:#e7b53c}
+.dk-script>div>p{grid-column:2;font-size:14px;margin:4px 0 0;line-height:1.7;color:#eaf0ff}
+.dk-obs{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:14px 0}
+.dk-obs>div{background:rgba(255,255,255,.05);border-radius:10px;padding:12px 14px;animation:dkPop .4s both}
+.dk-obs>div>b{display:block;font-size:11.5px;letter-spacing:1.5px;color:var(--brand-accent);margin-bottom:7px;font-family:var(--mono)}
+.dk-obs>div>span{display:block;font-size:12.5px;line-height:1.55;color:#c3cfeb;margin-bottom:3px}
+.dk-recap{display:flex;flex-direction:column;gap:7px;margin:14px 0}
+.dk-recap>div{display:grid;grid-template-columns:32px 130px 1fr;gap:12px;align-items:center;background:rgba(255,255,255,.045);border-radius:9px;padding:9px 14px;animation:dkUp .35s both}
+.dk-recap>div:nth-child(2){animation-delay:.06s}.dk-recap>div:nth-child(3){animation-delay:.12s}.dk-recap>div:nth-child(4){animation-delay:.18s}
+.dk-recap>div:nth-child(5){animation-delay:.24s}.dk-recap>div:nth-child(6){animation-delay:.3s}.dk-recap>div:nth-child(7){animation-delay:.36s}
+.dk-recap>div>span{width:26px;height:26px;border-radius:50%;background:var(--brand-accent);color:#0a0f22;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.dk-recap>div>b{font-size:14.5px}
+.dk-recap>div>p{font-size:13px;color:#b9c6e6;margin:0;line-height:1.5}
+#deck[data-tema="claro"] .dk-acrd>div,#deck[data-tema="claro"] .dk-script>div,#deck[data-tema="claro"] .dk-obs>div,#deck[data-tema="claro"] .dk-recap>div{background:#fff;box-shadow:0 4px 14px rgba(20,35,80,.07)}
+#deck[data-tema="claro"] .dk-acrd>div>p,#deck[data-tema="claro"] .dk-script>div>p,#deck[data-tema="claro"] .dk-obs>div>span,#deck[data-tema="claro"] .dk-recap>div>p{color:#3d4c73}
+@media(max-width:1000px){.dk-obs{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.dk-obs,.dk-acrd>div,.dk-script>div,.dk-recap>div{grid-template-columns:1fr}.dk-recap>div>span,.dk-acrd>div>span,.dk-script>div>span{display:none}}
+
+/* ===== RESPONSIVO — celular e tablet ===== */
+@media(max-width:1024px){
+ .grid3{grid-template-columns:1fr 1fr}
+ .dk-stage{padding:8px 20px}
+ .dk-h1{font-size:clamp(24px,5.5vw,38px)}
+ .dk-h2{font-size:clamp(19px,4vw,27px)}
+}
+@media(max-width:820px){
+ #app{grid-template-columns:1fr;grid-template-areas:"top" "main"}
+ .sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;z-index:120;transform:translateX(-102%);transition:transform .25s;overflow-y:auto}
+ body.navon .sidebar{transform:none;box-shadow:0 0 40px rgba(0,0,0,.6)}
+ body.navon::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:110}
+ #menuBtn{display:inline-flex !important}
+ .topbar{gap:9px;padding:9px 12px;flex-wrap:wrap}
+ .searchbox{order:9;width:100%;max-width:none}
+ .crumbs{font-size:11px}
+ .grid2,.grid3,.grid4{grid-template-columns:1fr}
+ .kanban{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .kcol{min-width:264px}
+ table.tbl{display:block;overflow-x:auto;white-space:nowrap}
+ .card{padding:14px}
+ .view-title h1{font-size:20px}
+ .dk-bar-top{gap:5px;padding:9px 11px 6px}
+ .dk-chip,.dk-btn{font-size:10.5px;padding:5px 9px}
+ .dk-notes{font-size:12.5px;padding:10px 14px}
+ .dk-stage{padding:8px 14px;align-items:flex-start}
+ .dk-slide{padding-top:6px}
+ .dk-cols,.dk-two,.dk-grid4,.dk-grid6,.dk-pdmaf,.dk-check,.dk-nums,.dk-spin{grid-template-columns:1fr;display:grid}
+ .dk-nums,.dk-spin{display:flex;flex-wrap:wrap;justify-content:center}
+ .dk-cycle{flex-direction:column}
+ .dk-cycle .dk-arrow{transform:rotate(90deg)}
+ .dk-timeline>div{flex-wrap:wrap}
+ .dk-timeline b{min-width:auto}
+ .dk-you,.dk-cli{max-width:96%}
+ .dk-art svg{max-width:120px}
+ .dk-letter{width:56px;height:56px;font-size:29px}
+}
+@media(max-width:480px){
+ .dk-h1{font-size:22px}.dk-h2{font-size:18px}
+ .dk-lead{font-size:14.5px}.dk-list{font-size:13.5px;padding-left:18px}
+ .dk-punch{font-size:13.5px;padding:11px 14px}
+ .dk-say p{font-size:14px}
+ .dk-nums>div{padding:14px 20px}.dk-nums b{font-size:32px}
+ .topbar .brandmark span:last-child{display:none}
+}
+
+@media(max-width:820px){
+ /* vence os grid-template-columns escritos direto no elemento */
+ #main .grid,#main .grid2,#main .grid3,#main .grid4,#main [class*="grid"]{grid-template-columns:1fr !important}
+ #main .flex.between{flex-wrap:wrap;gap:6px}
+ #main .card{overflow-x:auto}
+ /* topbar: sem sobreposição */
+ .topbar{min-height:52px;height:auto;align-items:center;row-gap:6px}
+ .topbar .crumbs{flex-basis:100%;order:8;font-size:11px;opacity:.75}
+ .topbar .userbox span,.topbar .who{display:none}
+ #cloudBadge{display:none}
+}
+@media(max-width:480px){
+ #main .kcol{min-width:82vw}
+ .view-sub{font-size:12.5px}
+}
+
+@media(max-width:820px){
+ .topbar{flex-wrap:nowrap !important;overflow:hidden;gap:8px;padding:8px 10px}
+ .topbar .crumbs,.topbar .searchbox,.topbar .spacer~span{display:none !important}
+ .topbar .spacer{flex:1}
+ .topbar .userchip{padding:5px 8px;font-size:12px;gap:6px}
+ .topbar .userchip .u-name,.topbar .userchip>span:not(.av):not(.btn){display:none}
+ .topbar .brandmark span:last-child{font-size:13px}
+}
 </style>
 </head>
 <body data-brand="protocolo">
@@ -444,7 +544,7 @@ small.mut{color:var(--brand-muted)}
 </div>
 <div id="app" class="hidden">
   <div class="topbar">
-    <div class="brandmark"><span id="tbMark"></span><span id="tbName">Protocolo</span></div>
+    <button class="iconbtn" id="menuBtn" onclick="document.body.classList.toggle('navon')" style="display:none" title="Menu">☰</button><div class="brandmark"><span id="tbMark"></span><span id="tbName">Protocolo</span></div>
     <div class="crumbs" id="crumbs"></div>
     <div class="spacer"></div>
     <div class="searchbox" id="searchWrap"><span>🔎</span><input id="globalSearch" placeholder="Buscar clientes, leads, produtos…" oninput="globalSearch(this.value)"></div>
@@ -1008,7 +1108,7 @@ function renderSidebar(){
   document.getElementById("sidebar").innerHTML=html;
 }
 function go(view){
-  CURRENT_VIEW=view;
+  CURRENT_VIEW=view;document.body.classList.remove("navon");
   document.querySelectorAll(".nav-item[data-view]").forEach(e=>e.classList.toggle("active",e.dataset.view===view));
   const nav=activeNav().find(n=>n.id===view);
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
@@ -2061,6 +2161,262 @@ S("Módulo 5","2:28","A regra das dispensas",
 ];
 
 DECK.splice(14,0,...PNL_SLIDES.slice(0,3));DECK.splice(28,0,PNL_SLIDES[3]);DECK.splice(38,0,...PNL_SLIDES.slice(4));
+/* === DINÂMICA 1 — reconstruída, 3 etapas === */
+const DIN1=[
+S("Módulo 2","0:56","DINÂMICA 1 — como funciona",
+ `${ART.voz}<div class="dk-dyn"><div class="dk-eyebrow">Dinâmica 1 · 14 minutos · em duplas</div>
+  <h1 class="dk-h1">🎤 A voz que abre porta</h1>
+  <p class="dk-lead">Três rodadas. Cada uma treina uma coisa diferente da sua voz.</p>
+  <div class="dk-cols">
+   <div class="dk-card"><b>Rodada 1 · 4 min</b><p>As <b>3 intenções</b> — sentir a diferença de tom.</p></div>
+   <div class="dk-card"><b>Rodada 2 · 5 min</b><p>A <b>pausa</b> e o <b>ritmo</b> — o que mais falta em quem começa.</p></div>
+   <div class="dk-card"><b>Rodada 3 · 5 min</b><p>A <b>abertura real</b>, com nome, "porque" e tempo específico.</p></div>
+  </div>
+  <div class="dk-punch">Formem duplas <b>agora</b>. Quem fala primeiro é quem tem o aniversário mais próximo.</div></div>`,
+ "Monte as duplas você — misture quem tem experiência com quem não tem. Avise que vai passar ouvindo. Marque 14 min no relógio.","destaque",null),
+S("Módulo 2","0:58","Rodada 1 — as três intenções",
+ `<h2 class="dk-h2">Rodada 1 · 4 minutos</h2>
+  <div class="dk-quote">"Oi João, aqui é a Ana do Líderes do Brasil,<br>a comunidade de empresários de Brasília."</div>
+  <div class="dk-cols">
+   <div class="dk-card dk-warn"><b>1️⃣ Inseguro</b><p>Tom <u>subindo</u> no final, pedindo licença, voz baixa. "…de Brasília?"</p></div>
+   <div class="dk-card dk-warn"><b>2️⃣ Robô</b><p>Lendo, sem respirar, sem emoção. Igual telemarketing.</p></div>
+   <div class="dk-card dk-ok"><b>3️⃣ Autoridade tranquila</b><p>Tom <u>descendo</u>, sorrindo, sem pressa. Afirmação, não pergunta.</p></div>
+  </div>
+  <div class="dk-punch"><b>A</b> diz as 3 versões · <b>B</b> de olhos fechados aponta qual atenderia e <u>por quê</u> · trocam.</div>`,
+ "Circule. Se alguém não conseguir fazer a versão 3, faça você na frente dele. Ouvir o contraste resolve mais que explicar.","azul",null),
+S("Módulo 2","1:02","Rodada 2 — a pausa e o ritmo",
+ `<h2 class="dk-h2">Rodada 2 · 5 minutos <span class="dk-mut">— o exercício mais difícil do dia</span></h2>
+  <div class="dk-two">
+   <div class="dk-card"><b>Exercício A — a pausa de 3 segundos</b><p><b>A</b> faz a pergunta: <i>"E qual é seu maior desafio hoje?"</i><br>Depois <b>conta 3 segundos em silêncio</b> antes de qualquer coisa.<br><b>B</b> demora de propósito para responder.</p><span class="dk-tag">Objetivo: aguentar o silêncio sem atropelar</span></div>
+   <div class="dk-card"><b>Exercício B — acelera e desacelera</b><p>Diga a abertura <b>rápido</b> (respeitando o tempo dele).<br>Depois, na pergunta, <b>desacelere</b> visivelmente.<br><b>B</b> avisa se sentiu a mudança.</p><span class="dk-tag">Objetivo: mudar de marcha no meio da frase</span></div>
+  </div>
+  <div class="dk-alert"><b>Por que isso importa:</b> o iniciante pergunta e já responde sozinho, por nervosismo. Aí o cliente nunca fala — e você nunca descobre a dor.</div>`,
+ "Este é o exercício que mais muda ligação. Faça a sala inteira treinar 3 segundos de silêncio junto, contando alto uma vez. É desconfortável e engraçado — e não esquecem mais.","escuro",null),
+S("Módulo 2","1:07","Rodada 3 — sua abertura de verdade",
+ `<h2 class="dk-h2">Rodada 3 · 5 minutos</h2>
+  <p class="dk-sub">Agora com <b>tudo junto</b>. Cada um monta a própria abertura usando as alavancas:</p>
+  <div class="dk-say"><b>MOLDE:</b><p>"Oi <b>[nome dele]</b>, aqui é <b>[seu nome]</b> do Líderes do Brasil.<br>
+   Vou ser bem direto pra respeitar seu tempo: te liguei <b>porque</b> você é dono de empresa aqui em Brasília — e a gente reúne donos daqui todo mês.<br>
+   São <b>40 segundos</b>. Você é o dono mesmo, né?"</p></div>
+  <div class="dk-grid4">
+   <div><b>✔ nome dele</b><p>usou pelo menos 1 vez</p></div>
+   <div><b>✔ o "porque"</b><p>deu um motivo real</p></div>
+   <div><b>✔ tempo específico</b><p>40 segundos, não "2 minutinhos"</p></div>
+   <div><b>✔ sim pequeno</b><p>terminou numa pergunta fácil</p></div>
+  </div>
+  <div class="dk-punch"><b>B</b> marca os 4 itens. Faltou algum? <b>A</b> refaz até sair completo. Depois trocam.</div>`,
+ "Escolha 3 pessoas para dizer a abertura delas em voz alta pra sala. Aplauda cada uma. Essa é a abertura que eles usam amanhã — tem que sair da boca deles, não da sua.","claro",null)
+];
+/* === OBJEÇÕES — mapa real (substitui "medo/dúvida/confusão") === */
+const OBJ_NOVOS=[
+S("Módulo 5","2:32","Antes de tudo: é objeção ou é condição?",
+ `<h2 class="dk-h2">A primeira separação que ninguém faz</h2>
+  <div class="dk-two">
+   <div class="dk-bad"><b>🚫 CONDIÇÃO</b><p>Um impedimento <b>real</b>. Não se contorna — se respeita.</p>
+    <span>"Não sou o dono, sou funcionário" · "Fechei a empresa mês passado" · "Moro em outro estado"</span>
+    <p style="margin-top:8px"><b>O que fazer:</b> agradecer, pedir indicação de quem se encaixa, e sair bem.</p></div>
+   <div class="dk-good"><b>✅ OBJEÇÃO</b><p>Uma <b>resistência</b>. Pode ser trabalhada com pergunta.</p>
+    <span>"Tá caro" · "Não tenho tempo" · "Preciso pensar" · "Já tenho meu grupo"</span>
+    <p style="margin-top:8px"><b>O que fazer:</b> acolher, entender a raiz e devolver.</p></div>
+  </div>
+  <div class="dk-punch">Insistir numa <b>condição</b> queima o contato e a sua reputação.<br>Desistir de uma <b>objeção</b> joga fora uma venda que era possível.</div>`,
+ "Pergunte à sala: 'me dá um exemplo de condição'. Muitos vão dar objeção. Corrija com carinho — essa confusão faz o vendedor insistir onde não deve.","escuro",null),
+S("Módulo 5","2:35","A objeção dita quase nunca é a real",
+ `<h2 class="dk-h2">Três camadas da mesma frase</h2>
+  <div class="dk-cols">
+   <div class="dk-card"><div class="dk-ic">🗣️</div><b>Explícita</b><p>Ele fala. "Tá caro." Pelo menos você sabe onde está.</p><span class="dk-tag">a mais fácil das três</span></div>
+   <div class="dk-card dk-warn"><div class="dk-ic">🤐</div><b>Implícita</b><p>Ele <u>não</u> fala. Vira hesitação, "vou pensar", resposta curta, sumiço.</p><span class="dk-tag">a mais perigosa — mata a venda em silêncio</span></div>
+   <div class="dk-card dk-warn"><div class="dk-ic">🎭</div><b>Pretexto (cortina de fumaça)</b><p>Ele fala <u>outra</u> coisa pra não dizer a verdadeira. "Preciso ver com meu sócio" quando na real não confiou.</p><span class="dk-tag">a mais comum de todas</span></div>
+  </div>
+  <div class="dk-punch">Por isso a pergunta mais valiosa da venda é:<br><b>"Só pra eu entender: é X ou é Y?"</b> — ela força a objeção real a aparecer.</div>`,
+ "Conte um caso seu em que o cliente disse uma coisa e o motivo era outro. Depois pergunte à sala: 'quantos de vocês já ouviram vou pensar e nunca mais tiveram retorno?' Todos.","azul",null),
+S("Módulo 5","2:39","As 6 raízes de toda objeção",
+ `<h2 class="dk-h2">Toda objeção nasce de uma destas seis</h2>
+  <p class="dk-sub">É o mapa clássico de vendas (as "quatro básicas" — sem necessidade, sem dinheiro, sem pressa, sem confiança — mais autoridade e ceticismo). Identifique a raiz e você sabe o que responder.</p>
+  <div class="dk-grid6">
+   <div><b>1. Sem necessidade</b><p>"Tá tudo bem por aqui."<br><u>Responda com:</u> pergunta de <b>Implicação</b> — traga o custo de continuar assim.</p></div>
+   <div><b>2. Sem valor percebido</b><p>"Tá caro."<br><u>Responda com:</u> comparação com o que ele perde hoje. Preço só é caro sem valor do lado.</p></div>
+   <div><b>3. Sem pressa</b><p>"Depois eu vejo."<br><u>Responda com:</u> "o que muda até lá?" — e escassez <b>real</b> (data do próximo encontro).</p></div>
+   <div><b>4. Sem confiança</b><p>"Nunca ouvi falar."<br><u>Responda com:</u> prova social específica — nome, ramo, caso parecido com o dele.</p></div>
+   <div><b>5. Sem autoridade</b><p>"Preciso ver com meu sócio."<br><u>Responda com:</u> traga o sócio pra conversa. Nunca deixe a venda na mão de quem não ouviu você.</p></div>
+   <div><b>6. Ceticismo</b><p>"Isso funciona mesmo?"<br><u>Responda com:</u> evidência, não adjetivo. Depoimento, número, convite pra ver de perto.</p></div>
+  </div>`,
+ "Peça pra sala classificar as objeções que eles deram no início. Cada uma cai numa dessas seis. Isso organiza a cabeça deles pro resto da vida.","claro",null),
+S("Módulo 5","2:43","Metade das objeções é você que cria",
+ `<h2 class="dk-h2">A descoberta mais incômoda do SPIN</h2>
+  <p class="dk-sub">Rackham observou algo que ninguém queria ouvir: <b>quanto mais cedo o vendedor apresenta vantagens, mais objeções ele recebe</b>. Não é o cliente que é difícil — é a ordem que está errada.</p>
+  <div class="dk-two">
+   <div class="dk-bad"><b>❌ Apresentar cedo</b><p>Você fala dos benefícios antes de saber a dor.<br>Cada benefício errado é um convite pra ele discordar.</p><span>"Temos encontro mensal!" → "não tenho tempo pra mais um evento"</span></div>
+   <div class="dk-good"><b>✅ Perguntar primeiro</b><p>Você descobre a dor, ele reconhece, e só então você mostra o que resolve <u>aquilo</u>.</p><span>"Você disse que decide tudo sozinho…" → "é exatamente pra isso que existe a Sociedade dos 12"</span></div>
+  </div>
+  <div class="dk-punch">Objeção que aparece <b>no fim</b> quase sempre é qualificação mal feita <b>no começo</b>.</div>`,
+ "Este slide muda a cabeça de vendedor experiente. Diga: 'se você está levando muita objeção, o problema provavelmente está lá atrás, não no fechamento.'","destaque",null),
+S("Módulo 5","2:47","ACRD — passo a passo",
+ `<h2 class="dk-h2">ACRD — o que fazer, na ordem</h2>
+  <div class="dk-acrd">
+   <div><span>A</span><b>Acolher</b><p>Tire a tensão. "Entendo", "faz sentido", "boa pergunta".<br><u>Proibido:</u> a palavra <b>"mas"</b> — ela apaga tudo que veio antes e transforma conversa em disputa. Troque por <b>"e"</b>.</p></div>
+   <div><span>C</span><b>Confirmar / Clarificar</b><p>Descubra a raiz real. <i>"Só pra eu entender: é o tema que não faz sentido, ou é o momento?"</i> · <i>"Quando você diz caro, é o valor ou é a prioridade agora?"</i><br>Aqui você separa objeção de pretexto.</p></div>
+   <div><span>R</span><b>Reformular</b><p>Devolva o valor por <u>outro ângulo</u>, curto — 2 frases no máximo. Use a raiz que você descobriu no C. Se a raiz era confiança, traga prova; se era pressa, traga o custo de esperar.</p></div>
+   <div><span>D</span><b>Devolver a pergunta</b><p>Termine <b>sempre</b> perguntando. <i>"Faz sentido?"</i> · <i>"Prefere terça ou quinta?"</i><br>Enquanto ele responde, a conversa continua viva e a bola está com ele.</p></div>
+  </div>`,
+ "Escreva ACRD no quadro. Faça a sala repetir: acolher, confirmar, reformular, devolver. Depois você joga uma objeção e aponta para uma pessoa — ela responde no ACRD. Faça 4 rodadas.","escuro",null)
+];
+/* === ROLE-PLAY com script pronto, separado por papel === */
+const RP=[
+S("Módulo 6","2:52","Agora vocês ligam — separados por papel",
+ `${ART.telefone}<div class="dk-ask"><div class="dk-eyebrow">Módulo 6 · Role-play</div>
+  <h1 class="dk-h1">SDR treina com SDR.<br>Closer treina com Closer.</h1>
+  <p class="dk-lead">São jogos diferentes: o SDR vende <b>a reunião</b>, o Closer vende <b>a adesão</b>.<br>Treinar junto e misturado não prepara nenhum dos dois.</p>
+  <div class="dk-punch">Formem <b>trios do mesmo papel</b>. Cada trio: quem liga · quem é o empresário · quem observa.</div></div>`,
+ "Divida a sala em dois lados: SDRs de um, Closers do outro. Se alguém faz os dois papéis, coloque no grupo de SDR (é o que ele fará amanhã de manhã).","acao",null),
+S("Módulo 6","2:54","SCRIPT DO SDR — para ler durante o role-play",
+ `<h2 class="dk-h2">📞 Script do SDR <span class="dk-mut">— objetivo: AGENDAR, não vender</span></h2>
+  <div class="dk-script">
+   <div><span>1</span><b>Abertura</b><p>"Oi <u>[nome]</u>, aqui é <u>[você]</u> do Líderes do Brasil. Vou ser bem direto pra respeitar seu tempo: te liguei <b>porque</b> você é dono de empresa aqui em Brasília e a gente reúne donos daqui todo mês. São <b>40 segundos</b>. Você é o dono mesmo, né?"</p></div>
+   <div><span>2</span><b>Pré-qualificação</b><p>"E o que a empresa faz, qual seu ramo?" → "Vocês tocam aqui de Brasília?" → "E como tá o momento — crescendo, estável, ou apertado?"</p></div>
+   <div><span>3</span><b>SPIN</b><p><b>S:</b> "Você costuma trocar ideia com outros donos?"<br><b>P:</b> "Qual seu maior desafio hoje? O que mais te tira o sono?"<br><b>I:</b> "E isso te custa o quê — tempo, dinheiro, oportunidade?"<br><b>N:</b> "Se tivesse do seu lado um grupo de donos que já passou por isso, o que mudaria?"</p></div>
+   <div><span>4</span><b>Ponte</b><p>"<u>[nome]</u>, deixa eu te falar por que faz tanto sentido: você é dono, me disse que sofre com <b>[a dor que ele falou]</b> e que agora é a hora. É exatamente pra isso que existe o Líderes."</p></div>
+   <div><span>5</span><b>Agendamento</b><p>"Vou te colocar com o <u>[Closer]</u> numa conversa de 30 minutos, sem compromisso. <b>Prefere terça às 9h ou quinta às 16h?</b>"</p></div>
+   <div><span>6</span><b>Confirmação</b><p>"Fechado! Te mando agora no WhatsApp a confirmação com dia, hora e o nome dele. Combinado?"</p></div>
+  </div>`,
+ "Projete este slide e deixe DURANTE todo o role-play do SDR. Eles vão olhar. É pra olhar mesmo — ninguém decora na primeira vez.","azul",null),
+S("Módulo 6","2:58","SCRIPT DO CLOSER — para ler durante o role-play",
+ `<h2 class="dk-h2">🤝 Script do Closer <span class="dk-mut">— objetivo: FECHAR a adesão</span></h2>
+  <div class="dk-script">
+   <div><span>1</span><b>Abertura e recap</b><p>"<u>[nome]</u>, prazer! O <u>[SDR]</u> me passou que você <b>[repita a dor registrada no CRM]</b>. É isso mesmo, ou mudou alguma coisa de lá pra cá?"</p></div>
+   <div><span>2</span><b>Diagnóstico ao vivo</b><p>"Me conta como isso acontece no dia a dia." → "Já tentou resolver de que jeito?" → "O que faltou?"<br><i>Aprofunde com Implicação: "e o que isso já te custou até hoje?"</i></p></div>
+   <div><span>3</span><b>Apresentação por valor</b><p>Fale <b>só</b> do que resolve a dor que ele citou. Um benefício por dor.<br>"Você falou que decide sozinho — na Sociedade dos 12 você senta todo mês com 11 donos que passaram por isso."</p></div>
+   <div><span>4</span><b>Ancoragem</b><p>Apresente <b>o Premium Board primeiro</b> (R$ 1.698), depois o Master (R$ 698). O segundo número sempre parece menor depois do primeiro.</p></div>
+   <div><span>5</span><b>Objeção</b><p>ACRD: acolhe → confirma a raiz → reformula curto → devolve pergunta.</p></div>
+   <div><span>6</span><b>Fechamento</b><p>"Pelo que você me contou, o <b>[plano]</b> é o que encaixa. A gente começa na <b>turma de [data]</b>. Faz sentido garantir sua vaga agora?"<br><i>Silêncio. Quem falar primeiro depois do fechamento, perde.</i></p></div>
+  </div>`,
+ "Reforce o passo 6: depois de fechar, CALE A BOCA. O iniciante fala em cima do próprio fechamento por nervosismo e desfaz a venda.","destaque",null),
+S("Módulo 6","3:02","Como rodar — 3 rodadas de 7 minutos",
+ `<h2 class="dk-h2">Mecânica do trio</h2>
+  <div class="dk-cols">
+   <div class="dk-card"><div class="dk-ic">📞</div><b>Quem liga</b><p>Segue o script do slide anterior. Pode <b>olhar</b>. O objetivo não é decorar — é sentir a conversa.</p></div>
+   <div class="dk-card"><div class="dk-ic">🧑‍💼</div><b>O empresário</b><p>Recebe a persona (próximo slide) e interpreta. <b>Dê 1 ou 2 objeções</b>, realistas. Não seja impossível.</p></div>
+   <div class="dk-card"><div class="dk-ic">👀</div><b>O observador</b><p>Fica <u>calado</u>, marca a ficha e cronometra os 7 minutos.</p></div>
+  </div>
+  <div class="dk-punch">7 min ligando · 2 min de feedback · <b>troca</b>. Três rodadas — todo mundo passa por todos os papéis.</div>
+  <div class="dk-alert"><b>Regra do feedback:</b> primeiro <b>duas coisas que funcionaram</b>, depois <b>UMA só</b> pra melhorar. Nunca mais que uma.</div>`,
+ "Cronometre você e avise em voz alta 'trocar!' a cada 9 minutos. Sem isso, um trio fica 20 min na primeira rodada e não sobra tempo.","escuro",null),
+S("Módulo 6","3:06","As personas — quem vai atender",
+ `<h2 class="dk-h2">Escolha uma ficha <span class="dk-mut">— gente real do nosso ICP</span></h2>
+  <div class="dk-grid4">
+   <div><b>🧍 Carlos, 48</b><p>Construtora, 22 funcionários, ~R$4M/ano. Decide tudo sozinho há 3 anos, desde que se separou do sócio.</p><span class="dk-tag">Objeção: "não tenho tempo pra grupinho"</span></div>
+   <div><b>🚀 Juliana, 35</b><p>Clínica, 3 unidades, ~R$2,5M/ano. Bateu num teto. Já fez curso demais e está cética.</p><span class="dk-tag">Objeção: "o que eu levo de concreto?"</span></div>
+   <div><b>🌱 Rafael, 29</b><p>Agência, 6 pessoas, ~R$600k/ano. Animado, fala muito, caixa curto.</p><span class="dk-tag">Objeção: "quanto custa?" logo no começo</span></div>
+   <div><b>👑 Ricardo, 55</b><p>Rede de lojas, ~R$20M/ano. Agenda cheia, secretária filtrando, convidado pra tudo.</p><span class="dk-tag">Objeção: "já tenho meu network"</span></div>
+  </div>
+  <div class="dk-punch">Quem faz o empresário: <b>não facilite</b> — mas também não invente uma pessoa que não existe.</div>`,
+ "Dê o Ricardo (o mais difícil) para quem já tem experiência, e o Rafael para quem está começando. Isso calibra a dificuldade.","claro",null),
+S("Módulo 6","3:10","Ficha do observador",
+ `<h2 class="dk-h2">📋 O que marcar enquanto assiste</h2>
+  <div class="dk-obs">
+   <div><b>ABERTURA</b><span>☐ Afirmou, não pediu licença ("tem 2 minutinhos?")</span><span>☐ Usou o nome dele</span><span>☐ Deu um "porque" (motivo da ligação)</span><span>☐ Tempo específico (40s), não vago</span><span>☐ Emendou direto na 1ª pergunta</span></div>
+   <div><b>CONDUÇÃO</b><span>☐ Falou menos que o cliente (70/30)</span><span>☐ Fez pausa depois de perguntar</span><span>☐ Usou as palavras do próprio cliente</span><span>☐ Confirmou se é o dono / quem decide</span><span>☐ Ritmo: acelerou no início, desacelerou na dor</span></div>
+   <div><b>SPIN</b><span>☐ Situação (sem exagerar)</span><span>☐ Problema — trouxe a dor à tona</span><span>☐ <b>Implicação</b> — perguntou o custo de não resolver</span><span>☐ Necessidade — fez o cliente dizer o ganho</span><span>☐ Não apresentou o produto cedo demais</span></div>
+   <div><b>OBJEÇÃO</b><span>☐ Acolheu sem usar "mas"</span><span>☐ Confirmou a raiz ("é X ou é Y?")</span><span>☐ Reformulou curto (2 frases)</span><span>☐ Devolveu com pergunta</span><span>☐ Parou na 2ª tentativa (não insistiu demais)</span></div>
+   <div><b>FECHAMENTO</b><span>☐ Retomou a dor que o cliente falou</span><span>☐ Ofereceu 2 opções de horário</span><span>☐ Confirmou dia e hora</span><span>☐ Combinou o WhatsApp de confirmação</span><span>☐ Ficou em silêncio depois de fechar</span></div>
+   <div><b>GERAL</b><span>☐ Soou como gente, não como script</span><span>☐ Manteve a energia até o fim</span><span>☐ Não discutiu com o cliente</span><span>☐ Saiu bem, mesmo sem agendar</span><span>☐ Anotaria isso no CRM depois?</span></div>
+  </div>`,
+ "30 itens. Diga: 'ninguém vai marcar tudo — e tudo bem. Escolham as 3 mais importantes pro feedback.' O objetivo é ter vocabulário pra dar feedback, não auditar.","azul",null)
+];
+/* === FECHAMENTO: metas por papel, resumo e encerramento === */
+const FECHO=[
+S("Fechamento","3:20","Recapitulando tudo que construímos",
+ `<h2 class="dk-h2">O caminho que a gente percorreu hoje</h2>
+  <div class="dk-recap">
+   <div><span>1</span><b>O jogo</b><p>Processo vence talento · SDR agenda, Closer fecha, CS retém e traz indicação</p></div>
+   <div><span>2</span><b>A voz</b><p>Tom que desce · pausa de 3 segundos · palavras dele · 70/30 · nunca "tem 2 minutinhos?"</p></div>
+   <div><span>3</span><b>A abertura</b><p>Nome + "porque" + 40 segundos + sim pequeno — e quebra do padrão automático</p></div>
+   <div><span>4</span><b>As perguntas</b><p>SPIN: Situação → Problema → <b>Implicação</b> → Necessidade · BANT na cabeça, SPIN na boca · PDMAF pra agendar</p></div>
+   <div><span>5</span><b>O sistema</b><p>Lead criado · dor com as palavras dele · <b>próximo passo sempre com data</b></p></div>
+   <div><span>6</span><b>O não</b><p>Condição ≠ objeção · explícita, implícita ou pretexto · as 6 raízes · <b>ACRD</b> · as 8 dispensas</p></div>
+   <div><span>7</span><b>A prática</b><p>Você já ligou 3 vezes hoje, levou objeção e recebeu feedback</p></div>
+  </div>`,
+ "Vá apontando cada linha e peça pra sala completar em voz alta. Ex.: 'BANT na cabeça...' e eles: 'SPIN na boca!'. Recapitulação ativa fixa muito mais que resumo lido.","claro",null),
+S("Fechamento","3:24","As metas do SDR",
+ `<h2 class="dk-h2">🎯 Metas do SDR <span class="dk-mut">— por dia</span></h2>
+  <div class="dk-nums">
+   <div><b>100</b><span>ligações</span></div>
+   <div><b>30</b><span>conexões reais<br>(falou com a pessoa)</span></div>
+   <div><b>10-15</b><span>agendamentos</span></div>
+  </div>
+  <div class="dk-cols">
+   <div class="dk-card dk-ok"><b>✅ CRM zerado</b><p><u>Nenhuma tarefa atrasada</u> no fim do dia. Se não deu tempo, reagende — mas não deixe vermelho.</p></div>
+   <div class="dk-card dk-ok"><b>✅ Nenhum lead órfão</b><p><u>Todo lead com próximo passo agendado.</u> Lead sem data marcada é lead perdido.</p></div>
+   <div class="dk-card dk-ok"><b>✅ Registro no mesmo dia</b><p>A dor, com as palavras dele. Não confie na memória.</p></div>
+  </div>
+  <div class="dk-punch">A única métrica que você controla 100% é <b>ligação</b>.<br>Se ela cai hoje, a agenda do Closer esvazia daqui a 3 semanas.</div>`,
+ "Seja firme: 100 ligações é a meta, não sugestão. Pergunte a cada SDR: 'quantas você fez ontem?' Sem julgar — só estabelecendo a régua nova.","acao",null),
+S("Fechamento","3:27","As metas do Closer",
+ `<h2 class="dk-h2">🤝 Metas do Closer <span class="dk-mut">— por dia</span></h2>
+  <div class="dk-nums">
+   <div><b>6</b><span>apresentações<br>comerciais</span></div>
+   <div><b>2</b><span>fechamentos</span></div>
+  </div>
+  <div class="dk-cols">
+   <div class="dk-card dk-ok"><b>✅ Preparação antes</b><p>Leu o que o SDR registrou <u>antes</u> de entrar na call. Chegar perguntando o que já foi perguntado queima a confiança.</p></div>
+   <div class="dk-card dk-ok"><b>✅ CRM atualizado na hora</b><p>Ganho, perdido ou próximo passo — <u>logo depois</u> da reunião, não no fim da semana.</p></div>
+   <div class="dk-card dk-ok"><b>✅ Perdeu? Anote o porquê</b><p>O motivo real da perda é o que melhora o time inteiro. "Não quis" não é motivo.</p></div>
+  </div>
+  <div class="dk-punch">6 apresentações e 2 fechamentos = <b>33% de conversão</b>.<br>Se cair muito abaixo, o problema costuma estar na <u>qualificação</u>, não no fechamento.</div>`,
+ "Amarre com o SDR: 'Closer com conversão baixa às vezes é SDR agendando lead ruim. Por isso o PDMAF importa.' Os dois papéis se olham aqui.","azul",null),
+S("Fechamento","3:30","Seu compromisso — o que muda a partir de amanhã",
+ `<div class="dk-dyn"><h1 class="dk-h1">✅ Agora é com você</h1>
+  <p class="dk-lead">Abra <b>Academia → Compromissos</b> e registre. Depois <b>diga em voz alta</b> pra sala.</p>
+  <div class="dk-cols">
+   <div class="dk-card"><b>1. O que eu fazia até hoje</b><p>Seja honesto. "Ligava umas 20, sem roteiro, e não registrava."</p></div>
+   <div class="dk-card"><b>2. O que vou fazer a partir de amanhã</b><p>Número exato de ligações + o horário bloqueado só pra prospectar.</p></div>
+   <div class="dk-card"><b>3. O que vou treinar em mim</b><p><u>Uma coisa só.</u> "Fazer a pausa de 3 segundos." · "Não falar 2 minutinhos."</p></div>
+  </div>
+  <div class="dk-punch">Fica <b>salvo na nuvem</b> — e o gestor acompanha.<br>Meta dita na frente dos pares tem outra força.</div></div>`,
+ "Faça a volta na sala, um por um, em voz alta. Não pule ninguém. Anote quem prometeu o quê — na segunda-feira você cobra com carinho.","destaque",null),
+S("Fechamento","3:34","Amanhã, se travar",
+ `<h2 class="dk-h2">🧭 Travou? Tudo mora no mesmo lugar</h2>
+  <p class="dk-sub"><b>oprotocolocomercial.com.br/consultorias</b> — do computador, do tablet ou do celular.</p>
+  <div class="dk-grid6">
+   <div><b>😰 Esqueci o que falar</b><p>Academia → <u>Script de bolso</u><br>A ligação inteira em 1 página</p></div>
+   <div><b>🛑 Ele tentou desligar</b><p>Script de bolso → <u>as 8 dispensas</u><br>Resposta pronta pra cada uma</p></div>
+   <div><b>🛡️ Objeção nova</b><p><u>Matriz de Objeções</u><br>E registre a nova lá — ajuda o time todo</p></div>
+   <div><b>📵 Não atendeu</b><p><u>Prospecção &amp; Cadências</u><br>O que fazer no D0, D1, D3… até o D12</p></div>
+   <div><b>📅 O que faço hoje?</b><p><u>Tarefas / Agenda</u><br>Atrasadas em vermelho, hoje em verde</p></div>
+   <div><b>💬 Dúvida do produto</b><p>Script de Vendas → <u>ICP &amp; Empresa</u><br>Planos, benefícios e personas</p></div>
+   <div><b>📈 Como estou indo?</b><p><u>Performance</u><br>Suas metas e seu ranking</p></div>
+   <div><b>🎓 Quero melhorar</b><p><u>Treinamento &amp; Prova</u><br>4 perguntas por dia, 2 minutos</p></div>
+   <div><b>🎬 Rever a aula</b><p>Academia → <u>Apresentação</u><br>Estes slides ficam aqui pra sempre</p></div>
+  </div>`,
+ "Mostre AO VIVO cada um desses caminhos, clicando na frente deles. Ver o caminho uma vez vale mais que ouvir dez vezes onde fica.","claro",null),
+S("Fechamento","3:38","Perguntas",
+ `<div class="dk-hero">${ART.pessoas}
+  <h1 class="dk-h1">Dúvidas?</h1>
+  <p class="dk-lead">Agora é a hora — depois vira ligação perdida.</p>
+  <div class="dk-cols" style="margin-top:24px">
+   <div class="dk-card"><b>❓ Sobre o roteiro</b><p>Alguma parte da ligação que ainda não ficou clara?</p></div>
+   <div class="dk-card"><b>🖥️ Sobre o sistema</b><p>Onde registrar, como mover o lead, onde ver as tarefas?</p></div>
+   <div class="dk-card"><b>🎯 Sobre as metas</b><p>Algum número que pareceu fora da realidade de vocês?</p></div>
+  </div></div>`,
+ "Não encerre antes de vir pelo menos 3 perguntas. Se a sala ficar muda, pergunte você: 'qual parte vocês acham que vai ser mais difícil amanhã?' — sempre destrava.","escuro",null),
+S("Fechamento","3:42","Bom trabalho",
+ `<div class="dk-hero">${ART.grafico}
+  <div class="dk-eyebrow">Líderes do Brasil · O Protocolo Comercial</div>
+  <h1 class="dk-h1">Amanhã, 9h.<br>Fone na orelha.</h1>
+  <p class="dk-lead">Você tem o roteiro, as perguntas, as respostas e o sistema.<br>Falta só a primeira ligação.</p>
+  <div class="dk-badges"><span>100 ligações</span><span>30 conexões</span><span>10-15 agendamentos</span></div></div>`,
+ "Encerre em pé, com energia. Agradeça pelo dia. Se der, combine o horário de amanhã em que vocês vão prospectar JUNTOS na primeira hora — o primeiro dia sozinho é o que mais gera desistência.","destaque",null)
+];
+
+DECK.push(...DIN1,...OBJ_NOVOS,...RP,...FECHO);
+/* remove os slides que foram substituídos por versões melhores */
+const _SUBST=["DINÂMICA 1","Toda objeção é uma de três","O método ACRD","Agora você liga",
+ "Como funciona o role-play","As 4 personas","Ficha do observador","O que você leva daqui",
+ "Seus números de amanhã","Seu compromisso","Travou? Onde procurar"];
+for(let i=DECK.length-1;i>=0;i--){ if(_SUBST.includes(DECK[i].titulo)) DECK.splice(i,1); }
+/* ordena pela linha do tempo da aula */
+const _min=t=>{const a=String(t).split(":");return (+a[0])*60+(+a[1]);};
+DECK.sort((a,b)=>_min(a.tempo)-_min(b.tempo));
 function deckOpen(i){
  DECK_I=(typeof i==="number")?i:0; if(!DECK_T0)DECK_T0=Date.now();
  let el=document.getElementById("deck");
@@ -2529,6 +2885,51 @@ const OBJ_SEED=[
  {id:"o6",obj:"Já participo de outro grupo (BNI etc.)",tras:"Dúvida — não vê diferença",resp:"Massa! Sinal de que você valoriza rede. O Líderes é diferente: é curado por donos do seu nível e foca em fazer negócio entre os membros.",cat:"duvida",by:"playbook"},
  {id:"o7",obj:"Não é meu momento",tras:"Momento — dor não virou prioridade",resp:"Entendo. Deixa eu te perguntar: o [dor que ele citou] costuma melhorar sozinho esperando? Às vezes o melhor momento é justamente quando aperta.",cat:"confusao",by:"playbook"}
 ];
+
+function acadPDF(){
+ const m=objMatrix(),CAT={medo:"Medo",duvida:"Dúvida",confusao:"Confusão",necessidade:"Sem necessidade",valor:"Sem valor",pressa:"Sem pressa",confianca:"Sem confiança",autoridade:"Sem autoridade",ceticismo:"Ceticismo"};
+ const hoje=new Date().toLocaleDateString("pt-BR");
+ const w=window.open("","_blank");
+ if(!w){alert("Libere pop-ups para gerar o PDF.");return;}
+ w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Matriz de Objeções — ${BRANDS[T()].name}</title>
+ <style>
+  @page{margin:14mm}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#16233f;margin:0;padding:0;font-size:12px;line-height:1.5}
+  .cab{border-bottom:3px solid #FF6B2B;padding-bottom:12px;margin-bottom:18px}
+  .cab h1{margin:0 0 4px;font-size:22px}
+  .cab p{margin:0;color:#5a6a8a;font-size:12px}
+  .intro{background:#f4f6fb;border-left:4px solid #FF6B2B;padding:11px 14px;border-radius:5px;margin-bottom:18px;font-size:11.5px}
+  .item{border:1px solid #dde3ef;border-radius:8px;padding:12px 14px;margin-bottom:11px;page-break-inside:avoid}
+  .tag{display:inline-block;background:#eef1f8;color:#4a5878;font-size:10px;padding:3px 9px;border-radius:12px;margin-bottom:7px}
+  .obj{font-size:15px;font-weight:700;margin:0 0 6px}
+  .tras{font-size:11.5px;color:#5a6a8a;margin:0 0 8px}
+  .resp{background:#f7f9fd;border-left:3px solid #23a06a;padding:9px 12px;border-radius:5px;font-size:12.5px}
+  .resp b{color:#23a06a;font-size:10px;letter-spacing:1px;display:block;margin-bottom:3px}
+  .regras{margin-top:18px;background:#f4f6fb;border-radius:8px;padding:13px 16px;page-break-inside:avoid}
+  .regras h3{margin:0 0 7px;font-size:13px}
+  .regras ol{margin:0;padding-left:18px;font-size:11.5px;line-height:1.7}
+  .rod{margin-top:20px;border-top:1px solid #dde3ef;padding-top:9px;font-size:10px;color:#8a96ad;text-align:center}
+  @media print{.noprint{display:none}}
+ </style></head><body>
+ <div class="cab"><h1>Matriz de Objeções</h1><p>${BRANDS[T()].name} · O Protocolo Comercial · ${hoje} · ${m.length} objeções mapeadas</p></div>
+ <div class="intro"><b>Como usar:</b> não decore palavra por palavra — entenda a lógica. Toda resposta segue o <b>ACRD</b>: acolher (sem usar "mas") → confirmar a raiz real ("é X ou é Y?") → reformular curto → devolver com uma pergunta.</div>
+ ${m.map(o=>`<div class="item"><span class="tag">${CAT[o.cat]||o.cat||"—"}</span>
+   <p class="obj">“${o.obj}”</p>
+   ${o.tras?`<p class="tras"><b>O que está por trás:</b> ${o.tras}</p>`:""}
+   <div class="resp"><b>COMO RESPONDER</b>${o.resp||"—"}</div></div>`).join("")}
+ <div class="regras"><h3>As 3 regras ao lidar com o não</h3><ol>
+  <li><b>Nunca discuta.</b> Concorde primeiro — sempre. "Mas" apaga tudo que veio antes.</li>
+  <li><b>Termine perguntando.</b> Enquanto ele responde, a conversa continua viva.</li>
+  <li><b>No máximo 2 tentativas.</b> Depois agradeça, agende e saia bem — queimar o contato custa mais caro que perder a ligação.</li>
+ </ol></div>
+ <div class="rod">Gerado pelo sistema em ${hoje} · oprotocolocomercial.com.br/consultorias</div>
+ <div class="noprint" style="text-align:center;margin-top:22px"><button onclick="window.print()" style="background:#FF6B2B;color:#fff;border:0;padding:12px 26px;border-radius:9px;font-size:14px;cursor:pointer;font-weight:700">🖨️ Salvar como PDF</button></div>
+ </body></html>`);
+ w.document.close();
+ setTimeout(()=>{try{w.focus()}catch(e){}},250);
+}
+
 function objMatrix(){return DB.getObj(T(),"objMatrix",OBJ_SEED);}
 function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
 function acadAddObj(){
@@ -2565,7 +2966,7 @@ function acadObjecoes(){
   <div class="flex" style="margin-top:10px;align-items:center;gap:10px">
    <select id="mxCat"><option value="medo">😨 Medo</option><option value="duvida" selected>🤔 Dúvida</option><option value="confusao">🌀 Confusão</option></select>
    <button class="btn gold sm" onclick="acadAddObj()">Adicionar à matriz</button>
-   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span>
+   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span><div style="flex:1"></div><button class="btn ghost sm" onclick="acadPDF()">📄 Gerar PDF para enviar</button>
   </div>
  </div>
 
