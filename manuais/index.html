@@ -132,7 +132,6 @@ button{font-family:inherit;cursor:pointer}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="q" placeholder="Buscar em todos os manuais..." oninput="onSearch(this.value)">
     </div>
-    <button class="topbtn" id="rebrandBtn" onclick="applyRebrand()" title="Troca 'Full Sales System / FSS' por 'Protocolo Comercial' em todos os manuais">✦ Aplicar marca Protocolo</button>
     <button class="topbtn" onclick="logout()">Sair</button>
   </div>
 
@@ -158,7 +157,7 @@ try{ sb=supabase.createClient(SB_URL,SB_KEY); }catch(e){ console.warn(e); }
 
 /* ===== Ordem e ícones das seções ===== */
 const GROUPS=[
-  {doc:'swipe-file', label:'HS&E · Swipe File', secs:[
+  {doc:'swipe-file', label:'Protocolo · Swipe File', secs:[
     ['Narrativa','📖'],['Job Descriptions','👤'],['Playbooks','📘'],['Protocolos','🧩'],['Processos','⚙️'],['Vídeos','🎬'],
   ]},
   {doc:'modelo-clientes', label:'Modelo para Clientes (template)', secs:[
@@ -300,44 +299,6 @@ async function saveItem(){
   const ix=INDEX.find(i=>i.id===curItem.id); if(ix){ ix.title=title; }
   if(curSec) renderList(INDEX.filter(i=>i.section===curSec),curSec);
   toast('Salvo na nuvem ✓');
-}
-
-/* ===== APLICAR MARCA PROTOCOLO (troca FSS -> Protocolo Comercial) ===== */
-function swapBrand(s){
-  if(!s) return s;
-  s=s.split('Full Sales System').join('Protocolo Comercial');
-  s=s.split('Full Sales').join('Protocolo Comercial');
-  s=s.replace(/\bda FSS\b/g,'do Protocolo Comercial').replace(/\bna FSS\b/g,'no Protocolo Comercial');
-  s=s.replace(/\bFSS\b/g,'Protocolo Comercial');
-  return s;
-}
-async function applyRebrand(){
-  if(!confirm('Trocar "Full Sales System / FSS" por "Protocolo Comercial" em TODOS os manuais? Isso grava na nuvem.')) return;
-  const btn=document.getElementById('rebrandBtn'); const orig=btn.textContent; btn.disabled=true;
-  try{
-    let rows=[], from=0, step=1000;
-    while(true){
-      const {data,error}=await sb.from('manuais_fss').select('id,title,content').order('id',{ascending:true}).range(from,from+step-1);
-      if(error) throw error;
-      rows=rows.concat(data||[]); if(!data||data.length<step) break; from+=step;
-    }
-    let changed=0, i=0;
-    for(const r of rows){
-      i++;
-      const nt=swapBrand(r.title||''), nc=swapBrand(r.content||'');
-      if(nt!==(r.title||'')||nc!==(r.content||'')){
-        const {error}=await sb.from('manuais_fss').update({title:nt,content:nc,updated_at:new Date().toISOString()}).eq('id',r.id);
-        if(!error) changed++;
-      }
-      if(i%50===0) btn.textContent=`Aplicando… ${i}/${rows.length}`;
-    }
-    // atualiza índice local
-    INDEX.forEach(it=>{ it.title=swapBrand(it.title||''); });
-    if(curSec) selectSection(curSec);
-    if(curItem){ curItem.title=swapBrand(curItem.title||''); curItem.content=swapBrand(curItem.content||''); renderItem(); }
-    btn.textContent=orig; btn.disabled=false;
-    toast(`Marca Protocolo aplicada ✓ (${changed} manuais atualizados)`);
-  }catch(e){ btn.textContent=orig; btn.disabled=false; toast('Erro: '+e.message,true); }
 }
 
 /* ===== BUSCA ===== */
