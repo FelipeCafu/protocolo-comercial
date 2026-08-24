@@ -1,0 +1,6525 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protocolo 2026 · Central de Vídeos</title>
+<link rel="icon" href="../favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0C0C; --bg2:#131211; --panel:#1a1917; --panel2:#211f1c; --line:#332f2a;
+  --text:#F0EDE8; --muted:#9a938a; --primary:#FF6B2B; --primary2:#ff8a52; --accent:#e7b53c;
+  --ok:#37c98a; --bad:#f0596b; --radius:14px; --font:"Kanit","Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased}
+a{color:var(--primary2);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+::selection{background:rgba(255,107,43,.32)}
+img{max-width:100%}
+
+/* LOGIN */
+#login{position:fixed;inset:0;display:grid;place-items:center;z-index:50;
+  background:radial-gradient(1200px 700px at 70% -10%,rgba(255,107,43,.18),transparent 60%),var(--bg)}
+.login-card{width:min(400px,92vw);background:linear-gradient(180deg,var(--panel),var(--bg2));
+  border:1px solid var(--line);border-radius:20px;padding:38px 34px;box-shadow:0 30px 80px rgba(0,0,0,.6);text-align:center}
+.login-card img{height:46px;margin-bottom:12px}
+.login-card h1{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:6px 0 2px}
+.login-card h2{font-size:22px;font-weight:700;margin-bottom:22px}
+.login-card label{display:block;text-align:left;font-size:12px;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.08em}
+.login-card input{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit}
+.login-card input:focus{outline:none;border-color:var(--primary)}
+.login-card button{width:100%;margin-top:16px;padding:13px;border-radius:12px;background:linear-gradient(180deg,var(--primary2),var(--primary));color:#1a0e07;font-weight:700;font-size:15px}
+.login-card .err{color:var(--bad);font-size:13px;margin-top:12px;min-height:16px}
+
+/* SHELL */
+#app{display:none;min-height:100%;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:14px 22px;
+  background:rgba(12,12,12,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar .brand{display:flex;align-items:center;gap:11px}
+.topbar .brand img{height:30px}
+.topbar .brand b{font-weight:700;font-size:15px;letter-spacing:.02em}
+.topbar .brand span{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.nav{display:flex;gap:6px;margin-left:8px}
+.nav a{padding:7px 13px;border-radius:9px;font-size:13.5px;color:var(--muted);border:1px solid transparent}
+.nav a:hover{color:var(--text);background:var(--panel)}
+.nav a.active{color:var(--primary);border-color:var(--line);background:var(--panel)}
+.search{margin-left:auto;display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:9px 13px;width:min(340px,40vw)}
+.search input{border:none;background:none;color:var(--text);font-size:14px;width:100%;font-family:inherit}
+.search input:focus{outline:none}
+.search svg{opacity:.6;flex:none}
+.logout{padding:8px 13px;border-radius:9px;border:1px solid var(--line);color:var(--muted);font-size:13px}
+.logout:hover{color:var(--bad);border-color:var(--bad)}
+
+.wrap{padding:26px 26px 80px;max-width:1400px;margin:0 auto;width:100%}
+.hero{margin-bottom:26px}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
+.hero p{color:var(--muted);margin-top:6px;font-size:14.5px}
+.hero .stats{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12.5px;color:var(--muted)}
+.chip b{color:var(--text)}
+
+.course{margin:22px 0;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel),var(--bg2));overflow:hidden}
+.course-head{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none}
+.course-head:hover{background:var(--panel2)}
+.course-head .ico{width:38px;height:38px;border-radius:10px;background:rgba(255,107,43,.14);display:grid;place-items:center;flex:none}
+.course-head .ico svg{width:20px;height:20px}
+.course-head .t{flex:1;min-width:0}
+.course-head .t b{font-size:16.5px;font-weight:600;display:block}
+.course-head .t small{color:var(--muted);font-size:12.5px}
+.course-head .arrow{transition:transform .25s;color:var(--muted)}
+.course.open .course-head .arrow{transform:rotate(90deg)}
+.grid{display:none;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;padding:6px 20px 22px}
+.course.open .grid{display:grid}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
+.card:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#241f1a,#15120f);display:grid;place-items:center;position:relative;border-bottom:1px solid var(--line)}
+.thumb .play{width:46px;height:46px;border-radius:50%;background:rgba(255,107,43,.92);display:grid;place-items:center;box-shadow:0 6px 20px rgba(255,107,43,.4);transition:.18s}
+.card:hover .thumb .play{transform:scale(1.12)}
+.thumb .num{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:2px 8px;border-radius:7px;font-weight:600}
+.card .cap{padding:11px 13px 13px;font-size:13px;line-height:1.35;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:58px}
+.empty{color:var(--muted);text-align:center;padding:60px 20px}
+
+/* PLAYER MODAL */
+#modal{position:fixed;inset:0;z-index:60;display:none;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);padding:3vh 3vw}
+#modal.on{display:grid;place-items:center}
+.player{width:min(1100px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)}
+.player-head{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line)}
+.player-head b{font-size:15px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-head small{color:var(--muted);font-size:12px}
+.player-head .x{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);color:var(--muted);font-size:20px;display:grid;place-items:center;flex:none}
+.player-head .x:hover{color:var(--bad);border-color:var(--bad)}
+.player .frame{aspect-ratio:16/9;background:#000}
+.player iframe{width:100%;height:100%;border:0}
+.pfoot{display:flex;gap:10px;padding:12px 18px;border-top:1px solid var(--line);align-items:center}
+.pfoot .nv{padding:8px 14px;border:1px solid var(--line);border-radius:9px;font-size:13px;color:var(--muted)}
+.pfoot .nv:hover{color:var(--text);border-color:var(--primary)}
+.pfoot a.dl{margin-left:auto;font-size:12.5px;color:var(--muted)}
+@media(max-width:640px){.wrap{padding:18px 14px 70px}.search{width:auto;flex:1}.nav span.lbl{display:none}.hero h1{font-size:23px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <img src="../logo.png" alt="O Protocolo" onerror="this.style.display='none'">
+    <h1>O Protocolo Comercial</h1>
+    <h2>Central de Vídeos</h2>
+    <label>Senha de acesso</label>
+    <input id="pw" type="password" placeholder="••••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Entrar</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <img src="../logo.png" alt="" onerror="this.style.display='none'">
+      <div><b>Protocolo 2026</b> <span>· Vídeos</span></div>
+    </div>
+    <nav class="nav">
+      <a href="../">Início</a>
+      <a href="../manuais/">Manuais</a>
+      <a class="active" href="./">Vídeos</a>
+    </nav>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Buscar curso ou aula..." oninput="render()">
+    </div>
+    <button class="logout" onclick="logout()">Sair</button>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Central de Vídeos</h1>
+      <p>Todo o acervo de treinamentos do Full Sales System — transmitido direto do Drive.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div id="modal" onclick="if(event.target.id==='modal')closePlayer()">
+  <div class="player">
+    <div class="player-head">
+      <div style="flex:1;min-width:0"><b id="pTitle">—</b><br><small id="pCourse"></small></div>
+      <button class="x" onclick="closePlayer()">×</button>
+    </div>
+    <div class="frame"><iframe id="pFrame" src="" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div>
+    <div class="pfoot">
+      <button class="nv" onclick="nav(-1)">‹ Anterior</button>
+      <button class="nv" onclick="nav(1)">Próxima ›</button>
+      <a class="dl" id="pOpen" href="#" target="_blank" rel="noopener">Abrir no Google Drive ↗</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD="Protocolo 2026";
+function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='flex';render();}
+function doLogin(){
+  const v=document.getElementById('pw').value.trim();
+  if(v.toLowerCase()===PASSWORD.toLowerCase()){sessionStorage.setItem('pc_videos_auth','1');enter();}
+  else{document.getElementById('loginErr').textContent='Senha incorreta. Tente novamente.';}
+}
+function logout(){sessionStorage.removeItem('pc_videos_auth');location.reload();}
+if(sessionStorage.getItem('pc_videos_auth')==='1'){enter();}
+
+const CATALOG = {
+ "total": 1217,
+ "courses": [
+  {
+   "course": "Treinamento para Closers",
+   "count": 114,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Treinamento do dia 05.02.2024 Warm Up e Emoção",
+     "id": "13pBHeepMDBJRCZu5xM3E8luzWH_iE0_K"
+    },
+    {
+     "n": "002",
+     "title": "Treinamento do dia 19.02.2024 Spin Selling",
+     "id": "1U03aTIVkkyIrNDp2-1KVUuPUTQBEwIVj"
+    },
+    {
+     "n": "003",
+     "title": "Treinamento do dia 04.03.2024 Laboratório de Dúvidas",
+     "id": "16jhaM45acbsxDcqrK_UXaOBlqdZ3FoXm"
+    },
+    {
+     "n": "004",
+     "title": "Treinamento do dia 18.03.2024 Pactos",
+     "id": "1Rf372XlFBv65BZ7W5swadFzZ4onmjmg1"
+    },
+    {
+     "n": "005",
+     "title": "Treinamento do dia 01.04.2024 HotSeat",
+     "id": "1TdP8XAL0M6ZbcrMTuYwRNCjpiYENujtj"
+    },
+    {
+     "n": "008",
+     "title": "Treinamento do dia 14.05.2024 Construção da Venda no Zero",
+     "id": "1Reoy5AxC-hax6s_3FJrSXHX_4O6p-2W3"
+    },
+    {
+     "n": "009",
+     "title": "Treinamento do dia 21.05.2024 Warm Up, Spin Selling e Pacto Inicial (Feat. Yuri Barbosa)",
+     "id": "1jF6dfYDMZ-yj9W_8zR_yYT4_-0hdw2tV"
+    },
+    {
+     "n": "010",
+     "title": "Treinamento do dia 28.05.2024 Ancoragem e Prova Social",
+     "id": "1lEYypEthUxw88IIo1KsNG-011mkTFSIn"
+    },
+    {
+     "n": "011",
+     "title": "Treinamento do dia 04.06.2024 HotSeat",
+     "id": "1jxLHBSgnqgGnFB06uBjhJMrRHenanJAl"
+    },
+    {
+     "n": "012",
+     "title": "Treinamento do dia 11.06.2024 Warm Up e Marketing Pessoal",
+     "id": "1lZdDxREsNan7X4oVlhKbUWAD9w5ObCSH"
+    },
+    {
+     "n": "013",
+     "title": "Treinamento do dia 18.06.2024 Warm Up e HotSeat",
+     "id": "1Kt2-B1QSYRUvM49OdPbkKzjI-B_M0bkp"
+    },
+    {
+     "n": "014",
+     "title": "Treinamento do dia 25.06.2024 HotSeat e Venda Emocional",
+     "id": "1jh3yJGAJRJax-g6PKN18yXFc_Dvvs98_"
+    },
+    {
+     "n": "015",
+     "title": "Treinamento do dia 02.07.2024 Quebra de Gelo, Rapport e Emoção",
+     "id": "1odz7V8hf5JRpI32OK3Mgn5aikinp3VAJ"
+    },
+    {
+     "n": "016",
+     "title": "Treinamento do dia 09.07.2024 HotSeat",
+     "id": "1k2QbdO-5AJR5aDAjkXBCzigxMkGn7CZW"
+    },
+    {
+     "n": "017",
+     "title": "Treinamento do dia 16.07.2024 Tira Dúvidas",
+     "id": "1aEBwc_FaYSKluEGDMjwTTgh53L-e9Jgp"
+    },
+    {
+     "n": "018",
+     "title": "Treinamento do dia 23.07.2024 Gatilhos Mentais",
+     "id": "1SC8hFvvuPQ_Cok7FazXialU4kFCv8UYN"
+    },
+    {
+     "n": "019",
+     "title": "Treinamento do dia 06.08.2024 HotSeat",
+     "id": "1y4sluyoKF6SvgHBpB4Dvs5a1-MDivowX"
+    },
+    {
+     "n": "020",
+     "title": "Treinamento do dia 13.08.2024 Ancoragem",
+     "id": "1meAowiSa89Wf-ml3VG5uCaPLTTw9wmfp"
+    },
+    {
+     "n": "021",
+     "title": "Treinamento do dia 20.08.2024 Construção de Rapport",
+     "id": "1dBkAf_x1bgvULYj9WxnP7wwyITJMM2MX"
+    },
+    {
+     "n": "022",
+     "title": "Treinamento do dia 03.09.2024 HotSeat",
+     "id": "1i4Ta8uNbpv22kO11XHx0fuaBsDT1BsEi"
+    },
+    {
+     "n": "023",
+     "title": "Treinamento do dia 10.09.2024 Script de Vendas Perfeito com Vinícius de Sá",
+     "id": "1amfxnTKqbNBX7gKtGcw_tDOdEaP--1yJ"
+    },
+    {
+     "n": "024",
+     "title": "Treinamento do dia 17.09.2024 HotSeat",
+     "id": "1HWcgJhUhV4X9fIWweasjFOi5T38R8xyt"
+    },
+    {
+     "n": "025",
+     "title": "Treinamento do dia 24.09.2024 Tira Dúvidas",
+     "id": "1dhKS9x41fBPYKbnKLhMLMwuGRv9AmbdW"
+    },
+    {
+     "n": "026",
+     "title": "Treinamento do dia 01.10.2024 HotSeat",
+     "id": "1MpkhFPK-lPqY88yNNm8RMuB6eG6T-jPo"
+    },
+    {
+     "n": "027",
+     "title": "Treinamento do dia 08.10.2024 Script de Objeções",
+     "id": "1I8nGePGgqmphlOpWAAh3-6qP340kKv5Z"
+    },
+    {
+     "n": "028",
+     "title": "Treinamento do dia 15.10.2024 HotSeat e Ancoragem",
+     "id": "1jbfOrtbFaj8UNTR2t63pI-sT8AfUCORj"
+    },
+    {
+     "n": "029",
+     "title": "Treinamento do dia 22.10.2024 Script de Apresentação",
+     "id": "1Rnxuzob1FAwXvj9ZKLVxAlGDkFxivvdG"
+    },
+    {
+     "n": "030",
+     "title": "Treinamento do dia 29.10.2024 DownSell",
+     "id": "1ZoC-DJ2JmDDkB9CyjrBjmseKM-pSMHiz"
+    },
+    {
+     "n": "031",
+     "title": "Treinamento do dia 05.11.2024 HotSeat",
+     "id": "1tfDqik6Li7hu0-TZB8D3uq58Ab1tcguf"
+    },
+    {
+     "n": "032",
+     "title": "Treinamento do dia 12.11.2024 Follow-Up",
+     "id": "1H1WNIdo7DU_XcpMzeKrPelh9EfH5qWSl"
+    },
+    {
+     "n": "033",
+     "title": "Treinamento do dia 19.11.2024 Apresentação Comercial",
+     "id": "1n0CQevRV_nIPVM8mr8V4gorW5k1hHxUj"
+    },
+    {
+     "n": "034",
+     "title": "Treinamento do dia 26.11.2024 HotSeat",
+     "id": "1oiEbu6bG9IjVZveeyA-ICsIftdoO3pd_"
+    },
+    {
+     "n": "035",
+     "title": "Treinamento do dia 03.12.2024 Construção de venda 1x1",
+     "id": "18UTBc5Lux00AmL23gNY3RphmZdoWNvnr"
+    },
+    {
+     "n": "036",
+     "title": "Treinamento do dia 10.12.2024 Dissertando Vendas 1x1",
+     "id": "1WbTJLcIPLvkWly8Lj6TjIffEwtjTxeWO"
+    },
+    {
+     "n": "037",
+     "title": "Treinamento do dia 17.12.2024 HotSeat",
+     "id": "1YWRGT_FRH2aMvGk7ox5a0vibJmwtCo56"
+    },
+    {
+     "n": "038",
+     "title": "Treinamento do dia 07.01.2025 Warm-Up e Emoção",
+     "id": "12mKf5xmEJw06euhIEB_YTlVq9CHqmo_n"
+    },
+    {
+     "n": "039",
+     "title": "Treinamento do dia 14.01.2025 HotSeat sobre Warm-Up e Emoção",
+     "id": "1eLUo0p39o_L57yca6GyoklfDPkqXnzO1"
+    },
+    {
+     "n": "040",
+     "title": "Treinamento do dia 21.01.2025 SPIN Selling",
+     "id": "1ChPz46IcJplpUxb-0ish7eKsrecRaGMg"
+    },
+    {
+     "n": "041",
+     "title": "Treinamento do dia 28.01.2025 HotSeat sobre SPIN Selling",
+     "id": "1GRvoVi3HTYUJj5mRSeqCYemPE-yBTpHn"
+    },
+    {
+     "n": "042",
+     "title": "Treinamento do dia 04.02.2025 Pactos e Micro Pactos",
+     "id": "1zdXFfc8vDXIPfKJgxDQPiJTUdURC-lAa"
+    },
+    {
+     "n": "043",
+     "title": "Treinamento do dia 11.02.2025 HotSeat",
+     "id": "1Y1LTlmb1zpXPpLxYg9hlJJ2OtQHKHiWo"
+    },
+    {
+     "n": "044",
+     "title": "Treinamento do dia 18.02.2025 RolePlay",
+     "id": "1kb8TBPzeeh7pfe-_Eb1rOGR0ZgxRTFhR"
+    },
+    {
+     "n": "045",
+     "title": "Treinamento do dia 25.02.2025 Objeções e Tira Dúvidas",
+     "id": "1UYASi3MqJdDicjJCEkwilqshz0MwZ6ox"
+    },
+    {
+     "n": "046",
+     "title": "Treinamento do dia 11.03.2025 Dominando os Gatilhos Mentais",
+     "id": "1xY9bYflhAvSyeJqw4YIStspBqwqC5ftU"
+    },
+    {
+     "n": "047",
+     "title": "Treinamento do dia 18.03.2025 HotSeat",
+     "id": "1yY2B3ivmVJlLhDRrdv3p8jlTCVRGFSXU"
+    },
+    {
+     "n": "048",
+     "title": "Treinamento do dia 25.03.2025 Gatilhos Mentais - Parte 2",
+     "id": "1mog4wWBytsnOGIMl9RF9efvZg3pLSUoM"
+    },
+    {
+     "n": "049",
+     "title": "Treinamento do dia 01.04.2025 Gatilhos Mentais - Parte 3",
+     "id": "1nYDkkzZI7ZBeixG4NCzUzhoouribFzRC"
+    },
+    {
+     "n": "050",
+     "title": "Treinamento do dia 08.04.2025 HotSeat",
+     "id": "11aVwioxXLOen6lIli-h9VD5sku56WOUE"
+    },
+    {
+     "n": "051",
+     "title": "Treinamento do dia 15.04.2025 Objeções",
+     "id": "1idWsVs8VQtCyrMIqQ-cGNqU2TWJv-3GV"
+    },
+    {
+     "n": "052",
+     "title": "Treinamento do dia 22.04.2025 Rapport",
+     "id": "1vRv3RmaFEgJchv7CmBDwWN2QyPKpzBbp"
+    },
+    {
+     "n": "053",
+     "title": "Treinamento do dia 29.04.25 Tira Dúvidas",
+     "id": "1kAB0cLnfa1vPakHIRrxr3Di7mNLNPI9G"
+    },
+    {
+     "n": "054",
+     "title": "Treinamento do dia 06.05.25 Tira Dúvidas",
+     "id": "1z9ySBFamR81tMFZZqkuKYL3GD-oy5Mb6"
+    },
+    {
+     "n": "055",
+     "title": "Treinamento do dia 13.05.25 Perfis Comportamentais com Melissa Paladino",
+     "id": "17o_4_aAhFXB69r138ByDmzfKWTIcgM9J"
+    },
+    {
+     "n": "056",
+     "title": "Treinamento do dia 20.05.25 Tira dúvidas",
+     "id": "1G--PhuDRSAmdqFz9LoqX5Q8BJPLVtSox"
+    },
+    {
+     "n": "057",
+     "title": "Treinamento do dia 27.05.25 Prospecção com Gabriel Hian",
+     "id": "1ziMvAD9H92ik4DDBpl0re5cYSMcBZtYe"
+    },
+    {
+     "n": "058",
+     "title": "Treinamento do dia 03.06.2025 Apresentação",
+     "id": "1n5Xhecfqj3ZYwaqg0VkOfpSPFj9PQALO"
+    },
+    {
+     "n": "059",
+     "title": "Treinamento do dia 10.06.25 Apresentação parte 2",
+     "id": "1_hGKq9fk9IdSP253J3yqk5dzywfuwHOl"
+    },
+    {
+     "n": "060",
+     "title": "Treinamento do dia 17.06.2025 Construção da Venda no 1x1",
+     "id": "1Q73-U-AnZcepisec4OCfIChBa64XGXkx"
+    },
+    {
+     "n": "061",
+     "title": "Treinamento do dia 24.06.2025 Tira Dúvidas",
+     "id": "1zPgMgP0Mz4oYfus0Byl6F6TBrnSobH6J"
+    },
+    {
+     "n": "062",
+     "title": "Treinamento do dia 01.07.2025 Warm up e Introdução",
+     "id": "1vt7pXrv52gemWnXWyh-GqUj3onsSAyUs"
+    },
+    {
+     "n": "063",
+     "title": "Treinamento do dia 08.07.2025 Hotseat",
+     "id": "1bcN6kxVMIeApHYmACtGwe7SUxzkm2pF_"
+    },
+    {
+     "n": "064",
+     "title": "Treinamento do dia 15.07.2025 Spin Selling",
+     "id": "1QEyn_Dagn_Yu1VlWmfoL3Vb0lIIE4pOs"
+    },
+    {
+     "n": "065",
+     "title": "Treinamento do dia 22.07.25 Tira Duvidas",
+     "id": "1v0NtPVy_JFX8omqyoZZ7pMNVnfhwJFkz"
+    },
+    {
+     "n": "066",
+     "title": "Treinamento do dia 29.07.25 Pitch de Vendas",
+     "id": "1vEwDptAbXXu5-tscv9LSm28L8DJgbGXS"
+    },
+    {
+     "n": "067",
+     "title": "Treinamento do dia 05.08.25 Hotseat",
+     "id": "1ykUHu8NFwde3qoYPxVC8JILsUu49M0lM"
+    },
+    {
+     "n": "068",
+     "title": "Treinamento do dia 12.08.25 Pactos",
+     "id": "1fscnFl5jdAA8ezxKHs9lfn5Tgt5P4yHq"
+    },
+    {
+     "n": "069",
+     "title": "Treinamento de Vendas 19.08.25 Técnicas de fechamento",
+     "id": "1SngsOh_ofMUfSQ-9FdgtmMB6VckkGJAy"
+    },
+    {
+     "n": "070",
+     "title": "Treinamento do dia 26.08.25 Técnicas de vendas e Objeções comuns",
+     "id": "1Ne1iAX_lO10SUkXw-KMr_ITBhUnglYXP"
+    },
+    {
+     "n": "071",
+     "title": "Treinamento do dia 02.09.25 Hotseat",
+     "id": "1avYVrerhV_px8K5OCqw2E2Ok3Hs8ksLk"
+    },
+    {
+     "n": "072",
+     "title": "Treinamento de Vendas 09.09.25 Tira Duvidas, Lidando com objeções",
+     "id": "1Xz7vaCgbfZwfJ-rqFtRJ8zTyp_qVppAn"
+    },
+    {
+     "n": "073",
+     "title": "Treinamento de Vendas 16.09.25 Downsell e Tira duvidas",
+     "id": "1QbAktqPKYszuT3ZVda9LnCzFnUlMqUFq"
+    },
+    {
+     "n": "074",
+     "title": "Treinamento do dia 23.09.25 Gatilhos Mentais e Hotseat",
+     "id": "1Kt5J5kQhdblJT-ctAclo5WyRXPrCObYg"
+    },
+    {
+     "n": "075",
+     "title": "Treinamento do dia 30.09.25 Hotseat",
+     "id": "11lKgDiRrovbYSF0iQdBl7PnT9mymYGDN"
+    },
+    {
+     "n": "076",
+     "title": "Treinamento do dia 07.10.25 Tira Duvidas",
+     "id": "1-b77yVLSQuxXQwYkHr1Pj5h-0aD2neJM"
+    },
+    {
+     "n": "077",
+     "title": "Treinamento do dia 14.10.2025 Gatilhos Mentais",
+     "id": "1GP5DRZKDYmAelM-JWKsuGH_ijU2R7BV8"
+    },
+    {
+     "n": "078",
+     "title": "Treinamento do dia 21.10.2025 Hotseat",
+     "id": "1SAOsNNOZR-V5kRW7LJ72Yt3H0TrrRb8S"
+    },
+    {
+     "n": "079",
+     "title": "Treinamento do dia 28.10.2025 Tira Dúvidas",
+     "id": "1skrADBW7abuGa0fvpFjeziOLlwGFUIy3"
+    },
+    {
+     "n": "080",
+     "title": "Treinamento do dia 04.11.2025 Perfis Comportamentais",
+     "id": "1MwYqEuQor9qnKr6sgAg_DCCg6cDQnTXV"
+    },
+    {
+     "n": "081",
+     "title": "Treinamento do dia 11.11.25 Perfis Comportamentais pt 2",
+     "id": "10T8CgQNCNAOuGaN-t3XQEG_jWjHgGBco"
+    },
+    {
+     "n": "082",
+     "title": "Treinamento do dia 18.11.2025 HotSeat",
+     "id": "1H9vlOQ_5iFEF5wQ7ge5utfd4OqkHSsw3"
+    },
+    {
+     "n": "083",
+     "title": "Treinamento do dia 25.11.2025 Apresentação Comercial",
+     "id": "1Dp5gNKh7rYyFZ_sGAJT5llfPWBpQ7zAb"
+    },
+    {
+     "n": "084",
+     "title": "Treinamento do dia 02.12.25 HotSeat",
+     "id": "19loAvrjz9CLezArJ9tpzCylpxCNED40l"
+    },
+    {
+     "n": "085",
+     "title": "Treinamento do dia 09.12.25 Construção da Venda no 1x1",
+     "id": "16i7LbL3qNXur5Vhd2LPVwDl0oCOSxDPA"
+    },
+    {
+     "n": "086",
+     "title": "Treinamento do dia 16.12.25 Hotseat",
+     "id": "1LaFu0JYN79sJZ1K0JenEnucIj90Okt2T"
+    },
+    {
+     "n": "087",
+     "title": "Treinamento do dia 30.12.2025 Construção da Venda",
+     "id": "1IoSstg1v6wbTne8uP-LsSzfWOTXz-x6X"
+    },
+    {
+     "n": "088",
+     "title": "Treinamento do dia 06.01.2026 Spin Selling",
+     "id": "1cmxVlhWz2M5cprpfLUAWK_A1bEBDzG4D"
+    },
+    {
+     "n": "089",
+     "title": "Treinamento do dia 13.01.26 Construção de Imagem com Melissa Paladino",
+     "id": "1fEcPeCbvLzKmBvP6OyNi1yictu0IcppW"
+    },
+    {
+     "n": "090",
+     "title": "Treinamento do dia 20.01.26 HotSeat",
+     "id": "1GrW0hrMaVj_ixFtj7MZRoDO7fKeLCvSQ"
+    },
+    {
+     "n": "091",
+     "title": "Treinamento do dia 27.01.26 SPIN",
+     "id": "1cINsQnNX8GKm9pXoNyzhpluFUbuBLdSl"
+    },
+    {
+     "n": "092",
+     "title": "Treinamento do dia 03.02.26 Hotseat",
+     "id": "1_DusWEAhNva4ehE-tW5plOunclT1duT_"
+    },
+    {
+     "n": "093",
+     "title": "Treinamento do dia 10.02.26 Pacto e Micropactos",
+     "id": "1pzl3logD2p9lcge4TYqVaXO-1n1S7Ubd"
+    },
+    {
+     "n": "094",
+     "title": "Treinamento Vendas - 24.02.26 Hotseat",
+     "id": "1JFpBLb2GcdJCTLVG3xAxnxO1X93JxNO5"
+    },
+    {
+     "n": "095",
+     "title": "Treinamento do dia 03.03.26 Bruno Hebert",
+     "id": "1GK8Py4dIIyEfogb37Ly6qhEhpF1m9SjQ"
+    },
+    {
+     "n": "096",
+     "title": "Treinamento do dia 10.03.2026 Fechamento",
+     "id": "1yirZQ8sB2GIdexECVXjTaYwS8oepU8Ho"
+    },
+    {
+     "n": "097",
+     "title": "Treinamento do dia 17.03.26 Hotseat",
+     "id": "1C_QfWqi5PnCvInCpLmYS8I9iTNxPk5Ku"
+    },
+    {
+     "n": "098",
+     "title": "Treinamento do dia 24.03.26 Gatilhos mentais",
+     "id": "1cpG5BXS44YR_v4aDO0nMzyuEs15I_v6I"
+    },
+    {
+     "n": "099",
+     "title": "Treinamento do dia 31.03.26 Gatilhos Mentais parte 2",
+     "id": "12B-M6Mer9YZGY40i4O7pi_AtYGS1ax7S"
+    },
+    {
+     "n": "100",
+     "title": "Treinamento do dia 07.04.26 Hotseat",
+     "id": "137Jbait75eMI9e3ExAhrYKHwsXMD9thf"
+    },
+    {
+     "n": "101",
+     "title": "Treinamento do dia 14.04.26 Gatilhos Mentais",
+     "id": "1VYv9MCJvstNfypouAciqNKDkjP4w6U0O"
+    },
+    {
+     "n": "102",
+     "title": "Treinamento do dia 28.04.26 Gatilhos Mentais",
+     "id": "1sW8_-w-I6BZGM11SQgrKoe8r8R7IWsyq"
+    },
+    {
+     "n": "103",
+     "title": "Treinamento do dia 05.05.26 Hotseat",
+     "id": "1FTCOAFoqGJy1laqiDyKpIvj8gdvDGpa6"
+    },
+    {
+     "n": "104",
+     "title": "Treinamento Comercial 12.05.26 Perfis Comportamentais",
+     "id": "1ouj9AJ76Cd0cmpUMhoskuCJVWXX-5kda"
+    },
+    {
+     "n": "105",
+     "title": "Treinamento do dia 19.05.26 Hotseat",
+     "id": "1ixRvAPUbSuBQERkvyKFoVpP4-P1xOpyr"
+    },
+    {
+     "n": "106",
+     "title": "Treinamento de Vendas 26.05.2026 Apresentação de Vendas",
+     "id": "1SlPed0fFL8ENihD8TYEcJ_IbxDl-mras"
+    },
+    {
+     "n": "107",
+     "title": "Treinamento de Vendas 02.06.26 Processo de Construção da Venda e Tira Dúvidas",
+     "id": "1pOMdVUB-EHXERO7pzbbovx3Yvyt8I90c"
+    },
+    {
+     "n": "108",
+     "title": "Treinamento de Vendas 09.06.26 Hot Seat",
+     "id": "1jnWXdXOpQr9KjDrvlQcG6IQQFEsFZarz"
+    },
+    {
+     "n": "109",
+     "title": "Treinamento de Vendas 16.06.26 Warm Up, Emoção e Diretório",
+     "id": "1KAqGAk-T03a4Tdg721T7mZuFbPj4ekuK"
+    },
+    {
+     "n": "110",
+     "title": "Treinamento de Vendas 23.06.2026 Hot Seat",
+     "id": "1e42TIoKW85rBsF0vZrnvUOwOVU-DcWkB"
+    },
+    {
+     "n": "111",
+     "title": "Treinamento de Vendas com Bruno Hebert 30.06.2026 - SPIN Selling na prática do dia a dia",
+     "id": "1ejVFeGvKeWIFAi7aavdwWHs9oUekaPTc"
+    },
+    {
+     "n": "112",
+     "title": "Treinamento de Vendas com Bruno Hebert 07.07.2026 - Hotseat",
+     "id": "1qOgby47xwoCBzAeZc7rdQ0OFLlsSAj44"
+    },
+    {
+     "n": "113",
+     "title": "Treinamento de Vendas com Bruno Hebert 14.07.2026 - Uso Correto do SPIN na Apresentação de Vendas",
+     "id": "1pIX0OoM33sFZSJGBVJsoUaGFWgBc-nNF"
+    },
+    {
+     "n": "114",
+     "title": "Treinamento de Vendas com Lucas Neri 21.07.2026 - Fundamentos de Vendas de Alta Performance",
+     "id": "1Tn0l9ezpKerfk0VGuz7CLKZLNjw8Funw"
+    },
+    {
+     "n": "115",
+     "title": "Treinamento de vendas - 04.08.2026 duvidas",
+     "id": "1_cnCjgKTy5NL15HN19hZ1oSkxdxq0WLW"
+    },
+    {
+     "n": "116",
+     "title": "Treinamento de Vendas com Lucas Neri 11.08.2026 - Como Encontrar a Dor do Cliente e Usa-la para Fechar a Venda",
+     "id": "14SwEy0Nk2lXyi_LPHyZTZzL1aLfj2nuD"
+    }
+   ]
+  },
+  {
+   "course": "Treinamento para SDR",
+   "count": 106,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Treinamento do dia 05.01.2024 Comunicação Assertiva e estratégias na ligação",
+     "id": "1O6UxQ75JneG8xWffHvPPWCFoJfHaFU5n"
+    },
+    {
+     "n": "002",
+     "title": "Treinamento do dia 11.01.2024 Mentalidade e Responsabilidade do SDR",
+     "id": "10us2_7TLzEvlnmBAaKuTf4alW74bqELu"
+    },
+    {
+     "n": "003",
+     "title": "Treinamento do dia 19.02.2024 Fluxograma do SDR",
+     "id": "1aWCIoHeiVWfr6SDJREan3EbIg1_ODNFH"
+    },
+    {
+     "n": "004",
+     "title": "Treinamento do dia 04.03.2024 Taxa de No-Show",
+     "id": "1uxCkJb2qFWXK_sNPI_cGHHiE7GUhMa4w"
+    },
+    {
+     "n": "005",
+     "title": "Treinamento do dia 18.03.2024 Social Selling",
+     "id": "1T8g-Y_t34iWKe-KCi4Y6WQ1aZujfEnqZ"
+    },
+    {
+     "n": "006",
+     "title": "Treinamento do dia 01.04.2024 Gestão do tempo",
+     "id": "1-DBEj0r7EJfJ6h_rj3W682efORBjkoWN"
+    },
+    {
+     "n": "007",
+     "title": "Treinamento do dia 16.04.2024 Estágio do Follow Up",
+     "id": "1HWBP3L6HK-ofIZVREesojqWDE5aYOHqR"
+    },
+    {
+     "n": "008",
+     "title": "Treinamento do dia 07.05.2024 HotSeat",
+     "id": "1zXceY0OYFDYDtlBzytySG2YQ3FWvwcaB"
+    },
+    {
+     "n": "009",
+     "title": "Treinamento do dia 14.05.2024 Tira Dúvidas",
+     "id": "1VjEXiEZWJrENGTJjmpjNj6fjr2G__eeo"
+    },
+    {
+     "n": "013",
+     "title": "Treinamento do dia 11.06.2024 Função SDR",
+     "id": "1Wxv_XqrcNCS8deyCYxxMBgQ038am-XwY"
+    },
+    {
+     "n": "014",
+     "title": "Treinamento do dia 18.06.2024 Social Selling",
+     "id": "1HJ6RUEj00OHy6fZRod2KJUbgkAbSuw4r"
+    },
+    {
+     "n": "015",
+     "title": "Treinamento do dia 25.06.2024 HotSeat",
+     "id": "1NKNpGIzvVn5RShdNFVORS0NhKe91yvAs"
+    },
+    {
+     "n": "016",
+     "title": "Treinamento do dia 02.07.2024 HotSeat",
+     "id": "1TpeBc5jlZcVvVIsFiUleClX01rVR4L5V"
+    },
+    {
+     "n": "017",
+     "title": "Treinamento do dia 09.07.2024 Pipeline Pré Vendas",
+     "id": "1IH_euSyhNTEUd6pwXsX0hqulqoBvrptA"
+    },
+    {
+     "n": "018",
+     "title": "Treinamento no dia 16.07.2024 Hotseat",
+     "id": "10zXM_UHpT2FQuzBmbS0uKGBe6sUpl5iJ"
+    },
+    {
+     "n": "019",
+     "title": "Treinamento do dia 23.07.2024 Tira Dúvidas",
+     "id": "16QOX4lfM4I5K1fhhhJaV64kErU38Kz5n"
+    },
+    {
+     "n": "021",
+     "title": "Treinamento do dia 06.08.2024 Pré Vendas Qualificação",
+     "id": "1mPlbe9sidUZ7MwHhFF9ZjY0VNdTUYWeM"
+    },
+    {
+     "n": "022",
+     "title": "Treinamento do dia 13.08.2024 HotSeat",
+     "id": "1NCluWm2XCrXkOmJwRfxqYxfPQ6FpDbLw"
+    },
+    {
+     "n": "023",
+     "title": "Treinamento do dia 20.08.2024 Tira Dúvidas",
+     "id": "1UaqFjCE1G-GRFsgqndlnn7cdYUI6ZWfP"
+    },
+    {
+     "n": "024",
+     "title": "Treinamento do dia 03.09.2024 Prospecção",
+     "id": "1KlpqRWZsIM6DXRS7Zk4qZ37_CVOWbqmE"
+    },
+    {
+     "n": "025",
+     "title": "Treinamento do dia 10.09.2024 HotSeat",
+     "id": "1HC1A16Bc87Lot0PXZd2lDwWG3-mmMaDW"
+    },
+    {
+     "n": "026",
+     "title": "Treinamento do dia 17.09.2024 Tira Dúvidas",
+     "id": "1PTdnOOy6noHhMPJWeODqZuu3tKq3DWOJ"
+    },
+    {
+     "n": "027",
+     "title": "Treinamento do dia 24.09.2024 Script Closer",
+     "id": "166VfEreD6Ote8dWn0CViU_iJ7-y07JSz"
+    },
+    {
+     "n": "028",
+     "title": "Treinamento do dia 01.10.2024 HotSeat",
+     "id": "1gt1yh1xkV1iIZdPy4PNUtNCBapLgH5Lj"
+    },
+    {
+     "n": "029",
+     "title": "Treinamento do dia 08.10.2024 Follow-Up",
+     "id": "1hD4lW1PlTnUUmRMbVvqTpgN0huta09Hi"
+    },
+    {
+     "n": "030",
+     "title": "Treinamento do dia 15.10.2024 HotSeat",
+     "id": "19xiOAeWKv1LPYCHtxxpb4-4rghQPxjSN"
+    },
+    {
+     "n": "031",
+     "title": "Treinamento do dia 22.10.2024 Fluxo de SDR e Social Seller",
+     "id": "18hn6xOAKUCYoB59InRhra91dV3RNS3xm"
+    },
+    {
+     "n": "032",
+     "title": "Treinamento do dia 29.10.2024 Pré-Vendas",
+     "id": "16dXhKjg0cHHgHTfEhCxRp_qSxEOTvugH"
+    },
+    {
+     "n": "033",
+     "title": "Treinamento do dia 05.11.2024 HotSeat e No Show",
+     "id": "111ab1LXwBgsp6Euhqwwu5mIj9bAwZpxC"
+    },
+    {
+     "n": "034",
+     "title": "Treinamento do dia 12.11.2024 Contorno de Objeções",
+     "id": "1bn29PeSPjxEe1GyoTDGDunALC4nsRQJp"
+    },
+    {
+     "n": "035",
+     "title": "Treinamento do dia 19.11.2024 CRM",
+     "id": "1ULXGq1dPTOxqJ-HR9g8WM8_hXipLm5i9"
+    },
+    {
+     "n": "036",
+     "title": "Treinamento do dia 26.11.2024 HotSeat",
+     "id": "1TzXocKSVvVQ-1IYBnwEClKenmQzFKxiu"
+    },
+    {
+     "n": "037",
+     "title": "Treinamento do dia 03.12.2024 Ligação e No-show",
+     "id": "1dGFvh5CK5lE0skZNwx61_zxwsb3lXGuX"
+    },
+    {
+     "n": "038",
+     "title": "Treinamento do dia 10.12.2024 Análise de Call",
+     "id": "1rUd4vGz6RaxIRikW8FKyTLPM3zCqe4JW"
+    },
+    {
+     "n": "039",
+     "title": "Treinamento do dia 17.12.2024 HotSeat",
+     "id": "1V5KhtNqk8lIS7pNXfxgzFyEQqmS9p-Yf"
+    },
+    {
+     "n": "040",
+     "title": "Treinamento do dia 07.01.2025 Organização e Planejamento",
+     "id": "1q7hvZmeer04gmZ5DBnCBywniqGTh0WRp"
+    },
+    {
+     "n": "041",
+     "title": "Treinamento do dia 14.01.2025 Análise de Call e Tira Dúvidas",
+     "id": "1rbdG0lxu0w73s14WI-pPtaQtREKLxWn1"
+    },
+    {
+     "n": "042",
+     "title": "Treinamento do dia 21.01.2025 O Real Produto do SDR",
+     "id": "1AzPlsBwP26KmeyrQsRPyOnPKPNvALC3u"
+    },
+    {
+     "n": "043",
+     "title": "Treinamento do dia 28.01.2025 Abordagem",
+     "id": "1szOoptPIAHIhhNinDVnt-5zxVJ6gTpDY"
+    },
+    {
+     "n": "044",
+     "title": "Treinamento do dia 04.02.2025 Ligação Inbound e Tira Dúvidas",
+     "id": "12wDR5awRxAf9XYHT_THauO-zmt6JpFVX"
+    },
+    {
+     "n": "045",
+     "title": "Treinamento do dia 11.02.2025 HotSeat",
+     "id": "19-9Ibx0Yb6a1uJAquEUiiPveJf8Ps3Mu"
+    },
+    {
+     "n": "046",
+     "title": "Treinamento do dia 18.02.2025 NO SHOW",
+     "id": "12wCHEB1VIhYijKlZwx-7gglToHtJCFBd"
+    },
+    {
+     "n": "047",
+     "title": "Treinamento do dia 25.02.2025 Tira Dúvidas",
+     "id": "12hixwFboDQQcrYOZE2XrsbwZZjxYcXGt"
+    },
+    {
+     "n": "048",
+     "title": "Treinamento do dia 11.03.2025 Processo de Pré-Vendas e Gestão de Leads no GHL",
+     "id": "1FToR5Xyj-EiM7JLGIv2sWfYY2_D3ZwIE"
+    },
+    {
+     "n": "049",
+     "title": "Treinamento do dia 18.03.2025 Sales Farming e Repescagem",
+     "id": "1YAE5FPf7NcUUSGmg7WgA3GYFqKMv9f1D"
+    },
+    {
+     "n": "050",
+     "title": "Treinamento do dia 25.03.2025 Tira Dúvidas",
+     "id": "1sAj9XVOow3qYsOKlfpPx8yiwHNEZnOIe"
+    },
+    {
+     "n": "051",
+     "title": "Treinamento do dia 01.04.2025 HotSeat",
+     "id": "1fh02UXhTaqwDlpsQfHhJjR7_onCa6-LW"
+    },
+    {
+     "n": "052",
+     "title": "Treinamento do dia 08.04.2025 Tira Dúvidas",
+     "id": "17m4b8ZguCyB4qdDjbTGTyGVdsLsid018"
+    },
+    {
+     "n": "053",
+     "title": "Treinamento do dia 15.04.2025 Funis, Scripts e Iscas",
+     "id": "1NE28ADbn0AFsGroMlYnC06Ku7RjRhxQx"
+    },
+    {
+     "n": "054",
+     "title": "Treinamento do dia 22.04.2025 Tira Dúvidas",
+     "id": "1O7XpSs090vxjHNzclEr5mnBbSMEsfdlC"
+    },
+    {
+     "n": "055",
+     "title": "Treinamento do dia 29.04.25 Tira Dúvidas",
+     "id": "1Tp04ULcFYxx1dPHlnNUVsL1JcFlIDH06"
+    },
+    {
+     "n": "056",
+     "title": "Treinamento do dia 06.05.25 Hotseat",
+     "id": "1gKi9cc2pl7Ehv8rotFjfOvHn5e48UHxj"
+    },
+    {
+     "n": "057",
+     "title": "Treinamento do dia 13.05.25 Social Selling",
+     "id": "1wHuxJkR4F7-hd9nSqEhdjWDYjdqjDMhY"
+    },
+    {
+     "n": "058",
+     "title": "Treinamento do dia 27.05.25 Social Selling",
+     "id": "1z_t7QIoA8e_fxaEYe-YrGxVcmOGJTjWX"
+    },
+    {
+     "n": "059",
+     "title": "Treinamento do dia 03.06.25 Tira Dúvidas",
+     "id": "1q9j_tySkeYUzVMJeqkSs1ZMb889T9BAW"
+    },
+    {
+     "n": "060",
+     "title": "Treinamento do dia 10.06.25 No-show",
+     "id": "1tYTTAEzG8CYnBYoKCPDg4dYiIfeoijy_"
+    },
+    {
+     "n": "061",
+     "title": "Treinamento do dia 17.06.2025 Hotseat",
+     "id": "16aiLa8iT-HbFUG70XCjWbgZfR1BxuEhf"
+    },
+    {
+     "n": "062",
+     "title": "Treinamento do dia 24.06.2025 - Social Selling na Prática",
+     "id": "1BCVBR-uhoF-Rs4B2DHT--d0BeE5KvcOj"
+    },
+    {
+     "n": "063",
+     "title": "Treinamento do dia 08.07.2025 Hotseat",
+     "id": "1NVbEm_VzrTxrgKd7TxIdDjgbQAozX9hw"
+    },
+    {
+     "n": "064",
+     "title": "Treinamento do dia 15.07.2025 Como trabalhar com perfis comportamentais na Pré-Vendas",
+     "id": "1E5rZ8XB0qDGShUoN5A9LAwmdeR-EG1w9"
+    },
+    {
+     "n": "065",
+     "title": "Treinamento do dia 22.07.2025 Hotseat",
+     "id": "1SUFcsaA7g9ko_uVAo957nBtNf7UGJcuo"
+    },
+    {
+     "n": "066",
+     "title": "Treinamento do dia 29.07.2025 Hotseat",
+     "id": "1wpHjdFWu3qWDEnsPeMmePo1xx22bhPDS"
+    },
+    {
+     "n": "067",
+     "title": "Treinamento do dia 05.08.2025 Como fazer uma boa passagem para o Closer",
+     "id": "1XfU7kBQZFaZd12uoWUYhL8r2P0gC0Zt3"
+    },
+    {
+     "n": "068",
+     "title": "Treinamento do dia 12.08.2025 Hotseat",
+     "id": "1WQsStfXyuTkq3aZLtCVcpwt4zi0Gspc_"
+    },
+    {
+     "n": "069",
+     "title": "Treinamento do dia 19.08.2025 Qualificação Inteligente em Pré-Vendas",
+     "id": "1_57YJ5Ft92JRkYeo2iWvdv-SaJ3MmiDs"
+    },
+    {
+     "n": "070",
+     "title": "Treinamento do dia 26.08.2025 CRC com Dra. Vitória e Júlia",
+     "id": "1nijQlOJemtacFKa5-80w2I-ReHcS8nWT"
+    },
+    {
+     "n": "071",
+     "title": "Treinamento do dia 02.09.2025 HotSeat",
+     "id": "1kHUogQ24ilA1Tg0ruQtcQHLAR9rUn5jC"
+    },
+    {
+     "n": "072",
+     "title": "Treinamento do dia 09.09.2025 Hotseat",
+     "id": "1HFkRmo4d00MECcHIH0keUmWZxDLvzTTM"
+    },
+    {
+     "n": "073",
+     "title": "Treinamento do dia 16.09.2025 Prospecção",
+     "id": "1vArqrEPuDd0_oDQKOY_1Tni3eT2EdRob"
+    },
+    {
+     "n": "074",
+     "title": "Treinamento do dia 23.09.2025 HotSeat",
+     "id": "1_9ho-MxVCPrPNUKTPFKKWILEeCn4OUsd"
+    },
+    {
+     "n": "075",
+     "title": "Treinamento do dia 30.09.2025 Cold Call",
+     "id": "12BWPNbW7r-Fra51lFcT-Y6Lr_UXnIFYj"
+    },
+    {
+     "n": "076",
+     "title": "Treinamento de Pré-Vendas do dia 07.10.2025 com Caio Miazaqui HotSeat",
+     "id": "1QnuQZNqSKsYpgT-So9TPLQSVupcT9oLm"
+    },
+    {
+     "n": "077",
+     "title": "Treinamento de Pré-Vendas do dia 14.10.2025 Prospecção",
+     "id": "1q687Juc-onrRhNhp409op-oUuEafglY4"
+    },
+    {
+     "n": "078",
+     "title": "Treinamento do dia 21.10.2025 HotSeat",
+     "id": "1QkgrPEAdtRRwLJC3t6hrMBYHtWfA_Dqh"
+    },
+    {
+     "n": "079",
+     "title": "Treinamento do dia 11.11.25 Spin Selling",
+     "id": "1ihPHlSwvxhBit4bl0lPxqBAfrUplE4LO"
+    },
+    {
+     "n": "080",
+     "title": "Treinamento do dia 18.11.2025 HotSeat",
+     "id": "11GBvc7tw6grhydi0eYnItAHcftrn1YZV"
+    },
+    {
+     "n": "081",
+     "title": "Treinamento do dia 25.11.2025 No-Show",
+     "id": "1zLUztm-McnfCdOgpCER-ePJdSVBpm8CS"
+    },
+    {
+     "n": "082",
+     "title": "Treinamento do dia 02.12.2025 HotSeat",
+     "id": "1WufzTO-ZKXOq_-jDKx52CM1vJjUFKIST"
+    },
+    {
+     "n": "083",
+     "title": "Treinamento do dia 09.12.25 HotSeat",
+     "id": "1WrpLGkXZdhtwbeYM2azeuJsAC899URvY"
+    },
+    {
+     "n": "084",
+     "title": "Treinamento do dia 16.12.2025 Tira Dúvidas",
+     "id": "1aGjmQbQ6ZIXkDtdTke7tEFUBMvvGF3Uh"
+    },
+    {
+     "n": "085",
+     "title": "Treinamento do dia 23.12.2025 HotSeat",
+     "id": "1RszRD6rA7jfzIupxNSfIFmQNYv5--uR5"
+    },
+    {
+     "n": "086",
+     "title": "Treinamento do dia 06.01.2026 Função Pré Vendas",
+     "id": "19CORtif_-IT1BdgBO0tBhgLZ2wgr4abE"
+    },
+    {
+     "n": "087",
+     "title": "Treinamento do dia 13.01.2026 HotSeat",
+     "id": "1iebBfIBIwQxXkYk0o8wpW3oULruZCumB"
+    },
+    {
+     "n": "088",
+     "title": "Treinamento do dia 27.01.2026 Speeches",
+     "id": "18DOwgrZa7saXJPlVLbuzTpwoJLSOZk1d"
+    },
+    {
+     "n": "089",
+     "title": "Treinamento do dia 03.02.2026 HotSeat",
+     "id": "1dNkSnFrsmPJugZ6QOhRuHfORMgLpsJ0J"
+    },
+    {
+     "n": "090",
+     "title": "Treinamento do dia 10.02.2026 HotSeat",
+     "id": "1IniNqc_wrS099QZv-NoJVaDlbh1iWBRn"
+    },
+    {
+     "n": "091",
+     "title": "Treinamento do dia 17.02.2026 HotSeat",
+     "id": "1U3RDBZvfgAXiKkU2UzTFt8k2PCzpYoHl"
+    },
+    {
+     "n": "092",
+     "title": "Treinamento do dia 24.02.26 Estratégias de recuperação final de mês",
+     "id": "1ZNc7MlPv-UuiuRkf6kr2Dd8KB8X8uJs3"
+    },
+    {
+     "n": "093",
+     "title": "Treinamento do dia 03.03.2026 HotSeat",
+     "id": "12PY2p6_5xJT_s7u3amxPcFVTy9l3TLen"
+    },
+    {
+     "n": "094",
+     "title": "Treinamento do dia 17.03.2026 Qualificação Inteligente",
+     "id": "1YryZYd8Rxol2OhblxkMt1RJuSOrdnYBw"
+    },
+    {
+     "n": "095",
+     "title": "Treinamento do dia 24.03.2026 HotSeat",
+     "id": "1TU4lJPZmUBcanxeAbDesUrwnm2THrFsq"
+    },
+    {
+     "n": "096",
+     "title": "Treinamento Pré vendas 31.03.2026 Hotseat",
+     "id": "17E_q8Dccvhw8BH_B2oTKmqIdwuJZsWsk"
+    },
+    {
+     "n": "097",
+     "title": "Treinamento de pré-vendas 07.04.2026 Regras do Follow-up",
+     "id": "1W9-AtKyqiZLRXsm7eoPUeoDTUeZbIV9v"
+    },
+    {
+     "n": "098",
+     "title": "Treinamento Pré vendas 14.04.2026 Hotseat",
+     "id": "1ajIlxqSYa9amIx2EwDK3C3-rSEQeHwro"
+    },
+    {
+     "n": "099",
+     "title": "Treinamento Pré vendas 28.04.2026 Hotseat",
+     "id": "1G2BnlAjuDTN6ICjsjN194HMg63KFbB1V"
+    },
+    {
+     "n": "100",
+     "title": "Treinamento de Pré vendas 05.05.2026 Impacto no Funil",
+     "id": "1JovZClg1-zgTKfsFC4etPHOjj2Iph62b"
+    },
+    {
+     "n": "101",
+     "title": "Treinamento de Pré Vendas 12.05.26 HotSeat",
+     "id": "1osGfnRgJ_tGndvwGF7wB3t59rlJj2drR"
+    },
+    {
+     "n": "102",
+     "title": "Treinamento Pré Vendas 19.05.2026 ICP",
+     "id": "1qcLbQEGLOKCVd3tnofmaNfTPETYnoPo4"
+    },
+    {
+     "n": "103",
+     "title": "Treinamento de Pré Vendas 26.05.26 HotSeat",
+     "id": "1PsdT4zG32yaZuXUKPbUO_70EJ3M4PA1R"
+    },
+    {
+     "n": "104",
+     "title": "Treinamento de Pré-Vendas com Gabriel Hian 02.06.2026 Spin Selling",
+     "id": "1kmzE6H1viOUP-v_vktavNulAUduoNNu-"
+    },
+    {
+     "n": "105",
+     "title": "Treinamento de Pré-Vendas com Gabriel Hian 23.06.2026 HotSeat",
+     "id": "1w7gtArJ5UGt3YKpkjbmXesWC7eeWFkjB"
+    },
+    {
+     "n": "106",
+     "title": "Treinamento de Pré Vendas com Gabriel Hian 30.06 Tema Pregão Mensal",
+     "id": "1gqZmiuk1UvSiWBJ7JH2r4-H8ZswSPGly"
+    },
+    {
+     "n": "107",
+     "title": "Treinamento de Pré-Vendas com Lucas Neri - Hot seat 07.07.2026",
+     "id": "1MZ58pu9nF-COMgGHYEziGZ3F0jHarer1"
+    },
+    {
+     "n": "108",
+     "title": "Treinamento de Pré-Vendas com Lucas neri - Os primeiros segundos da ligação não servem para vender. Servem para conquist",
+     "id": "1MDuOLa4mqlNDhhCLeHTsTlAs8NtqVkVO"
+    },
+    {
+     "n": "109",
+     "title": "Treinamento de Pré Vendas com Lucas Neri 28.07.2026 Hotseat",
+     "id": "14CKLP7rJfbBQTpr3GO6Ot6n2n2xPMYec"
+    },
+    {
+     "n": "110",
+     "title": "Treinamento de Pré-Vendas Lucas Neri 11.08.2026",
+     "id": "1GSDvg0syN8QBCpRCXG5dmlSA0JSRN4-W"
+    }
+   ]
+  },
+  {
+   "course": "Formação Closer Á.G.U.I.A",
+   "count": 87,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Águia, Bem Vinda à Sua Nova Vida",
+     "id": "17xjgrFbbr2hSBRz8PjaTc7dD_JMJVDuf"
+    },
+    {
+     "n": "002",
+     "title": "Comprometa-se ou Caia do Penhasco",
+     "id": "1ecgtX515IP4ednNL5KflVVMrIdlhjjRl"
+    },
+    {
+     "n": "003",
+     "title": "Siga Essas Instruções de Vôo",
+     "id": "11PgQkmrvusoxbFczFdjDTgjYU8fPiRxa"
+    },
+    {
+     "n": "004",
+     "title": "Mate Sua Franga",
+     "id": "1jfb_4_7NcFdrAa4oNtwZLecwNvX6WTum"
+    },
+    {
+     "n": "005",
+     "title": "MARKETING X VENDAS ou Marketing + Vendas",
+     "id": "1LMvb62OYDLsh3XS-EJzEmv5YcEpzW88x"
+    },
+    {
+     "n": "006",
+     "title": "Como é Composto um Time de Vendas",
+     "id": "1ikw3dukwwbNZ81mj_v6YqtVvFPsc_Adm"
+    },
+    {
+     "n": "007",
+     "title": "Essa Formação Serve Para o Meu Negócio",
+     "id": "1dvmSyapDIktPTMHLc-nASnDcGARp9cWP"
+    },
+    {
+     "n": "008",
+     "title": "OS PILARES Fundamentais De Um CLOSER",
+     "id": "1ksefTf0z7rJZwzyXA3J4wye2jxPle6E5"
+    },
+    {
+     "n": "009",
+     "title": "A Oportunidade Porque CLOSER é Mais Cobiçado do Momento",
+     "id": "13Jx12yYUIxq6pl8-SqZ3BX9yf52lnPCu"
+    },
+    {
+     "n": "010",
+     "title": "O Que Faz Um Closer Á.G.U.I.A",
+     "id": "1yW1CAPZXuDtJSC5RVkfVKT4skysxMAgt"
+    },
+    {
+     "n": "011",
+     "title": "O Que o CLOSER pode VENDER",
+     "id": "1jFeN-sboZRpCWdKk5I5X4SjD5Urhg4Lm"
+    },
+    {
+     "n": "012",
+     "title": "Formas de Remuneração e Percentuais de Comissão",
+     "id": "11MJikg5LoCIicXCohcQR-m1nAlRklwgV"
+    },
+    {
+     "n": "013",
+     "title": "Responsabilidades de um CLOSER",
+     "id": "1RMwIcy-ItiLA7aQeF8b7PjpLbyVmIh6u"
+    },
+    {
+     "n": "014",
+     "title": "O Que o CONTRATANTE Espera de Um CLOSER",
+     "id": "1ag6ZEAklQXAoULpQi6I4jusKk3lbBjMu"
+    },
+    {
+     "n": "015",
+     "title": "As Skills do CLOSER Á.G.U.I.A",
+     "id": "1NCHQiTb522sZhrJCtd5Wd9n01wFLXigf"
+    },
+    {
+     "n": "016",
+     "title": "Agora, Você é um Closer Á.G.U.I.A",
+     "id": "1EpWon8iSGgnfMNbNDA_6dz9KiVc5Brsv"
+    },
+    {
+     "n": "017",
+     "title": "O Principal Sabotador Das Suas ALTAS COMISSÕES",
+     "id": "1pjuxFQlLak3lRmMg1LqNVPGy0kRQdjva"
+    },
+    {
+     "n": "018",
+     "title": "87% Dos Closers FRACASSAM por Falta Disto",
+     "id": "1tTtMT2vEwsAYLPBWLT43SV4rBLzzbABx"
+    },
+    {
+     "n": "019",
+     "title": "Sinta-se CAPAZ de Fazer Vendas de Alto Ticket",
+     "id": "1EECA97nJ6EfAHgKlC6UMtJCdtn8sC1ne"
+    },
+    {
+     "n": "020",
+     "title": "Sinta-se MERECEDOR de Fazer Grandes Vendas e Receber ALTAS Comissões",
+     "id": "10B_7t0GzacDEo07lq6M9nXO-6okOT5Ar"
+    },
+    {
+     "n": "021",
+     "title": "Descubra o Que te Impede de SER, FAZER e TER os Resultados de Um CLOSER Á.G.U.I.A",
+     "id": "1qGep3OxCXG_73gzjYIR5_agFaUfwc-K3"
+    },
+    {
+     "n": "022",
+     "title": "Vender é Um Ato de Amor",
+     "id": "1Sj7YrALdfDhEeP_hmXQY1YCw1VudNNyB"
+    },
+    {
+     "n": "023",
+     "title": "A.G.U.I.A, Defina sua Visão",
+     "id": "1Kg2v48G3e-_wb64l_wbtrS8BGrDgCGDO"
+    },
+    {
+     "n": "024",
+     "title": "Comunique Como uma Á.G.U.I.A",
+     "id": "1puXr-aNAOfgTkuXn2geg-MLFiSXThK5c"
+    },
+    {
+     "n": "025",
+     "title": "A IMAGEM de Um CLOSER Á.G.U.I.A Que Vende",
+     "id": "13VNOPO-ChhXUDmaLkRlEFtjcaSvl6p39"
+    },
+    {
+     "n": "026",
+     "title": "Sem isto, a Venda Não Acontece",
+     "id": "14u-iQ_6A2XhljzEe2TTZnFfdEEpanAYl"
+    },
+    {
+     "n": "027",
+     "title": "Os 5 Pilares Comportamentais de Um CLOSER Á.G.U.I.A",
+     "id": "1HmFm2-WwPeiDxTxpcjG_-s9WjcEHkFjI"
+    },
+    {
+     "n": "028",
+     "title": "Ter Metas é Inegociável, Á.G.U.I.A",
+     "id": "1z86Dx8GFrkexi3of2_US8ehfbTKUtBlP"
+    },
+    {
+     "n": "029",
+     "title": "As 12 Leis de Um CLOSER Á.G.U.I.A",
+     "id": "1E3gH5JaP81jlOmCV3jpLOHkMGQZUObzo"
+    },
+    {
+     "n": "030",
+     "title": "O Despertar da Á.G.U.I.A Dourada",
+     "id": "1_QcbesaV6fhhUszfECQIuF_UFx-pLzti"
+    },
+    {
+     "n": "031",
+     "title": "As Habilidades Obrigatórias de Um Closer Á.G.U.I.A",
+     "id": "1ngZRKBE_0HPSW94dqD650coeTqP6aIWu"
+    },
+    {
+     "n": "032",
+     "title": "Organize-se e Aumente Seus Lucros",
+     "id": "120p5WI_ej9Jf-W-q-oWn7SsU7vglU5-z"
+    },
+    {
+     "n": "033",
+     "title": "Domine a Arte das Perguntas Poderosas",
+     "id": "1vP36Q0AhF15Keltvk3-akBbECAJlh4Fa"
+    },
+    {
+     "n": "034",
+     "title": "Seja perito em RAPPORT",
+     "id": "1TMxfRTJZMdqdvrM6SUVVRL795mBy_22o"
+    },
+    {
+     "n": "035",
+     "title": "Seja Perito em Analisar Métricas de Vendas",
+     "id": "1z9RVf4Tgzlwzm7a4EnO43egrUoYxwH5T"
+    },
+    {
+     "n": "036",
+     "title": "Seja Perito em Gestão Emocional e Aumente a Conversão",
+     "id": "1ldNTTIrQOLCM7-rPA7icUkWH8MVELDe-"
+    },
+    {
+     "n": "037",
+     "title": "Tenha a Visão de Negócios do CLOSER Á.G.U.I.A",
+     "id": "1R_VcvwmuMQvAq1E2bFJdmcXAG17W7hsi"
+    },
+    {
+     "n": "038",
+     "title": "Seja Perito em Comunicação",
+     "id": "14zxZBzjgrKQhxPsxwbnVY4N77pbFmrX0"
+    },
+    {
+     "n": "039",
+     "title": "Escuta ativa O segredo para Encantar o seu Cliente",
+     "id": "1rekuWy7xWxZpLGiZKalyWgoXTNjPcEVf"
+    },
+    {
+     "n": "040",
+     "title": "Seja Curioso",
+     "id": "1mApp70vKueIiT-aoHKF_qsQDiIoyGhvK"
+    },
+    {
+     "n": "041",
+     "title": "Cuide do seu Maior Patrimônio",
+     "id": "1Nd03yFpjh64Ff20jIw89ZCxhTXLoN9zA"
+    },
+    {
+     "n": "042",
+     "title": "O que é Personalidade",
+     "id": "1uw-4w11OBnyzN1cnWf0smv0XdklbyTEJ"
+    },
+    {
+     "n": "043",
+     "title": "Qual a Importância de Decifrar Personalidades nas Vendas",
+     "id": "144nPMngG4cblbThQYuJTFXmALD__bYLD"
+    },
+    {
+     "n": "044",
+     "title": "Descubra a Sua Personalidade e Seu Estilo de Venda",
+     "id": "18ytF313Lb-ZdPmvif1NdhDzb-aG3X-30"
+    },
+    {
+     "n": "045",
+     "title": "Lendo Sua Personalidade",
+     "id": "1xgv-_tcBcEhRokwon_lvr-UpVvJFwR91"
+    },
+    {
+     "n": "046",
+     "title": "Decifre a Personalidade Dominante",
+     "id": "1qYQ2_bJ_la4dXYXmBg6oV7asz7Dza3UV"
+    },
+    {
+     "n": "047",
+     "title": "Decifre a Personalidade do Influente",
+     "id": "1DTJ5A2gvSD1tMgw6HjizcAcnmSHNHTRm"
+    },
+    {
+     "n": "048",
+     "title": "Decifre a Personalidade do Estável",
+     "id": "1ZpZfMFTaMj1PZLM2a-A5N5JVaus2CWuj"
+    },
+    {
+     "n": "049",
+     "title": "Decifre a Personalidade do Conforme(Analítico)",
+     "id": "1lRikwTc1j5Y7406oTFxm7OT_NZs_p3J5"
+    },
+    {
+     "n": "050",
+     "title": "Como Descobrir a Personalidade do Cliente",
+     "id": "19MgPVZA5KcqmTxOn4i2DBdxpWXik2ETD"
+    },
+    {
+     "n": "051",
+     "title": "Roda das Competências Closer Á.G.U.I.A",
+     "id": "1BuHXSxrL0qnnN0yNB_uiSKiqcA_JWRp9"
+    },
+    {
+     "n": "052",
+     "title": "Closer Á.G.U.I.A, Entre na Mente do Seu Cliente",
+     "id": "1v2a2rxdUW2ikWpq-2DZhsqz5OoerMHzm"
+    },
+    {
+     "n": "053",
+     "title": "Valor x Preço",
+     "id": "1SyCHCpST3mOTrACwoQqDNarTaG-OjeG_"
+    },
+    {
+     "n": "054",
+     "title": "Entonação Correta da Voz",
+     "id": "1QZ1wHN6xrOt12HyFKYtTdPIGsRnBLYl4"
+    },
+    {
+     "n": "055",
+     "title": "O Passo a Passo para Vendas de Alto Valor",
+     "id": "1KD1m5y6zISLD0WlYqBGnsGmSlmOfB42J"
+    },
+    {
+     "n": "056",
+     "title": "Os Scripts de Abordagem do CLOSER Á.G.U.I.A",
+     "id": "1vDTJ5YxOgSnbGVA3tIP31mCUiJ3_ChF2"
+    },
+    {
+     "n": "057",
+     "title": "A Investigação Á.G.U.I.A",
+     "id": "12QHrS-uXDhqnLoYaHQhQVlAKFFnbW7k6"
+    },
+    {
+     "n": "058",
+     "title": "Descubra a Real Necessidade do Cliente",
+     "id": "1P3AlBdezcg56TZ4EDk6ZFQCuM2RkeMp8"
+    },
+    {
+     "n": "059",
+     "title": "Alimente e Agite a Real Necessidade",
+     "id": "1jGNO19vlG1qOYtqg2i-3HEJ6DkOtJWe_"
+    },
+    {
+     "n": "060",
+     "title": "Apresente a Sua Solução",
+     "id": "1dzWEuG66rlYTJMDcNoQEwKzgKzOHur4D"
+    },
+    {
+     "n": "061",
+     "title": "Apresente a Oferta Irresistível",
+     "id": "1CJS8pu_ru5I4dU8z_iBJgnBowqad1JbT"
+    },
+    {
+     "n": "062",
+     "title": "Faça o Fechamento do Closer Á.G.U.I.A",
+     "id": "1aCb5mBnmvrb0aEV5XCZQYFNf7zeOKa3H"
+    },
+    {
+     "n": "063",
+     "title": "Extermine as Objeções - A Principal Presa do Closer Á.G.U.I.A",
+     "id": "1Npp1tTL8GJtlh_sOfJfFXH6642Uwjus1"
+    },
+    {
+     "n": "064",
+     "title": "O Acompanhamento Á.G.U.I.A",
+     "id": "1UaKPZ5gNoqd7zkGOTxNvBP9sa7wjbcPJ"
+    },
+    {
+     "n": "065",
+     "title": "Negocie Como um CLOSER Á.G.U.I.A",
+     "id": "1eNmyR6Zj69sKckXbIJPsLu8-o__ZL4eK"
+    },
+    {
+     "n": "066",
+     "title": "O Jeito Águia de Aumentar o Ticket Médio",
+     "id": "17_Is5GCevRwB4OxTMfIlxj_XdIdjtkM5"
+    },
+    {
+     "n": "067",
+     "title": "Faça o Pós-Vendas Á.G.U.I.A e Aumente suas Comissões",
+     "id": "1CCggiYRW84fa9dV41scMM5bvG6R2B-x7"
+    },
+    {
+     "n": "068",
+     "title": "Aplicação Para Ser Contratado",
+     "id": "1m8qhC7BHCQDODJ3-Q16r998ssiIos0hb"
+    },
+    {
+     "n": "069",
+     "title": "Concurso de Depoimento",
+     "id": "1L7bOQiKuZ56-iBsKGk_q4mGXK36ubK4d"
+    },
+    {
+     "n": "070",
+     "title": "VOCÊ DESBLOQUEOU Uma Nova Possibilidade",
+     "id": "1VGmCqVAHWVWCX9jCF1Nb1FTM0LDBXXAM"
+    },
+    {
+     "n": "071",
+     "title": "Introdução ao Laboratório",
+     "id": "1h9arkTm7rQ49jR5saMMzg5QGM_sIDl1c"
+    },
+    {
+     "n": "072",
+     "title": "Laboratório 1",
+     "id": "1T5739FELdTNQoYgpZ39b_rdMzFQKosCE"
+    },
+    {
+     "n": "073",
+     "title": "Laboratório 2",
+     "id": "1kBwsEDh-ziumhVILDGiXVeleEhU77XUs"
+    },
+    {
+     "n": "074",
+     "title": "Laboratório 3",
+     "id": "1HDJ6RnMLnPLk0ZJmAMxOuHQoG1glsxDx"
+    },
+    {
+     "n": "075",
+     "title": "Laboratório 4",
+     "id": "1WNqPENL-OiYfEKM-3Wwew6ZyfGqEwRtP"
+    },
+    {
+     "n": "076",
+     "title": "Laboratório 5",
+     "id": "199AmeuEAhGRO9md0DsPqdwwFnOFPCRSR"
+    },
+    {
+     "n": "077",
+     "title": "BootCamp - Desafio Closer A.G.U.I.A Na Prática",
+     "id": "1V9ojhG-p1XVC2KqSbwtsNSQISRo7p9-w"
+    },
+    {
+     "n": "078",
+     "title": "Imersão CLOSER START",
+     "id": "1b0NYnDbwvX6AawI9msfpbU5nNgFVseO1"
+    },
+    {
+     "n": "079",
+     "title": "Como Ser Autoridade no Instagram - Ju Paterson e Cris Paterson",
+     "id": "1kMzbB1IEZToYDeMyXWyNSkX6ch970qtR"
+    },
+    {
+     "n": "080",
+     "title": "Hunter - Vinicius de Sá",
+     "id": "1E8j_PAff2LVkElR0dV1HF_fMPRjfpKIP"
+    },
+    {
+     "n": "081",
+     "title": "Boas Vindas",
+     "id": "1XfFiqI4epqaOP4YjXAHkLyxk1PC5GI2i"
+    },
+    {
+     "n": "082",
+     "title": "Começando a Prospecção",
+     "id": "16M1765YchyOkLVLAYHRVwTMFrAz3REc-"
+    },
+    {
+     "n": "083",
+     "title": "A Hora da Escolha",
+     "id": "1xT61bLmbmHm6q-NdVwrjS8Z_mC3fr5wQ"
+    },
+    {
+     "n": "084",
+     "title": "Se Relacione",
+     "id": "1Pu2ChEN0WJWQD5tJZ_bb8B0Ycj5lZ7GI"
+    },
+    {
+     "n": "085",
+     "title": "4 Tipos de Clientes",
+     "id": "13x4uulX-4r1Df8Hv_M7cpOxQULr_oeo0"
+    },
+    {
+     "n": "086",
+     "title": "Negociando com Expert",
+     "id": "1mfqeKyO0zT4Xa1IWVYiy5M5IRAjcWOat"
+    },
+    {
+     "n": "087",
+     "title": "Contrato",
+     "id": "1f_ZcgcYgOKpuQJK5_kG4L_vfy5DCrfwH"
+    }
+   ]
+  },
+  {
+   "course": "Hunter 10X",
+   "count": 76,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1NsMIn86bQRToWKqTpR4VOYH0WE7uoSW3"
+    },
+    {
+     "n": "002",
+     "title": "Prospecção Hunter 10k - O que Esperar",
+     "id": "1KIHoh6eHCd8IB5d9RklKFbnlSpb7bV_b"
+    },
+    {
+     "n": "003",
+     "title": "Como Aproveitar ao Máximo Esse Conteúdo",
+     "id": "1Jknsk6636pnDbioWjyBygqThPePAu1CH"
+    },
+    {
+     "n": "004",
+     "title": "O que é a Prospecção Elite",
+     "id": "1D8U6g8cTKC8kTb2KrsPZIneStphZ6-hH"
+    },
+    {
+     "n": "005",
+     "title": "Explicando os Bônus",
+     "id": "1t7C2V-1h_W0wg7ng43-sTFHLX8_s6plJ"
+    },
+    {
+     "n": "006",
+     "title": "Sua escada (e escalada) profissional",
+     "id": "1rT-TA3JRQBYvfBY3JKxdVJI1SeNz939_"
+    },
+    {
+     "n": "007",
+     "title": "Mentalidade",
+     "id": "1u-k8ps9X7HsfnUIzxlSRJDn-mJ2ej7vx"
+    },
+    {
+     "n": "008",
+     "title": "Porque de Mind Set - Jogo Mental",
+     "id": "1wCK7D2FCVp_VSmKzrzN_eVdEggS0IW8L"
+    },
+    {
+     "n": "009",
+     "title": "Componentes da Filosofia do sucesso e Como ativar",
+     "id": "1jgt4AKpURM3H6HsheNnjKKgiyVwNr-kh"
+    },
+    {
+     "n": "010",
+     "title": "Códigos Arquivos Mentais do Sucesso parte 1",
+     "id": "1A7mcLOP268OhmD1qt1KAVXG06GrGWSt9"
+    },
+    {
+     "n": "011",
+     "title": "Códigos Arquivos Mentais do Sucesso parte 2",
+     "id": "1cb0y-dSDxve5UMMaU2l9z9Cr7wRKmiUj"
+    },
+    {
+     "n": "012",
+     "title": "Sabotadores do Sucesso",
+     "id": "1NuIL_6vdZuYn19FkUBDD11HniH4SFHyk"
+    },
+    {
+     "n": "013",
+     "title": "Self Alchemy - Fórmula da Manhã",
+     "id": "1WlQZOe4HxzJn4w-RhX4vFbTxcrliT-jM"
+    },
+    {
+     "n": "014",
+     "title": "Rota do Sucesso + LIVROS indicados",
+     "id": "1XD8zEK099zPNL7RhcN8Dtk-d6HccpkCC"
+    },
+    {
+     "n": "015",
+     "title": "Branding Pessoal",
+     "id": "1LIpOZQKizQ8ZDuY6fz7_hXTXuy2iCFAM"
+    },
+    {
+     "n": "016",
+     "title": "Feed",
+     "id": "1jlIeiAUj6EeufRvDIMbEQmuFN2q0oPtY"
+    },
+    {
+     "n": "017",
+     "title": "Instagram Intro e Foto do Perfil Para prospecção",
+     "id": "18rtBgLWlvOWAvaHZWdULA3jlMTfGCDt4"
+    },
+    {
+     "n": "018",
+     "title": "Bio do Instagram",
+     "id": "1UGFIbaOgTO_QWONbDrIi98U1vb6Kt1A7"
+    },
+    {
+     "n": "019",
+     "title": "Instagram - Destaques",
+     "id": "1O7-mZjLX7VG_EFdn4NBBZTzswHgwf0NU"
+    },
+    {
+     "n": "020",
+     "title": "Perfil do Whatsapp",
+     "id": "1guPgq8d3gzkBqGE1Ztd7L1WsGAJmvJfJ"
+    },
+    {
+     "n": "021",
+     "title": "Táticas de Aumento de Autoridade Percebida + Credibilidade",
+     "id": "1mjnz36OmL1nM1sEGQhtneGrELEYVN2V6"
+    },
+    {
+     "n": "022",
+     "title": "Conceitos de Oratória",
+     "id": "1uwOyNxSsOtj4vmat-l9cBDZxLtEvktQW"
+    },
+    {
+     "n": "023",
+     "title": "Conceitos de Vestimenta Masculina",
+     "id": "1ueW2_Dlxt_h4niRiA_iqWYgqHUCUI_AX"
+    },
+    {
+     "n": "024",
+     "title": "Prospecção Way of Life",
+     "id": "1w5kixBtwvntGoYxxse8e8ACL8wxUl7om"
+    },
+    {
+     "n": "025",
+     "title": "Fundamentos da Prospecção de Alto Impacto",
+     "id": "1D9EM61yV1TtDdfcybrR2YacT_jV9eJf-"
+    },
+    {
+     "n": "026",
+     "title": "Fundamentos Essenciais da Prospecção de Elite de Alto Impacto",
+     "id": "1f6B0jLgF4PNWtyYThr6iINNky2DdSP2j"
+    },
+    {
+     "n": "027",
+     "title": "Elementos da Prospecção",
+     "id": "1E-c8ontMpy0gKvEZJJkYXOc_ETyooFPm"
+    },
+    {
+     "n": "028",
+     "title": "Função do Hunter de Elite",
+     "id": "1hyF_H40yYZXdCIUx-0RIHqgTWyGGi7Gb"
+    },
+    {
+     "n": "029",
+     "title": "Métricas do Funil de Prospecção",
+     "id": "1DomWnJO4JbXPnhYv07CdexFThILiVRmE"
+    },
+    {
+     "n": "030",
+     "title": "Lista de Prospecção",
+     "id": "1G9sRQey1Jz-ts6trekWPBacD0YCZfh1o"
+    },
+    {
+     "n": "031",
+     "title": "Gatilhos Mentais para a vendas prospecção parte 1",
+     "id": "1eqAqG5fPcPWiInDxVHObQEwv0sDoOmUc"
+    },
+    {
+     "n": "032",
+     "title": "Gatilhos Mentais para a vendas prospecção parte 2",
+     "id": "13K7teXyO71q9wpMxuiauaD_cq_BOLu6e"
+    },
+    {
+     "n": "033",
+     "title": "Esteróides da prospecção - Fundamentos de Relacionamento e Aplicação na Prospecção",
+     "id": "1pzCcpM3v1tJaDF0MbI_0fxCbl7rMAv1a"
+    },
+    {
+     "n": "034",
+     "title": "Start Inteligente - Plano Prático de Receita",
+     "id": "1wl7jkpxJrM59Q1pUGcxvuncbLOHX4f1R"
+    },
+    {
+     "n": "035",
+     "title": "Prática da Prospecção",
+     "id": "1CvGqlDv2s0_Ogtj-XVArIywEFpf4BmlE"
+    },
+    {
+     "n": "036",
+     "title": "Conceitos de Abordagem",
+     "id": "1mqh67HxyrwW7xfULdNRrAGezwWpLNvVK"
+    },
+    {
+     "n": "037",
+     "title": "Como aplicar Relacionamento nas fases da Prospecção",
+     "id": "1U0F8mNoqhZDsZlLxrxPiUhtMDooeCpGP"
+    },
+    {
+     "n": "038",
+     "title": "Linhas de prospecção",
+     "id": "1Dp2R9D-bhzcuLwKdobOHXnbZLIRUwTY7"
+    },
+    {
+     "n": "039",
+     "title": "Estrutura Mensagens e Etapas Linha Direta + gatilhos",
+     "id": "1Hyv_am6uBeNYhMx-KlN5kEbxxLTqftji"
+    },
+    {
+     "n": "040",
+     "title": "Estrutura de Mensagens e Etapas Quizz",
+     "id": "1Qz-9XUnWEd-Aq_rlRSSC98ySwEXm0IHS"
+    },
+    {
+     "n": "041",
+     "title": "Quizz para Prospecção",
+     "id": "13hyh02n3xCJQ2XdnQKjU4lL72_zsCztW"
+    },
+    {
+     "n": "042",
+     "title": "Vídeo para Prospecção",
+     "id": "1sb0Swwxcsgjudn7_CNmT9U0SSZ29Vx84"
+    },
+    {
+     "n": "043",
+     "title": "Analisando mensagens de prospecção",
+     "id": "1MbeEvIso1GXKHrnGa2zn6gKdH0S8upKx"
+    },
+    {
+     "n": "044",
+     "title": "CRM e Gestão de Contatos",
+     "id": "1LTNUgxE53Yx_ZgWDVZ8pOvgRFC1fYQjZ"
+    },
+    {
+     "n": "045",
+     "title": "Estágios e Gestão do Follow Up",
+     "id": "1kWSUPEN4YxFtPxw5TYR7e1PY4ZS8lVdG"
+    },
+    {
+     "n": "046",
+     "title": "Revertendo RDOs (Reflexos, Dispensas e Objeções)",
+     "id": "1Lmcd7YwNiGdtvgQxJ8E1Bm4mxjqRXkyf"
+    },
+    {
+     "n": "047",
+     "title": "Matriz de Follow Up e RDOs",
+     "id": "1Hxcw6dcXslE2Bc52kdurn2Is6hL9xDP0"
+    },
+    {
+     "n": "048",
+     "title": "Auto Disciplina e Gestão do Tempo",
+     "id": "1fvShQo0mQU1Au4QXqrcvYqRXXwVoTyHt"
+    },
+    {
+     "n": "049",
+     "title": "Atividades Hunter 10k",
+     "id": "1dGY_rY833avI6QSY339lC-CcB0BG_wBX"
+    },
+    {
+     "n": "050",
+     "title": "Identificando e Tapando os Furos do Funil",
+     "id": "12QHiz1CikyVlCNxrQBa8HxgTo3X2N8v6"
+    },
+    {
+     "n": "051",
+     "title": "Overbooking",
+     "id": "1thDz5iwWnEekCYsMU7TObQSZUBPKNAzt"
+    },
+    {
+     "n": "052",
+     "title": "Prospecção Instagram na Prática",
+     "id": "1AgqJtbRXkysHBiekFm8NuK28o2CfmKpF"
+    },
+    {
+     "n": "053",
+     "title": "Criando lista de clientes Insta na Prática",
+     "id": "1jfC7NiJckedgizR8oJqHtWsmBiS5Xs1G"
+    },
+    {
+     "n": "054",
+     "title": "Fluxo de Prospecção Instagram",
+     "id": "14wPzSCZOH1Af_u8nl8vkc7TbkmZRF9r0"
+    },
+    {
+     "n": "055",
+     "title": "Transição para o Whatsapp",
+     "id": "1gJZ66YWBEDnXiM5aveLXkFGOoQ5zJXM5"
+    },
+    {
+     "n": "056",
+     "title": "Analisando mensagens de prospecção Instagram 2",
+     "id": "1yQdR9PeSaVtmnaxwMMYuswysTiV7pTMu"
+    },
+    {
+     "n": "057",
+     "title": "Fundamentos da Prospecção de Whatsapp",
+     "id": "1h37RY0pAvVnHNxu0BBlZPKvRZ18MW2vm"
+    },
+    {
+     "n": "058",
+     "title": "Métricas do Funil Whatsapp",
+     "id": "1495knMGp_NGei8NaNUJUEtQCqdxA4PCh"
+    },
+    {
+     "n": "059",
+     "title": "Estrutura de Mensagens de Whatsapp",
+     "id": "10H9rMmEf_U9GCwR3Ak5N5FD0bpiaw609"
+    },
+    {
+     "n": "060",
+     "title": "Analisando mensagens de prospecção - Whatsapp",
+     "id": "1v3CxBmigfIFkme-GgBVJAcRwII1jRg6X"
+    },
+    {
+     "n": "061",
+     "title": "Solidificando o Agendamento",
+     "id": "1yUW2DcqTu9kaZng-WjaG-m8ftvx3qdr0"
+    },
+    {
+     "n": "062",
+     "title": "Ações Pré Apresentação",
+     "id": "1flfO0OYK1kkcva--F-8_KN742zNddP2w"
+    },
+    {
+     "n": "063",
+     "title": "Ligação de Confirmação de Agendamento",
+     "id": "1ZUGX3QC5Kg3RD413lC-uBpVpMwLPwN3e"
+    },
+    {
+     "n": "064",
+     "title": "Ações Pós Agendamento",
+     "id": "1T6EMUYcfc4riTiSlwj7NrmoNBkTu5P9X"
+    },
+    {
+     "n": "065",
+     "title": "Prospectando Contatos Quentes",
+     "id": "16eKtcxYnbxpHon42e-WXZpv6dFS7ODDE"
+    },
+    {
+     "n": "066",
+     "title": "O que é Lista quente e lista de primeiro grau",
+     "id": "1VS9Z3jcnrFM0VPLYouZnvsQSucNyaGza"
+    },
+    {
+     "n": "067",
+     "title": "Lista de Nomes - Como fazer",
+     "id": "19vwqr8TE3PUqsnfg0B42FFEiEm08CnL4"
+    },
+    {
+     "n": "068",
+     "title": "Modelo de Abordagem Quente",
+     "id": "1yvSy0MQmc_Im4PicNTb6j2O-yxHk8_DU"
+    },
+    {
+     "n": "069",
+     "title": "Aumentando a sua Lista de Contato Quente",
+     "id": "1PsXxQd32rk0xB-tsjA2b54o-HkZ-3fEq"
+    },
+    {
+     "n": "070",
+     "title": "Conseguindo um Negócio Cliente",
+     "id": "1I5AoqlNqZUmJajQSfcYF3N5Q_TRFPZIi"
+    },
+    {
+     "n": "071",
+     "title": "O papel de um Negócio e Produto",
+     "id": "170rCROJGNpJX6DUWdy9mJwd7dLox2Dtt"
+    },
+    {
+     "n": "072",
+     "title": "Atuação com a PropriedadesCompartilhadas.c",
+     "id": "1xsq6uggWVbgkWYdlOWn9TfUTIl1mJOOg"
+    },
+    {
+     "n": "073",
+     "title": "Prospecctando um Negócio Parceiro",
+     "id": "1jpM6a8gKW3uVBulptU8S3K4d4yFZAf-N"
+    },
+    {
+     "n": "074",
+     "title": "Se Afiliando ao Hunter 10k",
+     "id": "1cOKugv2lr1h5wf56mIEDW0EROR7JsaNJ"
+    },
+    {
+     "n": "075",
+     "title": "Workshop Prospecção Digital 6D com Vinicius de Sá e Paula Torres",
+     "id": "1m07PfDo0Y1ltUTvwkwIbuMV9Sb6WtVm7"
+    },
+    {
+     "n": "076",
+     "title": "Workshop Social Selling Vinicius de Sá e Thiago Germano",
+     "id": "1GkkmotcH5leto_VjB0Jv38MTgRtRCCsP"
+    }
+   ]
+  },
+  {
+   "course": "Vender Pelo WhatsApp",
+   "count": 72,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "11p0mccOA54lQdjBG3kQIVqnL4tztOOXI"
+    },
+    {
+     "n": "002",
+     "title": "Presente para Você",
+     "id": "1ifSEmYmG_fjhzgdIEK-TtyKh3Jt0I3BT"
+    },
+    {
+     "n": "003",
+     "title": "Ligação x Mídias Sociais",
+     "id": "1FA442_v6lUHTrudFdjXurm1C65Is3rro"
+    },
+    {
+     "n": "004",
+     "title": "Preço x Valor",
+     "id": "17mauEsxp_4xfQoy6levNtgGA4eYszINn"
+    },
+    {
+     "n": "005",
+     "title": "Construindo a Mentalidade de Vendas",
+     "id": "1cnrbdwmV94VKPYrqCoNbWHKBvH-QWa5F"
+    },
+    {
+     "n": "006",
+     "title": "Agora, Você é um Closer Á.G.U.I.A",
+     "id": "1Iyc3Y4gPSOIWB0hJxDVif4tlKG9UL296"
+    },
+    {
+     "n": "007",
+     "title": "O Principal Sabotador Das Suas ALTAS COMISSÕES",
+     "id": "1o3CEHzskujqprZOoVXH0eAwvdG7Nutru"
+    },
+    {
+     "n": "008",
+     "title": "87% Dos Closers FRACASSAM por Falta Disto",
+     "id": "18TQE8sgppTTST_iHJ0KxKyPd1BB-_qaT"
+    },
+    {
+     "n": "009",
+     "title": "Sinta-se CAPAZ de Fazer Vendas de Alto Ticket",
+     "id": "15RLCJW7j0CyD2V-czM-UGNYUYMAo8-7E"
+    },
+    {
+     "n": "010",
+     "title": "Sinta-se MERECEDOR de Fazer Grandes Vendas e Receber ALTAS Comissões",
+     "id": "1w9gY_LFqwp8j9sUPSCDhl9fvg1H-ezP6"
+    },
+    {
+     "n": "011",
+     "title": "Os 5 Pilares Comportamentais de Um CLOSER Á.G.U.I.A",
+     "id": "1uHzQNp7kWdXx4JwWsrWeljG_ax6Oblxw"
+    },
+    {
+     "n": "012",
+     "title": "Descubra o Que te Impede de SER, FAZER e TER os Resultados de Um CLOSER Á.G.U.I.A",
+     "id": "12swAG5OAuyxoWyqJuUsYGv2qVgvK6EnE"
+    },
+    {
+     "n": "013",
+     "title": "Vender é Um Ato de Amor",
+     "id": "1vg_lcEZMdDWYIWoXdy5KzMZMaIlto4d9"
+    },
+    {
+     "n": "014",
+     "title": "Comunique Como uma Á.G.U.I.A",
+     "id": "1N546krSOBKMarFqoB6bM7Z8RJx4S59na"
+    },
+    {
+     "n": "015",
+     "title": "As 12 Leis de Um CLOSER Á.G.U.I.A",
+     "id": "1tjz8VyGc2B6_Gke7LkBdOgXXyE3lb0VX"
+    },
+    {
+     "n": "016",
+     "title": "Facilite a vida do seu cliente",
+     "id": "1WvtjjnHOGBqH2XvfWAOhUc5cNrFZX3F6"
+    },
+    {
+     "n": "017",
+     "title": "A regra mais importante do WhatsApp",
+     "id": "1nj6B3p13TC5ZK8SR0_1dPSbELBc90Yr-"
+    },
+    {
+     "n": "018",
+     "title": "Processo de Vendas HighTicket x Low Ticket",
+     "id": "1P3MGGkfJ7PO3Duc9zT-hVt7L94aIDfs4"
+    },
+    {
+     "n": "019",
+     "title": "Responda rápido e venda mais",
+     "id": "1drN1skwqg7lbrvf1niSbRz-xomQhvr2g"
+    },
+    {
+     "n": "020",
+     "title": "Vendendo produto de R$ 48.000 pelo WhatsApp",
+     "id": "1bp-lTYlJzv-WzfYmw3crx3lwIlwccpuw"
+    },
+    {
+     "n": "021",
+     "title": "Como Perder Venda no WhatsApp",
+     "id": "1OCAWqQU4hHrrBc65ncfBtQ_U8jyFuqFh"
+    },
+    {
+     "n": "022",
+     "title": "Rapport",
+     "id": "1J0XoYfLR2tWCvy2ulh1DqrKBNmaoN4B3"
+    },
+    {
+     "n": "023",
+     "title": "SPIN",
+     "id": "1v1GSnuELdbIZ56oZGeXYHyeMb_V_AZ6q"
+    },
+    {
+     "n": "024",
+     "title": "Micropactos",
+     "id": "18Imydh_4XvR-p8OwGXaukrR2RokcVk6B"
+    },
+    {
+     "n": "025",
+     "title": "Pegando Indicações",
+     "id": "1pl4y7AIQDad2wrxkAOCa6UMIYinHrI4P"
+    },
+    {
+     "n": "026",
+     "title": "Scripts de Vendas",
+     "id": "1xoM0hupSWizVYZTkMl1lYiOXIpWUwjak"
+    },
+    {
+     "n": "027",
+     "title": "O que é Personalidade",
+     "id": "1TAEZWYNJ0C1hINK6qYMq5sKwfZLmqdKk"
+    },
+    {
+     "n": "028",
+     "title": "Qual a Importância de Decifrar Personalidades nas Vendas",
+     "id": "1rjyTAC838bCq_JtqzHGvn7jUEG45ZGbo"
+    },
+    {
+     "n": "029",
+     "title": "Descubra a Sua Personalidade e Seu Estilo de Venda",
+     "id": "1sP9WB87Se1ra1qCsGkBWCe8XHGTYTvCK"
+    },
+    {
+     "n": "030",
+     "title": "Lendo Sua Personalidade",
+     "id": "181-z28Y1zeHs3qgOlBvcDlRcQJa2msP0"
+    },
+    {
+     "n": "031",
+     "title": "Decifre a Personalidade Dominante",
+     "id": "15zYlXV7C0--G3Yo2UadLZSczaflkVaTc"
+    },
+    {
+     "n": "032",
+     "title": "Decifre a Personalidade do Influente",
+     "id": "1tk5IGzEbqaTln3_uldNWYozNDM5QRHRP"
+    },
+    {
+     "n": "033",
+     "title": "Decifre a Personalidade do Estável",
+     "id": "1ns8bIbmvo3pJXJz-fCRWf2bsHthwFgGK"
+    },
+    {
+     "n": "034",
+     "title": "Decifre a Personalidade do Conforme(Analítico)",
+     "id": "143ktjVsVQwURlgkn7HSrdAuVgqHiFT-V"
+    },
+    {
+     "n": "035",
+     "title": "Como Descobrir a Personalidade do Cliente",
+     "id": "1OUZvJauqwrfplHvwpEF3Wf9bkbyDf2Ic"
+    },
+    {
+     "n": "036",
+     "title": "Rastreando seus Contatos",
+     "id": "1SVajypTp2f5tzHFxgFHyikIbVsLspgwM"
+    },
+    {
+     "n": "037",
+     "title": "Automatizações [Tarefas, Pipeline e IA]",
+     "id": "1A8Mif_BgUGDVYDK26N3rq823ISaHxMOw"
+    },
+    {
+     "n": "038",
+     "title": "Follow Up",
+     "id": "17XSj1SKoW3gcHNC_UnM2KCq2cYNhs2wL"
+    },
+    {
+     "n": "039",
+     "title": "Cadências e RDO",
+     "id": "1AZ5HxaU8Lwn7NWbYXf6iu5_vItuzqSP0"
+    },
+    {
+     "n": "040",
+     "title": "Obrigado",
+     "id": "1eUr_mhCKpH6ymOVCBfUx_evNGSBpoDTa"
+    },
+    {
+     "n": "041",
+     "title": "Boas Vindas",
+     "id": "1IcnOCxbcWMTwpNdK2xwKHgREpd0UGt2U"
+    },
+    {
+     "n": "042",
+     "title": "Porque a Estratégia Funciona",
+     "id": "1KiVLdaEdq1JCEE7RDxeXInXzg16WpKpx"
+    },
+    {
+     "n": "043",
+     "title": "Estratégia 1",
+     "id": "1dcw1iEZ1E1DEDiq4k3GWZk3h8ig8-drx"
+    },
+    {
+     "n": "044",
+     "title": "Estratégia 2",
+     "id": "1cJrHwE0lqSvnkXRHSRZW9ulWLxfHEBuO"
+    },
+    {
+     "n": "045",
+     "title": "Estratégia 3",
+     "id": "1qg54-eSxQDhGInHHZgPMqS1iYtY38wDN"
+    },
+    {
+     "n": "046",
+     "title": "Pré-Lançamento",
+     "id": "1n50jDBH0qAuk7z_Od3ni9ZH9Q0oajhIO"
+    },
+    {
+     "n": "047",
+     "title": "Dia 1",
+     "id": "1gJAQ0S6zwtZcxou6FghGkZih9ybD9VEN"
+    },
+    {
+     "n": "048",
+     "title": "Dia 2",
+     "id": "1IhDWK1HITKGAomJLfhRGfgjuTxFjeszu"
+    },
+    {
+     "n": "049",
+     "title": "Dia 3",
+     "id": "1s8hfIr1fBawRaerSRgqxlvNOLvVSQfOn"
+    },
+    {
+     "n": "050",
+     "title": "Dia da Riqueza",
+     "id": "15fBypulzzM1Jc2NZY_mE1Uq3NMujHvh0"
+    },
+    {
+     "n": "051",
+     "title": "Dicas Essenciais",
+     "id": "1GhSCWf9WLEtTAAKl-zTilqDJ2eIsy7X5"
+    },
+    {
+     "n": "052",
+     "title": "WhatsApp Web",
+     "id": "1l0-3oLIzNZQXvklN93F_hYcqhPymcFXR"
+    },
+    {
+     "n": "053",
+     "title": "Domador de Grupo",
+     "id": "1689ZBWOB1chUGOqoYFFj4D3IUve-Bv9n"
+    },
+    {
+     "n": "054",
+     "title": "Parabéns Para Quem Comprou",
+     "id": "1qry2uz-vduBcusP8j59YNSdn4yZdX-Yq"
+    },
+    {
+     "n": "055",
+     "title": "Cliente Oculto",
+     "id": "1mDxB1IjbzDVRiOcRsC6fo14PnXJTAvR-"
+    },
+    {
+     "n": "056",
+     "title": "Faça Ações Massivas",
+     "id": "1DwjKbq60ZvWygWJVvx62ieGqIFYWC9Qx"
+    },
+    {
+     "n": "057",
+     "title": "Prepare-se Para Sinais de Compras",
+     "id": "1IX1YwjBnyEkzH83csV76dQ_N9GoUI48C"
+    },
+    {
+     "n": "058",
+     "title": "O Que Não Fazer",
+     "id": "1vbGRpKQ-QGlhChz-1ugIozfzDllk1ZJW"
+    },
+    {
+     "n": "059",
+     "title": "Faça Upsell",
+     "id": "14GCY7TtLTm0d_B_JuHK50fiy8BtlO5KG"
+    },
+    {
+     "n": "060",
+     "title": "Vendas Do Dia Seguinte",
+     "id": "1R5h_eyAEgyhEclq0thi6Txj8vMgT5YWa"
+    },
+    {
+     "n": "061",
+     "title": "Está Dando Tudo Errado o Que Fazer",
+     "id": "11KSOVS-8tSMtIKtrw_3z4zTkW8A-HGu3"
+    },
+    {
+     "n": "062",
+     "title": "Planeje o Seu Calendário de Ofertas",
+     "id": "1YbNbgkPapCWYksu7pIDdirYJ84ujyCfU"
+    },
+    {
+     "n": "063",
+     "title": "Construa Desejo",
+     "id": "1w8BPbopSPsosh27zCaXJyjI-F-ZlBrkX"
+    },
+    {
+     "n": "064",
+     "title": "Programação Para os Dias do Evento",
+     "id": "1fLkC0yYshZulW0FmgqE_Gp3xNlbV67Yc"
+    },
+    {
+     "n": "065",
+     "title": "Como Fazer a Estratégia Constantemente",
+     "id": "16qSlUs1xW3J-agCm36Z4Vmtygpgo_I3B"
+    },
+    {
+     "n": "066",
+     "title": "O Que Fazer Se o Cliente Sair do Grupo",
+     "id": "1cQ4cwL92FFFop7Sy_Eq1ln2UKghNuCxt"
+    },
+    {
+     "n": "067",
+     "title": "Implementando Com Você - Aula 01",
+     "id": "1W9BhuhGoyycyTx_vwlc0og3wJEE_FABR"
+    },
+    {
+     "n": "068",
+     "title": "Implementando Com Você - Aula 02",
+     "id": "13Z5IoHEB4t8Mjt3t93lRj32c7AgAPvO8"
+    },
+    {
+     "n": "069",
+     "title": "Implementando Com Você - Aula 03",
+     "id": "1Hld4FYP2v97RRu2A5Igqm5DoPHSBeWel"
+    },
+    {
+     "n": "070",
+     "title": "Implementando Com Você - Aula 04",
+     "id": "1aGprlzmBP_2KdQbNXJL6XCS-wmbmowp3"
+    },
+    {
+     "n": "071",
+     "title": "Implementando Com Você - Aula 05",
+     "id": "1l5eWycbYLx1ibncrvvLS-VI6_Xexz3Qi"
+    },
+    {
+     "n": "072",
+     "title": "Implementando Com Você - Aula 06",
+     "id": "1NWrbKXpLhXgn59xRlh2mciAXHNSi-dn2"
+    }
+   ]
+  },
+  {
+   "course": "Eleve-se",
+   "count": 68,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas-vindas",
+     "id": "1r536r1ad4BpKa32KrHTZps0tDoaz3yMJ"
+    },
+    {
+     "n": "002",
+     "title": "Termo de Compromisso",
+     "id": "1f_aLYIHvk6UL_mMJAuXUKocb_QkluLXz"
+    },
+    {
+     "n": "003",
+     "title": "Instruções",
+     "id": "1yn5CSreeRiDZ7EbtYyR0iaEurWJWleER"
+    },
+    {
+     "n": "004",
+     "title": "Fases da Mudança",
+     "id": "1LRbzFmQFlW_32ZLZUyTKP3hIN9hYmVjv"
+    },
+    {
+     "n": "005",
+     "title": "Autossabotagem",
+     "id": "1okhjzV6KYUEJruCu6KnlXvHyMLc9e5VC"
+    },
+    {
+     "n": "006",
+     "title": "Matando a Franga",
+     "id": "1hQJMxXUoD53lu74C3G-JpGCEwMzmSrer"
+    },
+    {
+     "n": "007",
+     "title": "Autorresponsabilidade",
+     "id": "1v3UlHsSnisWHH4ROkNocrnxXfk0ZfOiC"
+    },
+    {
+     "n": "008",
+     "title": "Desafio",
+     "id": "11riAWNGPwRew-uSOiUbgiN2jYK9HW__T"
+    },
+    {
+     "n": "009",
+     "title": "O Que é Inteligência Emocional",
+     "id": "1dQxFc45CS0aWfCQ56qb6rePLjNy1DhT8"
+    },
+    {
+     "n": "010",
+     "title": "O Que é Inteligência Emocional PARTE 2",
+     "id": "1jGgpmoJB9Eg-bIM-8hEFBHW2Uh0C0XiB"
+    },
+    {
+     "n": "011",
+     "title": "Linguagem Verbal",
+     "id": "10r__7VrNZBmzeZCj9kLsDPWa_vag99AW"
+    },
+    {
+     "n": "012",
+     "title": "Linguagem Verbal PARTE 2",
+     "id": "1DL1D-zMpD6exUExLd6joLih8cp9QfLik"
+    },
+    {
+     "n": "013",
+     "title": "Linguagem Verbal PARTE 3",
+     "id": "1Y_yTzjARhi1oTjtY7nq20cv7vhYJ2IRZ"
+    },
+    {
+     "n": "014",
+     "title": "Estados de Recursos",
+     "id": "131QGtLA6pWj8qNhW_dkTJcqlpnUrghzf"
+    },
+    {
+     "n": "015",
+     "title": "Crenças",
+     "id": "1Pk8xAQE_2h8d3F-FQVGBHv-zuWuv2aqn"
+    },
+    {
+     "n": "016",
+     "title": "Crenças PARTE 2",
+     "id": "1gay059OuhnpbjIyJwu1cjEFLEqF52ugE"
+    },
+    {
+     "n": "017",
+     "title": "Como Age a Emoção",
+     "id": "13vbZgujRzCbRMgBLd4AzgX4Yl4SJF5C1"
+    },
+    {
+     "n": "018",
+     "title": "Contágio Social",
+     "id": "1uduutKvc69waVJW9pDtlTG_rDbMkTNVL"
+    },
+    {
+     "n": "019",
+     "title": "Contágio Social PARTE 2",
+     "id": "1vdyIlZIrZOO_V1o7KjxYlva6SpXp0_W_"
+    },
+    {
+     "n": "020",
+     "title": "Gratidão",
+     "id": "1FUW8tPORQEKXR5vCdNCQslQICcA44cwQ"
+    },
+    {
+     "n": "021",
+     "title": "Regra 10 90",
+     "id": "1X_U1o6L0VUvYgZ_4EDiZQe7zchIilN6h"
+    },
+    {
+     "n": "022",
+     "title": "Inteligência Foco Temporal",
+     "id": "1I0r1TsxP3cCNczAh3tqGLVeNwkpYakR8"
+    },
+    {
+     "n": "023",
+     "title": "E Se...",
+     "id": "1CCXzZk9Gk2QrcLxC5hochePiS0IgJuVq"
+    },
+    {
+     "n": "024",
+     "title": "Autoestima e Sua Formação",
+     "id": "1-qC4qVAMsR81soejs1nDZ6ngzEyLG4uj"
+    },
+    {
+     "n": "025",
+     "title": "Como Anda sua Autoestima",
+     "id": "15L1TB7EcyGmYMRSo9Q07JuE8qAlQo9Tb"
+    },
+    {
+     "n": "026",
+     "title": "Como Anda sua Autoestima PARTE 2",
+     "id": "12QemNZzUrNTz7npv7D7tcHq_Vr6vPYF_"
+    },
+    {
+     "n": "027",
+     "title": "Como Anda sua Autoestima PARTE 3",
+     "id": "1guA-saCWS9jGWCdsakG9fVRvhOJ1D80r"
+    },
+    {
+     "n": "028",
+     "title": "Construindo uma Autoestima Sólida no Seu Filho",
+     "id": "1hjLB6_t3AUw4sypE2N1Oz0cBMiMiMmWL"
+    },
+    {
+     "n": "029",
+     "title": "Se Valide, Se Valorize",
+     "id": "1l79fTqAh_Yda0GPNqPGvb-ldehFor0jd"
+    },
+    {
+     "n": "030",
+     "title": "Perdão",
+     "id": "1IC_mRLdI6figVQq1UJsTGRY3jvZorfKZ"
+    },
+    {
+     "n": "031",
+     "title": "Felicidade",
+     "id": "1S8avWgZtJGe-O7WDGNN201TEFF-oxICp"
+    },
+    {
+     "n": "032",
+     "title": "Felicidade PARTE 2",
+     "id": "11hnjWyrY6bOferVlo_mrgrzZOokaErRN"
+    },
+    {
+     "n": "033",
+     "title": "Dar e Receber",
+     "id": "1tWxrjcrrVYRW-FEZY2BEMxiqgeyIUYbY"
+    },
+    {
+     "n": "034",
+     "title": "Dar e Receber PARTE 2",
+     "id": "1bmEv1hA2QKH2SVCmW1YOuoXOa9FlhRpv"
+    },
+    {
+     "n": "035",
+     "title": "Aprenda a Dizer Não",
+     "id": "12tdyzz6zW-r4sMIOSe4lBqonYR5skWU3"
+    },
+    {
+     "n": "036",
+     "title": "Acostume-se Com o Não",
+     "id": "1bkZH9dY-W1QxrhLkm9ek7VOuaEyvrWeg"
+    },
+    {
+     "n": "037",
+     "title": "Afaste-se de Pessoas que te Jogam para Baixo",
+     "id": "1-ru7w0cCMUkNjwSdQ8Lp4B_WbE9qtZpL"
+    },
+    {
+     "n": "038",
+     "title": "Não Coloque Expectativas em Outras Pessoas",
+     "id": "15JNQEggMhbO8fBa_q8XKv6R7ubIBcsQF"
+    },
+    {
+     "n": "039",
+     "title": "Não Tente Cumprir Expectativas de Outras Pessoas",
+     "id": "1a7Fih4yEqUHe9L9nEqfPpxjtBlsGoCQ0"
+    },
+    {
+     "n": "040",
+     "title": "Não Tente Cumprir Expectativas de Outras Pessoas PARTE 2",
+     "id": "1vD3UxrMjTu_93hNOFkwFFIjLs_AD2NIJ"
+    },
+    {
+     "n": "041",
+     "title": "Aprenda Com os Seus Erros",
+     "id": "1g4lutp4JzAJI_3CUZQhMrV5IHOwSwX4_"
+    },
+    {
+     "n": "042",
+     "title": "Não Tenha Medo de Ser Criticado",
+     "id": "1pP0l-5zCvJV_JHCFL9cOT7SjhJ7rrKiS"
+    },
+    {
+     "n": "043",
+     "title": "Não se Compare Com os Outros",
+     "id": "12PKitV3fe1v1KDaq2eWkFUO-_fK4Gjb3"
+    },
+    {
+     "n": "044",
+     "title": "Você Vê o Mundo de Acordo com os Seus Óculos",
+     "id": "1HaGug-Vjjsb63029n3TclKA9c1g7cGWL"
+    },
+    {
+     "n": "045",
+     "title": "Lei da Atração",
+     "id": "1jZShQnXk7QiZcsTGmSIZJMs5JFd-gQGx"
+    },
+    {
+     "n": "046",
+     "title": "Lei da Atração PARTE 2",
+     "id": "1wQNpXuBPyoWlcsqdIcRbZkAARmfcwo5J"
+    },
+    {
+     "n": "047",
+     "title": "Lei da Atração PARTE 3",
+     "id": "1DzWeNNzTdUKV1dglm1Gb0Ap_6j1nGcRR"
+    },
+    {
+     "n": "048",
+     "title": "O Que é Autoconfiança",
+     "id": "1GmH3ELygxKsO2j7MMVCflrQhZ9ztX-Bs"
+    },
+    {
+     "n": "049",
+     "title": "Autoconhecimento",
+     "id": "1tEnzMYK7pN_Ea4cMjQGKnjqu_enZciVV"
+    },
+    {
+     "n": "050",
+     "title": "Sonhos",
+     "id": "1Eh2_4-CVw4rHHNtJ6xVq4AwhnrFBqDSM"
+    },
+    {
+     "n": "051",
+     "title": "Sonhos PARTE 2",
+     "id": "1KrpebECRg8rdDoQACNb5YK3Mxb0NX51R"
+    },
+    {
+     "n": "052",
+     "title": "Metas e Objetivos",
+     "id": "1TrV0sVprdkT4fYk2tBcbKCBw0ftbPAVx"
+    },
+    {
+     "n": "053",
+     "title": "Metas Neurológicamente Corretas",
+     "id": "1n5OdiaPps13EN1c3J6Vyf8dSk1bgygYe"
+    },
+    {
+     "n": "054",
+     "title": "Valores",
+     "id": "1uLplPRU-L60pCjKqeHeii10Lg5dkf_N-"
+    },
+    {
+     "n": "055",
+     "title": "Propósito e Missão de Vida",
+     "id": "1qJj2XU2IpkLrebZjxnCAtLQRQYAzH2-R"
+    },
+    {
+     "n": "056",
+     "title": "Visão Positiva de Futuro",
+     "id": "11jk1SKF3mE45jVMW4oimW5Qdo2ViZS6U"
+    },
+    {
+     "n": "057",
+     "title": "Hábitos",
+     "id": "1S7tIohxy3jltgv6spE03MUuDOym_yFv0"
+    },
+    {
+     "n": "058",
+     "title": "Pequenos Ganhos e Celebração",
+     "id": "1uYLKqDKcBeRr0wpbquPnEhjezN0F8uG2"
+    },
+    {
+     "n": "059",
+     "title": "Medos",
+     "id": "13zOuLzWP96LMS_Gb24-IX86xT-pf1H-q"
+    },
+    {
+     "n": "060",
+     "title": "Afirmações Positivas",
+     "id": "1oyjvwDicSGkSsZUmeRIzhl0hdYcrPCm8"
+    },
+    {
+     "n": "061",
+     "title": ". Afirmações Positivas PARTE 2",
+     "id": "1XMJjiWMKMo_IW1NMSPn7MEDedhU56evG"
+    },
+    {
+     "n": "062",
+     "title": "Ação",
+     "id": "11Q9I7FVOJ-DjBZAQ_IaceAZsPIEabsqn"
+    },
+    {
+     "n": "063",
+     "title": "Não Tenha Medo de Errar",
+     "id": "1p4iIIMi7VLqiCSF3YGliIYEIREBZA0dD"
+    },
+    {
+     "n": "064",
+     "title": "Forças e Fraquezas",
+     "id": "1_nQVgBxPwMx8NYMNgTqxUm6uf-hQYZaR"
+    },
+    {
+     "n": "065",
+     "title": "Fé e Coragem",
+     "id": "11EiQFaBq5kCz_kKK3LJPfWzYISdbbj-Z"
+    },
+    {
+     "n": "066",
+     "title": "VAS da Coragem",
+     "id": "1Xlp_lc-jJm65zR6e84rB0-mq09xLoH8d"
+    },
+    {
+     "n": "067",
+     "title": "História de Sucesso",
+     "id": "1Y3QAqIUDl6_LJuq-FAHtzZCVgbGlUBGL"
+    },
+    {
+     "n": "068",
+     "title": "Mensagem Final",
+     "id": "1kYqjUvrgam7sGETC3XPz1wxV-HppxByi"
+    }
+   ]
+  },
+  {
+   "course": "Eleve-se - Full Sales Flix",
+   "count": 68,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas-vindas",
+     "id": "1tofbuVg63t-YumH1ry6eO4mZitYEneWt"
+    },
+    {
+     "n": "002",
+     "title": "Termo de Compromisso",
+     "id": "1P2964lgjQP8OAbAx672YSqhhGybt_su5"
+    },
+    {
+     "n": "003",
+     "title": "Instruções",
+     "id": "1JO1gYzYvj2gmv1j3ondfHiihbFrjNdW9"
+    },
+    {
+     "n": "004",
+     "title": "Fases da Mudança",
+     "id": "1NEil5R_I2iAnk2sdDQwEW3a84dWJxeXp"
+    },
+    {
+     "n": "005",
+     "title": "Autossabotagem",
+     "id": "1Jcj6RoHE_u5vLQBtuk86_t7JePPNmKoY"
+    },
+    {
+     "n": "006",
+     "title": "Matando a Franga",
+     "id": "1GbZOg6F7D7YQNPq-aAbobsPXSR3uy4ey"
+    },
+    {
+     "n": "007",
+     "title": "Autorresponsabilidade",
+     "id": "1KIig916Ew4Ap04UqBLdkJRcEeHiBUX7u"
+    },
+    {
+     "n": "008",
+     "title": "Desafio",
+     "id": "1XS0f_661g5_s8cCYbmxdC-xTKL3djMe8"
+    },
+    {
+     "n": "009",
+     "title": "O Que é Inteligência Emocional",
+     "id": "1oMbQr_kdcfekZclmg_JyYIjeu22PaBKR"
+    },
+    {
+     "n": "010",
+     "title": "O Que é Inteligência Emocional PARTE 2",
+     "id": "1NhC76EKrYfALQdBgHKYP9F9HpKfDdcR4"
+    },
+    {
+     "n": "011",
+     "title": "Linguagem Verbal",
+     "id": "1n08v3iJ8tdg-D9QqN3xKNHd2O4nOucSf"
+    },
+    {
+     "n": "012",
+     "title": "Linguagem Verbal PARTE 2",
+     "id": "1jETvgYVzwJiauQxXVA4089jJiSbvmn1_"
+    },
+    {
+     "n": "013",
+     "title": "Linguagem Verbal PARTE 3",
+     "id": "1glap-ikNw9cRbZLYLFnkGiLPohMlJMmk"
+    },
+    {
+     "n": "014",
+     "title": "Estados de Recursos",
+     "id": "1y2epE5bNChliMeGp5mKbLiElDQBgxm0n"
+    },
+    {
+     "n": "015",
+     "title": "Crenças",
+     "id": "1L3tR1ZrmzmPKNU1-KaCA2iZVhCu8YghY"
+    },
+    {
+     "n": "016",
+     "title": "Crenças PARTE 2",
+     "id": "1fM3yQKyVdeD4kLPAGGrYQ8aD62GUbz61"
+    },
+    {
+     "n": "017",
+     "title": "Como Age a Emoção",
+     "id": "1jmaASBvhp7IRdhTYx6yP22NHCHZ4r_py"
+    },
+    {
+     "n": "018",
+     "title": "Contágio Social",
+     "id": "1utvFJJsGlREMVZliKGKMGaUEhqfSCEvV"
+    },
+    {
+     "n": "019",
+     "title": "Contágio Social PARTE 2",
+     "id": "1lyhVghLvxmW83Z3KDoWaTyNXFvvL79XD"
+    },
+    {
+     "n": "020",
+     "title": "Gratidão",
+     "id": "1nopGCxPaHx3fBNvUqI0tFiKyKJHR-rEb"
+    },
+    {
+     "n": "021",
+     "title": "Regra 10 90",
+     "id": "1MJMVzzxVim0Tbw31IRFt1Vnvagok3cQJ"
+    },
+    {
+     "n": "022",
+     "title": "Inteligência Foco Temporal",
+     "id": "11LpLHjFNRwLdzdGxL4WZK484LB-kqsT1"
+    },
+    {
+     "n": "023",
+     "title": "E Se...",
+     "id": "1f3HSGB2Mbc_fPu3xsPPdEqjiDz-FHUyS"
+    },
+    {
+     "n": "024",
+     "title": "Autoestima e Sua Formação",
+     "id": "1V1MTL5PrRevkumYjzGPHLYnr9ecYu1Wd"
+    },
+    {
+     "n": "025",
+     "title": "Como Anda sua Autoestima",
+     "id": "1I0CNiWw0tWa0M2iT2KtLLbt5Z_caERwn"
+    },
+    {
+     "n": "026",
+     "title": "Como Anda sua Autoestima PARTE 2",
+     "id": "17W1ZeYxA2i1MsI9mjxGPNl2SMDIDf5RN"
+    },
+    {
+     "n": "027",
+     "title": "Como Anda sua Autoestima PARTE 3",
+     "id": "14Rle7DI2Jx6RCJKhp_1qspyNUi-tm5lp"
+    },
+    {
+     "n": "028",
+     "title": "Construindo uma Autoestima Sólida no Seu Filho",
+     "id": "1SuAYLvNlBUP-NzCH9-rnA0SzOuNyERce"
+    },
+    {
+     "n": "029",
+     "title": "Se Valide, Se Valorize",
+     "id": "1xYP5cvs6C2IZoTZG6KpHGNK6sdDap0us"
+    },
+    {
+     "n": "030",
+     "title": "Perdão",
+     "id": "1bFfnIlRqi0dLrN7qFzn8rBEnEsORHglt"
+    },
+    {
+     "n": "031",
+     "title": "Felicidade",
+     "id": "11gDrhi1mWv50dAvZSHk4MgkqUMGFai6T"
+    },
+    {
+     "n": "032",
+     "title": "Felicidade PARTE 2",
+     "id": "1e8xmLpeyPEKlqN1TqpiGZGGpXg2BriD8"
+    },
+    {
+     "n": "033",
+     "title": "Dar e Receber",
+     "id": "1wzi7ZVUSgzCiOq57M7v7WE9xkdIyISBa"
+    },
+    {
+     "n": "034",
+     "title": "Dar e Receber PARTE 2",
+     "id": "1aJPer575BuwgN3nCGF9iI8mRIr67PGtM"
+    },
+    {
+     "n": "035",
+     "title": "Aprenda a Dizer Não",
+     "id": "1C28uXJuaDh7UBpgX-j3quSrlF8daAQ1d"
+    },
+    {
+     "n": "036",
+     "title": "Acostume-se Com o Não",
+     "id": "1IFVqSyg1nhZNIU2AaHfbCvZkeUZlbSVZ"
+    },
+    {
+     "n": "037",
+     "title": "Afaste-se de Pessoas que te Jogam para Baixo",
+     "id": "1LjHhb4eQOFmqe11vCyiqA1Us-wQhCU_Q"
+    },
+    {
+     "n": "038",
+     "title": "Não Coloque Expectativas em Outras Pessoas",
+     "id": "16BeVX_hXwjQ1eOX069TVAeZEpYxQECHb"
+    },
+    {
+     "n": "039",
+     "title": "Não Tente Cumprir Expectativas de Outras Pessoas",
+     "id": "1YyDJNl1Vx_EKHkR77SNCxY2pBajf5Gzn"
+    },
+    {
+     "n": "040",
+     "title": "Não Tente Cumprir Expectativas de Outras Pessoas PARTE 2",
+     "id": "1j-bx1vIF48HKpMrnlsWxiWYTwJbL15Pq"
+    },
+    {
+     "n": "041",
+     "title": "Aprenda Com os Seus Erros",
+     "id": "1GJ0K2qW9NvBuObWbqDgi1tQIfPQKen0v"
+    },
+    {
+     "n": "042",
+     "title": "Não Tenha Medo de Ser Criticado",
+     "id": "1bmxv4VCMvM_TQTzBJxVOlZNxw9LvWPN6"
+    },
+    {
+     "n": "043",
+     "title": "Não se Compare Com os Outros",
+     "id": "1oboupnQS7HYHHi-KfzRpbjcFZ9OkAW6i"
+    },
+    {
+     "n": "044",
+     "title": "Você Vê o Mundo de Acordo com os Seus Óculos",
+     "id": "1eUzvhXLdRbp63CQbjQuQ3WXjhoFfrnUp"
+    },
+    {
+     "n": "045",
+     "title": "Lei da Atração",
+     "id": "17bvXQgd3HuL_TnagJhK7xJqnO3UYm8ks"
+    },
+    {
+     "n": "046",
+     "title": "Lei da Atração PARTE 2",
+     "id": "172O1csytQBKv0oXgErz2-0tbdTBBHj9b"
+    },
+    {
+     "n": "047",
+     "title": "Lei da Atração PARTE 3",
+     "id": "11osX3EIIlikHcyU-AsTQ3KQ1dU06tLmJ"
+    },
+    {
+     "n": "048",
+     "title": "O Que é Autoconfiança",
+     "id": "1PMdCHtG6Sd2-OBkKozOpXw_ugOFvLPCR"
+    },
+    {
+     "n": "049",
+     "title": "Autoconhecimento",
+     "id": "1LHKPjh0IyuCzz5CQlH0uUHvJiQCTLZFg"
+    },
+    {
+     "n": "050",
+     "title": "Sonhos",
+     "id": "1Gy3g8Vkd95Bq81vJiV3e85BJWUwu5Xx8"
+    },
+    {
+     "n": "051",
+     "title": "Sonhos PARTE 2",
+     "id": "17lOITVqatiJN7P_N0gMcxVKIkj0jbE1b"
+    },
+    {
+     "n": "052",
+     "title": "Metas e Objetivos",
+     "id": "1sewIdX_0DiC4NnLfJIXRqQoEZjbnN1r4"
+    },
+    {
+     "n": "053",
+     "title": "Metas Neurológicamente Corretas",
+     "id": "1tt-g0iTGgn2iDQrk--Vfvil-ithsvaIN"
+    },
+    {
+     "n": "054",
+     "title": "Valores",
+     "id": "19KizEOGf6LYmP8-WkeCX8e1fp2eJ6nbe"
+    },
+    {
+     "n": "055",
+     "title": "Propósito e Missão de Vida",
+     "id": "1SuP8sdW7z5WucWPfBRmQvGQ3S2AjnI0N"
+    },
+    {
+     "n": "056",
+     "title": "Visão Positiva de Futuro",
+     "id": "1MLGE9x7QNBC-ZgMh6Fz05EJOrO7W6pCz"
+    },
+    {
+     "n": "057",
+     "title": "Hábitos",
+     "id": "1-T5LPVW_Ddus8taxkbbEv0Lnhnndd-UF"
+    },
+    {
+     "n": "058",
+     "title": "Pequenos Ganhos e Celebração",
+     "id": "1p_CKHHm1ydimnbGCM-2SvlFDXkNG7B8n"
+    },
+    {
+     "n": "059",
+     "title": "Medos",
+     "id": "1Gm-ChgGaTpSB6gKscxwGnKI7QqvcBlKR"
+    },
+    {
+     "n": "060",
+     "title": "Afirmações Positivas",
+     "id": "1hbod5w5r16uYF7_ZZP0PxpkRIGo4_86F"
+    },
+    {
+     "n": "061",
+     "title": ". Afirmações Positivas PARTE 2",
+     "id": "1uN1lPbftte2QxRLKIdvUaSJ-TJAgxYwh"
+    },
+    {
+     "n": "062",
+     "title": "Ação",
+     "id": "1pasM_-Uj_1D8hP6E_0RqG4iAvGKwxPQS"
+    },
+    {
+     "n": "063",
+     "title": "Não Tenha Medo de Errar",
+     "id": "1ApJDIqG9zV4nvOjgI85PaZUR38aOnR9b"
+    },
+    {
+     "n": "064",
+     "title": "Forças e Fraquezas",
+     "id": "1M0FIadEMx3hPTi0iEti4SnrndPXRVm9L"
+    },
+    {
+     "n": "065",
+     "title": "Fé e Coragem",
+     "id": "1-BfpZrflelFQJuND_id-QjSjT_2UJ5MW"
+    },
+    {
+     "n": "066",
+     "title": "VAS da Coragem",
+     "id": "1EHt6zy85juldRlvDNduaA57oP0hO36L-"
+    },
+    {
+     "n": "067",
+     "title": "História de Sucesso",
+     "id": "15FLobU-uj8uMznjYg3tp4oPEaC7PMV7J"
+    },
+    {
+     "n": "068",
+     "title": "Mensagem Final",
+     "id": "1pn-XejtsLOco8FDjJ0AAaeTMpq-jmcJv"
+    }
+   ]
+  },
+  {
+   "course": "Gravações do Programa de Aceleração e Hotseats",
+   "count": 65,
+   "videos": [
+    {
+     "n": "001",
+     "title": "09.08.2023 - Construindo uma Apresentação de Vendas",
+     "id": "1cr_xM4gPKB94DCj3sh5bukBxXpCPGTRs"
+    },
+    {
+     "n": "002",
+     "title": "23.08.2023 - Quebrando Objeções de Venda",
+     "id": "1Kel1toK4oFzgoVQwv38bYophbQsTGDzO"
+    },
+    {
+     "n": "003",
+     "title": "20.09.2023 - Planilha de Dimensionamento Comercial + HotSeats 1 a 1",
+     "id": "1Ql2uoVUdPMdtZz8SWslQVT2Gqs4vaEaW"
+    },
+    {
+     "n": "004",
+     "title": "19.10.2023 - Oficina de Apresentações de Venda",
+     "id": "1t2QvpjaUEQFpBUE9ZuQ17uOXXHcKbMmT"
+    },
+    {
+     "n": "005",
+     "title": "01.11.2023 - Fechamento Full Sales",
+     "id": "1S_iTlY-F3c3QzUbYoMxOJ-Z44ZNFyBe4"
+    },
+    {
+     "n": "006",
+     "title": "15.11.2023 - Workshop CRM - configurações iniciais",
+     "id": "1ubp9qHF57hWHtlK-HWJL0fP5RMnDyYqh"
+    },
+    {
+     "n": "007",
+     "title": "29.11.2023 - Hot Seat",
+     "id": "1k1i4BF_3nt8AOP0wvBzPFsEHIKQHSJPi"
+    },
+    {
+     "n": "008",
+     "title": "13.12.2023 - Processo de Pré-Vendas",
+     "id": "1Ww1xL4DdAwJgrhHMD2U9tl6jDt85-Pzu"
+    },
+    {
+     "n": "009",
+     "title": "28.12.2023 - Planejamento de 2024 da FSS",
+     "id": "1zE7fbWOOdMIUn3d_7rPzCCUnHZ92qT38"
+    },
+    {
+     "n": "010",
+     "title": "10.01.2024 - Dimensionamento e Onboarding de Time Comercial + HOT SEAT.mp4",
+     "id": "1iqNt-z4Yvt3BxGh-ZRDdbl-vNyuqKtBL"
+    },
+    {
+     "n": "011",
+     "title": "24.01.2024 - Sistema de Mensagens de Prospecção (base de clientes, lista quente e contatos frios do instagram)",
+     "id": "1fySUm-D3ySxW0j25FZsnstzY4dKJgO6F"
+    },
+    {
+     "n": "012",
+     "title": "07.02.2024 - Hot Seat",
+     "id": "1CdGC2FmP0ueL4HERopWnJW3TPsBJjDv2"
+    },
+    {
+     "n": "013",
+     "title": "21.02.2024 - Como liderar diferentes personalidades com Yuri Barbosa",
+     "id": "1V6VwxnuBJo1aHn6V55jaP3ED5-WS9KAg"
+    },
+    {
+     "n": "014",
+     "title": "06.03.2024 - Funil de Isca Paga",
+     "id": "1cguI-Fd2lU9YfIpc09LNxEFiDKBfDhii"
+    },
+    {
+     "n": "015",
+     "title": "20.03.2024 - Hot Seat",
+     "id": "1I_gp4z62Iv0hlABcq6zETrScNUCEzkvq"
+    },
+    {
+     "n": "016",
+     "title": "03.04.2024 - Processos Precisos de Recrutamento, Seleção e Treinamento de Times Comerciais",
+     "id": "1my6QIXVlwYzuziCePSj_EOnHvFca6tv_"
+    },
+    {
+     "n": "017",
+     "title": "19.04.2024 - Hot Seat",
+     "id": "1Kdc6qewQ51--8PqwnWgVRV7RIsTe5tdp"
+    },
+    {
+     "n": "018",
+     "title": "01.05.2024 - Ativação FSS",
+     "id": "103YVVKdtkmSOAYQTXBFLkg8uRK6trR8D"
+    },
+    {
+     "n": "019",
+     "title": "15-05-2024 - Estruturação de Apresentação de Vendas e Ofertas",
+     "id": "1xaq0N4PA5Gyg5U_558z8MohLUUTQ43MG"
+    },
+    {
+     "n": "020",
+     "title": "15-05-2024 - Estrutura e Processo de Equipe de Pré-Vendas",
+     "id": "1qfV98u-LddvgnJSBgUyZKkg_XC5qCh4V"
+    },
+    {
+     "n": "021",
+     "title": "30.05.2024 - 11 Princípios da Venda de Alta Performance",
+     "id": "1_qqVHvrASWN-1YESfcrKartgMwjK7ehN"
+    },
+    {
+     "n": "022",
+     "title": "12.06.2024 - Gestão de Eventos e Distribuição de Conteúdo - Funil Invisível",
+     "id": "1qrS5l3mqqReDOHZzk2dT7h-hKRZFYTAx"
+    },
+    {
+     "n": "023",
+     "title": "26.06.2024 - Implementação de Social Selling.",
+     "id": "1uuASmmovIhaKb1c6KFvuJFneSlEMCX81"
+    },
+    {
+     "n": "024",
+     "title": "10.07.2024 Processos de Onboarding e Entrega do Programa de Aceleração",
+     "id": "1G4l5yZs1DTQ156Aa0B5r1ASkKrJgiCEE"
+    },
+    {
+     "n": "025",
+     "title": "07.08.2024 - Melhores Funis para Plugar no Time Comercial",
+     "id": "1X7hYdXR0yXG2KSZ_9xdHqADEXfNeZ4RV"
+    },
+    {
+     "n": "026",
+     "title": "04.09.2024 - Hot Seat",
+     "id": "1mFHrFsSj_1peibGoWg4L8Mmeym0kDqik"
+    },
+    {
+     "n": "027",
+     "title": "18.09.2024 - Detalhamento de 3 Padrões de Funis de Escala e Automações da FSS para fazer 1.6 Mi Mês",
+     "id": "1IOXiBdWIK1Wf5v3p9iafE2A_XMilJKBM"
+    },
+    {
+     "n": "028",
+     "title": "02.10.2024 - Rotina e Treinamento para Rampar e Maximizar Rápido a Conversão de VENDAS do seu time e Dobrar o Seu Ne",
+     "id": "1uyIJ2vnV6hMEUoScuMEwuBEX0Q28iYg5"
+    },
+    {
+     "n": "029",
+     "title": "16.10.2024 - Plano de Escala - Plano Oficial Pós Ativação Liberado",
+     "id": "1sk2htD4PJ5Akegd2DIX47arRdHQfJRUl"
+    },
+    {
+     "n": "030",
+     "title": "30.10.2024 - Caixa Preta do Tráfego Pago para Escala dos Funis (Os 4 Pilares da Escala)",
+     "id": "1R7F_svavVNrCSTOQPuc8PseaiMgFmEpO"
+    },
+    {
+     "n": "031",
+     "title": "13.11.2024 - Como Construir Processos Departamento de Pós Vendas Lucrativo (Copie e Cole da FSS)",
+     "id": "1z8hdaDSqkgCdJYkcqrglhZ6XgKZV03vZ"
+    },
+    {
+     "n": "032",
+     "title": "27.11.24 - Webinar Como Geração de Demanda Qualificada",
+     "id": "1sankV8piZhkPdmr3-kDmreDEnI5xMBhY"
+    },
+    {
+     "n": "033",
+     "title": "11.12..2024 - Formatação de Produtos para Dobrar seu Negócio Construindo Produtos Complementares para LTV",
+     "id": "15PRCJsWr7vs0PXXdvzPCTgeHlaQmFPAD"
+    },
+    {
+     "n": "034",
+     "title": "08.01.2025 - Plano Estratégico de 2025",
+     "id": "1iwKZX-wVTSXDEKpoFQYuGp-XCMWKQWRk"
+    },
+    {
+     "n": "035",
+     "title": "22.01.2025 - Caixa Preta Dos Eventos Presenciais Erros e Acertos em Eventos para obter 40 a 55% de conversão",
+     "id": "1FDjie1eOnFgkdusMNDTS87IkBiWiOKPI"
+    },
+    {
+     "n": "036",
+     "title": "05.02.2025 - Prospecção Inbound e Outbound no Instagram",
+     "id": "1AaAomSFAEOS9csv_uFYQMHn4bQv5XTvj"
+    },
+    {
+     "n": "037",
+     "title": "19.02.2025 - O Novo Sistema de Pontos Full Sales",
+     "id": "1kCUbO1s4d92NfhGUO7ZYku8K3UoGyNOV"
+    },
+    {
+     "n": "038",
+     "title": "19.03.2025 - Como Construir e Impor Cultura",
+     "id": "1UcrIQvkcLvpi9laiNcnSy2zYvElAZCfE"
+    },
+    {
+     "n": "039",
+     "title": "02.04.2025 - Debriefing da Imersão Full Sales",
+     "id": "1QE8JpKi53nk6xUiK-WnifSNUQXggPUkH"
+    },
+    {
+     "n": "040",
+     "title": "16.04.2025 - Mapa de Contratação Full Sales",
+     "id": "1W3ZYQHJXIyh9PhOpeNnRbmjP_TfSv2Qe"
+    },
+    {
+     "n": "041",
+     "title": "30.04.2025 - Gestão Comercial por Indicadores Como Ler, Corrigir e Otimizar a Performance Sem Adivinhação",
+     "id": "1d3emLcbJgV3wjn05btGIDa7ldJOPCqIN"
+    },
+    {
+     "n": "042",
+     "title": "14.05.2025 - Hot Seat",
+     "id": "1S8b7Bxm96lEtnePHn0G24K4bJMVl4nfV"
+    },
+    {
+     "n": "043",
+     "title": "28.05.2025 - Apresentação Comercial Revisão de detalhes que aumentam de 30 a 50% sua conversão - 28 mai. 2025.mp4",
+     "id": "1PTfoxp1c_bf3Ky1TLbDmmhRj3LWAO1gX"
+    },
+    {
+     "n": "044",
+     "title": "25.06.2025 - Otimização de Oferta Como Criar Ofertas Que Não Tenham Objeções",
+     "id": "1njIEzMPkzUiCLfNpFEf8imUZFMoKwsEE"
+    },
+    {
+     "n": "045",
+     "title": "23.07.25 Como Aumentar Caixa - Plano de Ação Para Receber o Máximo de Caixa Durante a Reunião",
+     "id": "1E-tKk7wzolDbG1Jgf1pCFqqF7sKMKzrG"
+    },
+    {
+     "n": "046",
+     "title": "20.08.2025 Como fazer social selling do zero e agendar pelo menos 20 reuniões na semana sem trafego com Matheus Matu",
+     "id": "10lxIL4zQFNApk-pKUEhLMGPGlO6XLjr2"
+    },
+    {
+     "n": "047",
+     "title": "03.09.2025 Apresentação Comercial com Bruno Hebert e Caetano Paixão",
+     "id": "1pBne-44lVmvSvcKEUU3B4BigrTMdmD8J"
+    },
+    {
+     "n": "048",
+     "title": "01.10.2025 Cadências de Follow Up com Vinicius de Sá",
+     "id": "1O0Awzx623SGnZA5rR25MRu90ZMnsSbpa"
+    },
+    {
+     "n": "049",
+     "title": "13.10.2025 Como Captar o Máximo de Leads Prontos para Comprar com Matheus Matuta",
+     "id": "1ols8qXweAm7zmEG-Rban4unUS9bhc8l3"
+    },
+    {
+     "n": "050",
+     "title": "12.11.2025 Encontro Quinzenal Black Friday com Cadu Neiva",
+     "id": "1v9mbnAdx1OLs8rhm7TPqqyqX9PimwQju"
+    },
+    {
+     "n": "051",
+     "title": "26 11 2025 Dimensionamento e Viabilidade de Times Comerciais - Vinicius de Sá",
+     "id": "1bqTQ7KU2_7FPNkRJz6zz1SrWDEm_XrcW"
+    },
+    {
+     "n": "052",
+     "title": "07.01.2026 - Encontro Quinzenal Planejamento e Metas para 2026 com Vinícius de Sá",
+     "id": "1qxdCEQ4Ounp3C4SykLutfKIZSvGuOXO4"
+    },
+    {
+     "n": "053",
+     "title": "04.02.2026 - Funis na Prática como escolher o funil certo para o seu negócio hoje",
+     "id": "1_jmO4uvUsjjjM_pqskP1DIaAvg5MjtHK"
+    },
+    {
+     "n": "054",
+     "title": "04.03.2026 Apresentação Comercial Estrutura Base que Aumenta Conversão ( modelo FSS ) com Bruno Hebert",
+     "id": "1wgnVKDHiqvJ8kQ8Y738R9tdEtX292soB"
+    },
+    {
+     "n": "055",
+     "title": "18.03.2026 Formatação de Produtos criando produtos complementares para aumentar LTV",
+     "id": "15KqbOZC6HHS0mtQmyzcMbvweaSrgAqzL"
+    },
+    {
+     "n": "056",
+     "title": "25.03.2026 Conteúdo para Gerar Demanda Qualificada, FLG com Matuta",
+     "id": "1nf33z-_3d6v0tmHQv_8HobaNV3ec8yjq"
+    },
+    {
+     "n": "057",
+     "title": "26.03.2026 Só postar não basta Como transformar seus conteúdos em uma alavanca de autoridade com Joao Lima",
+     "id": "1Z7gVgToee9bKO2iHh4-TT4bhLdhYqbcp"
+    },
+    {
+     "n": "058",
+     "title": "04.2026 - Encontro Quinzenal Como construir produtos perpétuos, preservando valor, simplificando e minimizando esforç",
+     "id": "1m_gU1rtgOhkSwD1AD8kPAy7utFljOTxJ"
+    },
+    {
+     "n": "059",
+     "title": "04.2026 - Encontro Quinzenal Funis com o Claude - Como Criar Funis através de Inteligência Artificial com Matheus Mat",
+     "id": "1aMPIjnZmQxw1J4fLoyxSxClwQjcXvP6F"
+    },
+    {
+     "n": "060",
+     "title": "05.2026 ENCONTRO QUINZENAL Gestão de eventos é transformar planejamento em experiências memoráveis.",
+     "id": "1ulVpgNI9HX3xNhhgHVTgHgUWg8wL6Mzj"
+    },
+    {
+     "n": "061",
+     "title": "Encontro Quinzenal - Apresentaçao Comercial Revisão e Tira Dúvidas 20.05.2026",
+     "id": "1anP54r1aQZPVaotI45ceql_-jUMgdr8O"
+    },
+    {
+     "n": "062",
+     "title": "Processo de Pós-Venda como estruturar um departamento que gera lucro 17.06.2026",
+     "id": "1vq9g3hr0kD4ierSBdhKW-T81r9449uz3"
+    },
+    {
+     "n": "063",
+     "title": "Encontro Quinzenal - 01.07 - Contratação de SDR",
+     "id": "1Hje7QQWYvXt_6PlEyh6lOCC8mj5aT07v"
+    },
+    {
+     "n": "064",
+     "title": "Encontro Quinzenal - 15.07 - Construindo uma Máquina de Vendas como estruturar um time do zero ao alto volume",
+     "id": "1ZWQj0GjXtR7sGPp0ofF0dFZp7RsUcZzD"
+    },
+    {
+     "n": "065",
+     "title": "Encontro Quinzenal - Correção de baixa performance 29.07.2026",
+     "id": "1vCP4ytxcoEehD0f0dgtvGf36GzCFgTB_"
+    }
+   ]
+  },
+  {
+   "course": "Raio-x da Personalidade",
+   "count": 53,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1qNUFRrFN_DLSY2kciPL8n3CrqJvJiW7y"
+    },
+    {
+     "n": "002",
+     "title": "Termo de Compromisso",
+     "id": "1MKXYIeArPD4rKmWpsYDapgtN4TK59uH5"
+    },
+    {
+     "n": "003",
+     "title": "Alinhamento e Instruções",
+     "id": "1QB0kAxYm05lsJqeX1vhE69fnLlECwYwf"
+    },
+    {
+     "n": "004",
+     "title": "Comunicação X Perfil",
+     "id": "1dYkuh1isMCMOg9uZP7RoXP8eA3zpAKzt"
+    },
+    {
+     "n": "005",
+     "title": "O Que é Personalidade",
+     "id": "15tFo_GpCgUuP2A6edyaWVg0LQvcb5jHQ"
+    },
+    {
+     "n": "006",
+     "title": "Teoria da Personalidade",
+     "id": "1-gB3CPTiU6an57KwUZ2NZcGRsVX6WJmh"
+    },
+    {
+     "n": "007",
+     "title": "Filtros",
+     "id": "1RCX-_T9-dhHdVm8clYkoJaDMO4jV022u"
+    },
+    {
+     "n": "008",
+     "title": "Regra de Ouro x Regra de Platina",
+     "id": "1n2IMBUrWXIwLgItgt09ERpXTTjspMfWx"
+    },
+    {
+     "n": "009",
+     "title": "Porque Aprender Personalidade",
+     "id": "1YSpI1Pyvgt6vkWOoRIFKXGid6fZSkMm7"
+    },
+    {
+     "n": "010",
+     "title": "Pontos Importantes Frisar",
+     "id": "18vJdjFctpbjOiS5Hj-FpmG1kY06--ncX"
+    },
+    {
+     "n": "011",
+     "title": "Comunicação x Perfil",
+     "id": "17FwrEqZ9LO6Zmh8NFulunq4Fvn5T0jRP"
+    },
+    {
+     "n": "012",
+     "title": "Você Realmente Se Conhece",
+     "id": "1K38AUkoDjgkgTtczIZ6xZQMV0fYSPh3w"
+    },
+    {
+     "n": "013",
+     "title": "Identificando e Lendo o Seu Perfil",
+     "id": "1M6TPSxSLlmRlRc01zrgxMDTKHQpJS0Ep"
+    },
+    {
+     "n": "014",
+     "title": "Perfil",
+     "id": "1EzM7430td6dphdYHjaag8pQ44o4N1HNL"
+    },
+    {
+     "n": "015",
+     "title": "Características da Essência",
+     "id": "1_YQQpUsDgR_BqY-sIltz8enU-6PAw35M"
+    },
+    {
+     "n": "016",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1e80aeKbSuJ-mzW4TcngJrcFPKKgv-vU2"
+    },
+    {
+     "n": "017",
+     "title": "Medos do Perfil",
+     "id": "1HH9_4a2bW0gLjL8qd-2ZWTRQTtWU2-kq"
+    },
+    {
+     "n": "018",
+     "title": "Motivações do Perfil",
+     "id": "1irXpsjq3YcGjJjY6yqyEmUnOyycMXqNs"
+    },
+    {
+     "n": "019",
+     "title": "Necessidades Básicas",
+     "id": "1dTJ3rfujE9WHSUTcGq7dS3XzExuTYjPS"
+    },
+    {
+     "n": "020",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "17iIpbIOKD8fHWKMNoSWukrf3kYdRCVNc"
+    },
+    {
+     "n": "021",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1GUr0Z__lUQK6L9eK1hUEqyHdHxrL64uZ"
+    },
+    {
+     "n": "022",
+     "title": "Resumo do Perfil",
+     "id": "1lKqVK3Mm-Srkj3NBzlpDwHHMhJs0J7Ul"
+    },
+    {
+     "n": "023",
+     "title": "Perfil",
+     "id": "19ihmSFxj8fy6UpIIyzOJgtvHOj5wOmPO"
+    },
+    {
+     "n": "024",
+     "title": "Características da Essência",
+     "id": "1VPquQ4CUKOVleKe2Tdpgp0kovnmvPazm"
+    },
+    {
+     "n": "025",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1Eo7aGq2NsLOTWv744QkUJY1eM_UyREbX"
+    },
+    {
+     "n": "026",
+     "title": "Medos do Perfil",
+     "id": "1Tmo-vjF50XXigH0GT3gREjvoOexZbixK"
+    },
+    {
+     "n": "027",
+     "title": "Motivações do Perfil",
+     "id": "1OKYRloO9tQk9zeuUvNZmwnww4_7TtQib"
+    },
+    {
+     "n": "028",
+     "title": "Necessidades Básicas",
+     "id": "1Vej_WVVHfB3pXe9Q4BSWRKNpNDH32KXw"
+    },
+    {
+     "n": "029",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1-1nO95-q9iTZiAZG3h-9AKkYEKpfK_gz"
+    },
+    {
+     "n": "030",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1FVqDeh-Y9e-WE3yBOOUWIreZwTgYqWnS"
+    },
+    {
+     "n": "031",
+     "title": "Resumo do Perfil",
+     "id": "1HuCJ0vSfF8TZtylgU9C8_cWIsCa7dyzc"
+    },
+    {
+     "n": "032",
+     "title": "Perfil",
+     "id": "19a7nuQ1Jwlcy5hGun0nG0oEtGJMu6Wj0"
+    },
+    {
+     "n": "033",
+     "title": "Características da Essência",
+     "id": "1hR-nPjlZZ13SfYP0pnZU5RmJGhTmuG5o"
+    },
+    {
+     "n": "034",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1ae55dC-eb8sSDtg9kdNs2vLeFYIDaulm"
+    },
+    {
+     "n": "035",
+     "title": "Medos do Perfil",
+     "id": "1wNR0fRzcYresjJbXI7y77eExoXD5grs7"
+    },
+    {
+     "n": "036",
+     "title": "Motivações do Perfil",
+     "id": "1UlTr7vxiAlvO8AvMsMezxLcdckOpfJUw"
+    },
+    {
+     "n": "037",
+     "title": "Necessidades Básicas",
+     "id": "1b7TkmrsJ1IH8FjfT2M2InW71sR8cZFgh"
+    },
+    {
+     "n": "038",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "12RFTWSwZp9fz0RAu4Sv2vDML_8_FZhKa"
+    },
+    {
+     "n": "039",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1oDw2k6T0TztfBAp77N3xQHGY8f0RbAJ-"
+    },
+    {
+     "n": "040",
+     "title": "Resumo do Perfil",
+     "id": "1zTIPbHuHlecK2-AZKnVTFXBhBZQ4qdzO"
+    },
+    {
+     "n": "041",
+     "title": "Perfil",
+     "id": "1-UbuNbjLGuNJCmFP0B-ay-nkZivUb3IC"
+    },
+    {
+     "n": "042",
+     "title": "Características da Essência",
+     "id": "1eeZsV-c24U-v4unSFf_83Squ0kjJsq9k"
+    },
+    {
+     "n": "043",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1HXW8a-_e_OayzNd5Dywx80WlSI4Ui_uY"
+    },
+    {
+     "n": "044",
+     "title": "Medos do Perfil",
+     "id": "1XFN04u8Xijlez-V3PNPNOUkdylggATFM"
+    },
+    {
+     "n": "045",
+     "title": "Motivações do Perfil",
+     "id": "1cQUvAdFnRLXZNd1b_QNSnvvk-uCVuh8u"
+    },
+    {
+     "n": "046",
+     "title": "Necessidades Básicas",
+     "id": "1oMiwXqWp9C4cRfpVtWLxZni_szteCxal"
+    },
+    {
+     "n": "047",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1zMqOyx5a0uOukLMgj41cvJj4iGEeTO4j"
+    },
+    {
+     "n": "048",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1lKJAUQ76OXHyPKp54qwc3Vt0ckaoIbB3"
+    },
+    {
+     "n": "049",
+     "title": "Resumo do Perfil",
+     "id": "18r1ddp_xN594xWzR-4P_dnAx_KpTWHri"
+    },
+    {
+     "n": "050",
+     "title": "Como Identificar os Perfis",
+     "id": "1wwsZFXBqO4CYnlM45HBAClqA7F0BgTwG"
+    },
+    {
+     "n": "051",
+     "title": "Treinando Seu Olhar",
+     "id": "1pn08B9hmHA3E2IKeRoug7RkxmlBJb75j"
+    },
+    {
+     "n": "052",
+     "title": "Perfil e Suas Combinações",
+     "id": "14D4F2vytl27p96TjZzOmcFKbeozIpZ_V"
+    },
+    {
+     "n": "053",
+     "title": "Agradecimento",
+     "id": "16Ql1L7p9KQD-AojGIv--ycqJpjHxml5t"
+    }
+   ]
+  },
+  {
+   "course": "Raio-x da Personalidade - Full Sales Flix",
+   "count": 53,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1_7aSf4FyfN2INV71cWlipYzFmB4BCAAo"
+    },
+    {
+     "n": "002",
+     "title": "Termo de Compromisso",
+     "id": "1NrtrA5zqtv4o26tFR3YpOFK9np7U_Fxt"
+    },
+    {
+     "n": "003",
+     "title": "Alinhamento e Instruções",
+     "id": "131W77BMA4Q3F7_Xzyx-HKtRBfQ8nlzoz"
+    },
+    {
+     "n": "004",
+     "title": "Comunicação X Perfil",
+     "id": "17Red8l5yVA5wvL5tERIMZGu_Hr8EdrOx"
+    },
+    {
+     "n": "005",
+     "title": "O Que é Personalidade",
+     "id": "1QeNqEVAn6m6rVbY25kAcM2nNyzYk6wH1"
+    },
+    {
+     "n": "006",
+     "title": "Teoria da Personalidade",
+     "id": "1InyXmzGZUy3dey87B8c4-uxHvVlTYVau"
+    },
+    {
+     "n": "007",
+     "title": "Filtros",
+     "id": "1Cv2NXcSYFoZ0M_vVbyeZCVsLf1bYMt2V"
+    },
+    {
+     "n": "008",
+     "title": "Regra de Ouro x Regra de Platina",
+     "id": "10wtJKD5pVmEB8XgwyUiOsT0NbOkaMEty"
+    },
+    {
+     "n": "009",
+     "title": "Porque Aprender Personalidade",
+     "id": "1boyk6LpCfPVC81IP_q5hCzDEV41rEYOt"
+    },
+    {
+     "n": "010",
+     "title": "Pontos Importantes Frisar",
+     "id": "1yLHB9Y1Msf_uEAEYPk8WV1LWUi-UthoM"
+    },
+    {
+     "n": "011",
+     "title": "Comunicação x Perfil",
+     "id": "1pJaCh7w0gZ6NJtIeSfQJSyUwxGftpJi9"
+    },
+    {
+     "n": "012",
+     "title": "Você Realmente Se Conhece",
+     "id": "18D8FP7-op0vYLHcuEHQyGIcEgebrK1Mm"
+    },
+    {
+     "n": "013",
+     "title": "Identificando e Lendo o Seu Perfil",
+     "id": "18YDutMGaMxp6pUGs4AhXjvH345fKcluS"
+    },
+    {
+     "n": "014",
+     "title": "Perfil",
+     "id": "1gw0gnxP0ENpDW2XAeMQeWshh99Rv9ZsM"
+    },
+    {
+     "n": "015",
+     "title": "Características da Essência",
+     "id": "1XbmRvfhPyGiYM28Oo14p7wBSEy7IJbfI"
+    },
+    {
+     "n": "016",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1qCnvdT452EnADpfS8H_xBqlTH1PLag6B"
+    },
+    {
+     "n": "017",
+     "title": "Medos do Perfil",
+     "id": "1tlEArILaqwE594fWrYfX0SXCb2qUrKTU"
+    },
+    {
+     "n": "018",
+     "title": "Motivações do Perfil",
+     "id": "1_Eekxwqh5V8FR61enueTM-HWLCSyW8ZJ"
+    },
+    {
+     "n": "019",
+     "title": "Necessidades Básicas",
+     "id": "1CvXxQqLoTXX4zPSIiNxSbe1759Gc51_5"
+    },
+    {
+     "n": "020",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1BpQ4b7Kmka-LmT1Lnsf1iPsZfQYB_ZN8"
+    },
+    {
+     "n": "021",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1OetS_0N-EBeAEY8CKaavb_asZVXQL3Ys"
+    },
+    {
+     "n": "022",
+     "title": "Resumo do Perfil",
+     "id": "1r1U2HdhEE0MRYzoUyj97EMydpZM5uQWW"
+    },
+    {
+     "n": "023",
+     "title": "Perfil",
+     "id": "13KUuAMR3Xy8Oyfa__AfCyxk3ZcI-AAyt"
+    },
+    {
+     "n": "024",
+     "title": "Características da Essência",
+     "id": "1QuzlE2OYLnJaqEvyLBIq8qoQnkiO4tHY"
+    },
+    {
+     "n": "025",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "1Cx1nZbfXFsaA3_aNvNlGJrOuCQ4yKVO4"
+    },
+    {
+     "n": "026",
+     "title": "Medos do Perfil",
+     "id": "1oVpsCMSMYHg9oefa3WOvRZRfpDExMfHG"
+    },
+    {
+     "n": "027",
+     "title": "Motivações do Perfil",
+     "id": "1_yrD8eJWUgAtsfHZnV598ODR0VZbgvka"
+    },
+    {
+     "n": "028",
+     "title": "Necessidades Básicas",
+     "id": "1oGovmHKc3aXXZ9QtyiFcmKjPbZJN139n"
+    },
+    {
+     "n": "029",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "10G4cVmGDAb3P8MpTV073a8JQinD_vDb5"
+    },
+    {
+     "n": "030",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1hX-vM2wSe-CJ-vHS5q2NSy11dwipgDGN"
+    },
+    {
+     "n": "031",
+     "title": "Resumo do Perfil",
+     "id": "1rgJB21N1OUk0GNhRLkzfM8dqlMCr6jOl"
+    },
+    {
+     "n": "032",
+     "title": "Perfil",
+     "id": "1SXcRRAj42G_7ZaeTiQCE3Oe0E6PughvW"
+    },
+    {
+     "n": "033",
+     "title": "Características da Essência",
+     "id": "1IxBWqXand5Anqy8kqzbjNiwe2HdFdU3K"
+    },
+    {
+     "n": "034",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "15hxinjE9G10oTZf1HQ_55daVJhB3lZn4"
+    },
+    {
+     "n": "035",
+     "title": "Medos do Perfil",
+     "id": "17cFdENpgix6qHyyCMoIVHRBZqmyj6Jge"
+    },
+    {
+     "n": "036",
+     "title": "Motivações do Perfil",
+     "id": "1YJ4lj_GMqEzl_UxKawYWHTPCgxLyDIGP"
+    },
+    {
+     "n": "037",
+     "title": "Necessidades Básicas",
+     "id": "1WpwGiPvhUIN0rbHrSDC9yNbpLVbGPh-0"
+    },
+    {
+     "n": "038",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1Da8zltMgkd9GTAmvLuqGG2iXDPhAy6U0"
+    },
+    {
+     "n": "039",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "19s4ffQJRmM0b6COzcobfWaG9Gd7wjN8v"
+    },
+    {
+     "n": "040",
+     "title": "Resumo do Perfil",
+     "id": "13nIXhex7l5SoUdqU7BgL_jmG29mCeNgW"
+    },
+    {
+     "n": "041",
+     "title": "Perfil",
+     "id": "1J_hblEDqyw0avTB2RcqnslYP50ZLSFfM"
+    },
+    {
+     "n": "042",
+     "title": "Características da Essência",
+     "id": "1YQ_PWCYM0nLoxeCdQxQth0pAeo5Z6Jfg"
+    },
+    {
+     "n": "043",
+     "title": "Comportamentos a Serem Desenvolvidos",
+     "id": "14lgSgEhyoIJGqqLUqowTzQE218KKwgBL"
+    },
+    {
+     "n": "044",
+     "title": "Medos do Perfil",
+     "id": "1EemoL-SMwXP8yDerthbFnKZDwv4qU8e3"
+    },
+    {
+     "n": "045",
+     "title": "Motivações do Perfil",
+     "id": "1PMBQaT5IQnXuh1VQDDds-FkEKMvw5AE8"
+    },
+    {
+     "n": "046",
+     "title": "Necessidades Básicas",
+     "id": "1DnYqbOzrJCqRQdJE-1NRcNWrB0HN80s_"
+    },
+    {
+     "n": "047",
+     "title": "Melhor Adequação Nas Organizações",
+     "id": "1NmzJR2c3vOMVwzGvZNJu94EAiEqMW7jo"
+    },
+    {
+     "n": "048",
+     "title": "Tomada de Decisão do Perfil",
+     "id": "1pNGuvyT7F6_QCjXdYm0yPcV_CUL8deR6"
+    },
+    {
+     "n": "049",
+     "title": "Resumo do Perfil",
+     "id": "1EkAUuO8Yj8I2_P_8143riqedUX3Hls3x"
+    },
+    {
+     "n": "050",
+     "title": "Como Identificar os Perfis",
+     "id": "1qZ7_8RAqrlM2fDV3KA_3UgAtPWZOIL2h"
+    },
+    {
+     "n": "051",
+     "title": "Treinando Seu Olhar",
+     "id": "1Aw1tQjpE1fsLzTTHLn-Isu1SFDqv608P"
+    },
+    {
+     "n": "052",
+     "title": "Perfil e Suas Combinações",
+     "id": "1roltfgzIzK7n_AEIQtMy7ed5lAB6YHJ-"
+    },
+    {
+     "n": "053",
+     "title": "Agradecimento",
+     "id": "1v36j5YNgqsKyu5FtwwiaIYU0rpditpY9"
+    }
+   ]
+  },
+  {
+   "course": "Bônus e Entregas de Convidados",
+   "count": 52,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Oratória e Posicionamento com Naldo Correia e Katharina Bartz",
+     "id": "1qV8gMrC0SPUF_j8dQrPAUe8VHKG165iC"
+    },
+    {
+     "n": "002",
+     "title": "A Comunicação que Vende com Érika Guarnieri 24.07.2025",
+     "id": "1eAhNIl070BG6awKpBs8i8BcBu7N76PVQ"
+    },
+    {
+     "n": "003",
+     "title": "Como gerar desejo de compra nas redes sociais com Mari Perzi",
+     "id": "1jUI8GKbX9gdZqbzGKNDQyhkX32hbze94"
+    },
+    {
+     "n": "004",
+     "title": "Como Viralizar Experts com Lucas Miike",
+     "id": "10ywxhZZPPuDMx_keOQdJtseaYEQiBKf2"
+    },
+    {
+     "n": "005",
+     "title": "Como Fazer Reels Virais para Social Selling com Lucas Miike",
+     "id": "1NdvWC_n1BFswhyiio8hvdJKOS6hm2sRN"
+    },
+    {
+     "n": "006",
+     "title": "Como produzir conteúdo para atrair novos clientes com Rodrigo Vicenzi 28.05.2026",
+     "id": "1ZW-kvN5kX-HDNxTw-Cwkb2qj3rBXaelJ"
+    },
+    {
+     "n": "007",
+     "title": "🎥 Como Estruturar um Canal no YouTube para Vendas de Alto Valor com Paulo Arteque 30.07.2026",
+     "id": "1TIytQPRBA4j7GpD4S6Euif7-UAmD2vv2"
+    },
+    {
+     "n": "008",
+     "title": "Crescendo no Instagram e Tiktok para atrair milhares de leads qualificados sem investir 1 real a mais com Catlen Guerra",
+     "id": "1tGxwQV7YwdzJqa70_LSidTotmuw4kebY"
+    },
+    {
+     "n": "009",
+     "title": "Implementação de Social Selling com Gabriel Hian 29.11.2024",
+     "id": "1WVRjV7H3QdrV28y54mDe7CFt23_dUtFg"
+    },
+    {
+     "n": "010",
+     "title": "Treinamento de Vendas e Construção de Onboarding com Caetano Ferraz 31.01.2025",
+     "id": "1U1Cto6VlxIb86hToq_B7J77DMEjSV1jc"
+    },
+    {
+     "n": "011",
+     "title": "Master Class de Social Selling com Vinicius de Sá, Thiago Germano e Douglas Batista",
+     "id": "1Uv6fSETP-_6vpV69Pk2VDq8fnEnewASz"
+    },
+    {
+     "n": "012",
+     "title": "WorkShop Definitivo de Social Selling com Vinicius de Sá e Juliana Duarte",
+     "id": "1b0DISGhp6e5lcaRDU3shp0lPPqdUMiiv"
+    },
+    {
+     "n": "013",
+     "title": "Prospecção Digital 7D com Vinicius de Sá e Paula Torres",
+     "id": "1MQt2DXl0TustIHCZkzOvh30qagbEZZme"
+    },
+    {
+     "n": "014",
+     "title": "Aula de Prospecção Instagram com Leo Toledo",
+     "id": "1MSgTAH7ONfcdQjQN0hwvzMrAlhCqYW5p"
+    },
+    {
+     "n": "015",
+     "title": "Aula de Prospecção de Whatsapp com Murilo Max",
+     "id": "1iEI3RFwTvU5-5K4paULfcwZciEIaS-vx"
+    },
+    {
+     "n": "016",
+     "title": "Aula de Prospecção Linkedin Faixa Preta com Marcio Bertot",
+     "id": "16liSMDc4eKs4O4SAlN9KqadcxHyI-NNV"
+    },
+    {
+     "n": "017",
+     "title": "Aula de Pegar indicação e Vender para Indicação com Elvis Lion",
+     "id": "152FPDpR68UcElskNRpH7cSBdVfcgNsfG"
+    },
+    {
+     "n": "018",
+     "title": "Aula de SDR Faixa preta com Eliakim",
+     "id": "1VW4XYnlKaNH4vTPlFWoYbt_CWxhyhJmR"
+    },
+    {
+     "n": "019",
+     "title": "Processos de Embaixadorização (Farming) com Gabriel Hian e Bruno Hebert 27.09.2024",
+     "id": "1Jtd0MFpkikDpULHVH3OW2FS_3tANRoUf"
+    },
+    {
+     "n": "020",
+     "title": "Como Ativar o Comercial no Funil de Desafio com Alícia Félix",
+     "id": "1HfbSotAvDsaq6qMLFcBQ0m5g6Y0GZwth"
+    },
+    {
+     "n": "022",
+     "title": "Os Segredos do Webinar - Vinicius Domicioli, Antoni Dinamar, Eduardo Luz e Dennis Faustino",
+     "id": "1McbtIdg2hAIvouWWWxbVdtaPHYSU_fd6"
+    },
+    {
+     "n": "023",
+     "title": "Construção de Copy para filtrar o Cliente Ideal com Matheus Fiel 16.04.2025",
+     "id": "1k5k-QoExo63NFsNQi60ZVh0qezwkbz4P"
+    },
+    {
+     "n": "024",
+     "title": "O Código da Autoridade com Melissa Paladino 27.11.25",
+     "id": "1kQi_xRgDnWRfAvab087thk1CvaYyA4NB"
+    },
+    {
+     "n": "025",
+     "title": "Captação Perfeita Como reduzir mais de 50% do seu Custo por Lead sem perder a qualificação com Natan Madeira 18.09.2025",
+     "id": "1LcxY0TmFiNQJXKZvqXt5iZ_eE-KLM7CT"
+    },
+    {
+     "n": "026",
+     "title": "Funil de Isca Paga com Matheus Matuta 28.03.2024",
+     "id": "1XY9-Efpdsw0GK0sy-RNViIHDNgB-PArb"
+    },
+    {
+     "n": "027",
+     "title": "Construção de Ofertas e Funis com Matheus Matuta e Caetano Paixão",
+     "id": "1CbeybOsbmT6ZRCMB8V0HLffqW1g7vQ66"
+    },
+    {
+     "n": "028",
+     "title": "Lançamento Meteórico com Arcílio Neto",
+     "id": "1cKEXDTzCquE2ICq28gguIDoc17jA99Yv"
+    },
+    {
+     "n": "029",
+     "title": "Eventos Presenciais de Alta Conversão com Douglas Batista",
+     "id": "1e6sEz7bHVmTSTLtm9W4os1IPMuRP0PjE"
+    },
+    {
+     "n": "030",
+     "title": "Transformando seus Eventos em uma Máquina de Lucro com Aline Baptista",
+     "id": "1fDRqDuVfp6wuKCaMTaIqCL74YD6pu-ZS"
+    },
+    {
+     "n": "031",
+     "title": "Captação de Patrocínio para Eventos e estruturação de cotas de patrocínio com Pedro Neves",
+     "id": "1oTV4nUyiumAOSc1YXbCFJt91aVo8qWjA"
+    },
+    {
+     "n": "032",
+     "title": "Como ter e entregar uma experiência memorável nos seus eventos presenciais com Andrea Cachum",
+     "id": "1e1UauksiVgtasXwy5b6iGwqT62vZRGzB"
+    },
+    {
+     "n": "033",
+     "title": "Oratória e Comunicação para EVENTOS com Isabella Mori",
+     "id": "1bDR6E508paCRDaQphyL3WwtE9eZL6MrV"
+    },
+    {
+     "n": "034",
+     "title": "Como executar um evento pequeno em 7 dias com baixo custo e faturar alto mesmo com poucos participantes com Mateus Menez",
+     "id": "1cbSaXVb8jE3-x1XBtnJOPye9meY79KAi"
+    },
+    {
+     "n": "035",
+     "title": "Estruturação de Ofertas e composição de Produtos com Matheus Matuta 31.01.2024",
+     "id": "1uIN2PZuDtk2ffQPLtoxQAb6vswn0Y1h1"
+    },
+    {
+     "n": "036",
+     "title": "Sua Empresa Sem Depender de Você e Muito Mais Lucrativa com Fernando Campanholo",
+     "id": "15xOizOKSFCcBd1CweuCCoS7hrY5FPwB_"
+    },
+    {
+     "n": "037",
+     "title": "Gestão Financeira e Estratégia com Thiago Oliveira 26.06.2025",
+     "id": "1XTRjiDdhK7sD03ng4l0BP-SdAQQnfpUl"
+    },
+    {
+     "n": "038",
+     "title": "Health Day com Vinicius de Sá 27.05.2024",
+     "id": "1OmiKHGpIGpn7uDn8BRZJETqWS8oiGHsf"
+    },
+    {
+     "n": "039",
+     "title": "Agentes Autônomos Transforme sua Rotina e Alcance um Salto Exponencial em Resultados e Qualidade de Vida com Guga Ribeir",
+     "id": "1m1QIX28-1Y2JTLSArVLzcy4ZuDv4ShNe"
+    },
+    {
+     "n": "040",
+     "title": "Scripts de Whatsapp e Ligação de Pré-Vendas com Gabriel Hian 06.06.2024",
+     "id": "1ZFOq_4tUcLiWA0JquT8quFNAloKWCr8Z"
+    },
+    {
+     "n": "041",
+     "title": "Estruturação de Apresentação de Vendas com Bruno Hebert e Caetano Paixão 25.10.2024",
+     "id": "1jsxHj3bOa8u2gjAQjx3nC9j_uGep-rnY"
+    },
+    {
+     "n": "042",
+     "title": "Implementation Day - Reunião de Boas Vindas 31.02.2025",
+     "id": "14z4KmzviKabru_p7hcVKIS3IDp3A_61H"
+    },
+    {
+     "n": "043",
+     "title": "Como definir e criar um processo eficiente Caetano Ferraz e Raquel Mateus 31 07 2025",
+     "id": "1mptmF0uflyDIaAXaPViQXV7J0E9kwA6K"
+    },
+    {
+     "n": "044",
+     "title": "25.09.2025 - Organização e Gestão de Métricas do Time Comercial com Aline Ribeiro",
+     "id": "1m7zPy7yDE-scqgiW7swdxf8Z6BCQON9S"
+    },
+    {
+     "n": "045",
+     "title": "15.10.2025 - Gestão de Processos Inteligentes no CODA Raquel Mateus",
+     "id": "1ZU0yxt_In6E9sPfIvluvgrM6Uceolcmk"
+    },
+    {
+     "n": "046",
+     "title": "Aula completa de Claude Code com Rafael Cruvinel 30.04.2026",
+     "id": "1ifh83y-rPMwmll42Hotv9Ji-uY01lrKV"
+    },
+    {
+     "n": "047",
+     "title": "Configuração do CRM e Regras de Automação 29.02.2024",
+     "id": "1lZCf7uqRGaPf-h42ihflNHh95Vlqcoaw"
+    },
+    {
+     "n": "049",
+     "title": "Disparos de Grupos Configurações, gerenciamentos e acompanhamentos com Larissa Diniz 28.08.2025",
+     "id": "1w8Fh9guMjpV3b61mevJx6dUJh5XTWKaL"
+    },
+    {
+     "n": "050",
+     "title": "Contrato PJ sem medo de CLT com Barbara de Paula",
+     "id": "1QMA9IyAalnsM5bRZ-Umy7cuC6DM4M1A1"
+    },
+    {
+     "n": "051",
+     "title": "Estratégias Tributárias para REDUZIR impostos de forma legal com Stela Carneiro",
+     "id": "1TfoBwwhXZ-JgVKrVMs4ynBwVJtHPrnLr"
+    },
+    {
+     "n": "052",
+     "title": "Vendas Protegidas Como o Jurídico Pode Evitar Prejuízos e Aumentar seu Lucro com José Raphael 21.08.25",
+     "id": "1oxNkGk7mJANx9m6bDeMiQAZGYLpDMplm"
+    },
+    {
+     "n": "053",
+     "title": "Funding e M&A com Algo Makers",
+     "id": "1aHehBUltr33aN9MBvb55Y3E6k7-aytCY"
+    },
+    {
+     "n": "054",
+     "title": "Como transformar o sucesso do seu negócio em patrimônio, renda e liberdade financeira com Alex Petri",
+     "id": "117U9A5SBBj0OftChWLGZL6kM1hqEota0"
+    }
+   ]
+  },
+  {
+   "course": "Mastermind Head Comercial",
+   "count": 47,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Mastermind de Heads Comerciais 06.02.2025",
+     "id": "1td7PWqXXevLfmjm3rwI9-Q7dqUhS0WU8"
+    },
+    {
+     "n": "002",
+     "title": "Mastermind de Heads Comerciais 13.02.2025",
+     "id": "1ZiEKX1H3YJjX4EAat5Dpz22yl162SsEY"
+    },
+    {
+     "n": "003",
+     "title": "Mastermind de Heads Comerciais 20.02.2025",
+     "id": "1ZXnWv2GG9iedCpU5YlzzqS8VGrYaMAGe"
+    },
+    {
+     "n": "004",
+     "title": "Mastermind de Heads Comerciais 13.03.2025",
+     "id": "1_QAkHQMgV7jEzI6tDYfX99kuyZu2Snwe"
+    },
+    {
+     "n": "005",
+     "title": "Mastermind de Heads Comerciais 27.03.2025",
+     "id": "1vJis8b7Rp7DibmPo0TPcBSzFheFMxX2H"
+    },
+    {
+     "n": "006",
+     "title": "Mastermind de Heads Comerciais 03.04.2025",
+     "id": "1YOFLp9PAesb2vNR7GB_Gn9zlei9Mkg9p"
+    },
+    {
+     "n": "007",
+     "title": "Mastermind de Heads Comerciais 10.04.2025",
+     "id": "1_bw4tmg5DImsxleQ1utrG8B5emoZA16B"
+    },
+    {
+     "n": "008",
+     "title": "Mastermind de Heads Comerciais 17.04.2025",
+     "id": "1QIc8bAjLvyC6TEXeJzrWl2KzqdCG_qg5"
+    },
+    {
+     "n": "009",
+     "title": "Mastermind de Heads Comerciais 24.04.2025",
+     "id": "16y9ISuAnDvnTENGTTqvauVoGzDccSwTK"
+    },
+    {
+     "n": "010",
+     "title": "Mastermind de Heads Comerciais 08.05.2025",
+     "id": "1U56l-kL12rLO9K1e3K7Oyzug_B-UEbOm"
+    },
+    {
+     "n": "011",
+     "title": "Mastermind de Heads Comerciais 22.05.2025",
+     "id": "1crd0M9rTAYZxaazm1S-8wSXAmnLCj4-r"
+    },
+    {
+     "n": "012",
+     "title": "Mastermind de Heads Comerciais 29.05.2025",
+     "id": "1N0BGQLNVhw7y1w3zZuBPu8GQDhVBCOUk"
+    },
+    {
+     "n": "013",
+     "title": "Mastermind de Heads Comerciais 05.06.2025",
+     "id": "13WpT-2SwQw5n2txExi2AgVBoSAa2_g5N"
+    },
+    {
+     "n": "014",
+     "title": "Mastermind de Heads Comerciais 21.08.2025",
+     "id": "1kSGveU4QuxQNOJJpf598LO5vkYPmTWF_"
+    },
+    {
+     "n": "015",
+     "title": "Mastermind de Heads Comerciais 04.09.2025",
+     "id": "12yGxP1oDhjN8V-NGRkb54hC4hsirqPya"
+    },
+    {
+     "n": "016",
+     "title": "Mastermind de Heads Comerciais 11.09.2025",
+     "id": "11jL_qcvaF9S0pEODmGVWdwv16qwPropI"
+    },
+    {
+     "n": "017",
+     "title": "Mastermind de Heads Comerciais 18.09.2025",
+     "id": "1c41rHUSTPyHRIULUjqd2SMEROKAt3uFe"
+    },
+    {
+     "n": "018",
+     "title": "Mastermind de Heads Comerciais 25.09.2025",
+     "id": "1RL_9tK9BF_oHGAGCtxxwP8v_bNbao5d4"
+    },
+    {
+     "n": "019",
+     "title": "Mastermind de Heads Comerciais 09.10.2025",
+     "id": "1ssX6yQEmUoeajGI_D1GWkLz7mpMrAWrM"
+    },
+    {
+     "n": "020",
+     "title": "Mastermind de Heads Comerciais 16.10.2025",
+     "id": "11m0mGA2ndC-62rjMM5PUcE_eYsUrr5x-"
+    },
+    {
+     "n": "021",
+     "title": "Mastermind de Heads Comerciais 23.10.2025",
+     "id": "1DYprRl8ECaSpDRBZ1U6JhIkqoPe5npV0"
+    },
+    {
+     "n": "022",
+     "title": "Mastermind de Heads Comerciais 30.10.2025",
+     "id": "1l0dWJqauZ7fQpYzPppkI4SYqkux8R-x_"
+    },
+    {
+     "n": "023",
+     "title": "Mastermind de Heads Comerciais 06.11.2025",
+     "id": "1hoIHreo3wQi0bYnDwq6hnqdw3mJZbkiY"
+    },
+    {
+     "n": "024",
+     "title": "Mastermind de Heads Comerciais 13.11.2025",
+     "id": "1fpa82gu3kCJMUNPh9rGyhHo3pmQ083Vg"
+    },
+    {
+     "n": "025",
+     "title": "Mastermind de Heads Comerciais 19.11.2025",
+     "id": "10kos24E-2s_B4DKSDxJ8CgCK16XukFnm"
+    },
+    {
+     "n": "026",
+     "title": "Mastermind de Heads Comerciais 18.12.2025",
+     "id": "1mt8L2xOd6_TfTQ7oyvTYPYX52wH39aZO"
+    },
+    {
+     "n": "027",
+     "title": "Mastermind de Heads Comerciais 08.01.2026",
+     "id": "1QSZ4ddrxTIwOfX7P0vN1zPnN0czmjS9_"
+    },
+    {
+     "n": "028",
+     "title": "Mastermind de Heads Comerciais 15.01.2026",
+     "id": "1E0p8OAlIWD5GwSBuB-US2hklpPwjQwqm"
+    },
+    {
+     "n": "029",
+     "title": "Mastermind de Heads Comerciais 29.01.2026",
+     "id": "11Uj8StRqFCGhXlP0oYyZPGZ2E6DQCrod"
+    },
+    {
+     "n": "030",
+     "title": "Mastermind de Heads Comerciais 12.02.2026",
+     "id": "1x_ktQqWAdpJCw2jLR4WbIyGG2NCOUpah"
+    },
+    {
+     "n": "031",
+     "title": "Mastermind de Heads Comerciais 19.02.2026",
+     "id": "1ONqVBIFsivaF_4Oj1iMzhyc2KhlGv3NP"
+    },
+    {
+     "n": "032",
+     "title": "Mastermind de Heads Comerciais 26.02.26",
+     "id": "1N-Wzlu6GMooj2iOx1HSBnx6nYF9iMy1u"
+    },
+    {
+     "n": "033",
+     "title": "Mastermind de Heads Comerciais 12.03.26",
+     "id": "18LTYquq24KH6AhEonim971DYdz2evJqy"
+    },
+    {
+     "n": "034",
+     "title": "Mastermind de Heads Comerciais 19.03.2026",
+     "id": "1bn9DfeKLQ0p25il875UnYckL7ftb0xcH"
+    },
+    {
+     "n": "035",
+     "title": "Mastermind de Heads Comerciais 26.03.2026",
+     "id": "1VeibW7e1x7YMpr9Iu3HmPGUAFiLpVlNW"
+    },
+    {
+     "n": "036",
+     "title": "Mastermind de Heads Comerciais 02.04.2026",
+     "id": "1I2HmACdU2saaE_QFkOR2uk46Zh5DNJMh"
+    },
+    {
+     "n": "037",
+     "title": "Mastermind de Heads Comerciais 09.04.2026",
+     "id": "1MzXcOody4YxgLWOXDkM4s5naH_JYxsu8"
+    },
+    {
+     "n": "038",
+     "title": "Mastermind de Heads Comerciais 16.04.2026",
+     "id": "15El2Vp5oaruiJc3Uaco3wZH9ZC3A0zhl"
+    },
+    {
+     "n": "039",
+     "title": "Mastermind Heads Comerciais 30.04.2026",
+     "id": "1eO6JEhpRKvSqpZO-VTvg2C7_Ybj_ZD__"
+    },
+    {
+     "n": "040",
+     "title": "Mastermind de Heads Comerciais 07.05.2026",
+     "id": "1HyT8EN-QMGU5seBop-rlRqzn9fguRYis"
+    },
+    {
+     "n": "041",
+     "title": "Mastermind de Heads Comerciais 14.05.2026",
+     "id": "1FYiv2rQuqQEZknsTGAsS8_fMQyhVSx-m"
+    },
+    {
+     "n": "042",
+     "title": "Mastermind de Heads Comerciais 21.05.2026",
+     "id": "1ELNz2qYZ_-8dJXaxcuK0ySZpNHUyY5df"
+    },
+    {
+     "n": "043",
+     "title": "Mastermind de Heads Comerciais 28.05.2026",
+     "id": "1Wjfs0qYcsLMXyIBRrm9FhD-S42sqzsWL"
+    },
+    {
+     "n": "044",
+     "title": "Mastermind de Heads Comerciais 11.06.2026 com Gabriel Hian",
+     "id": "1n7YwjsR-Py0JeN_yYM__AVe-hHUsFIev"
+    },
+    {
+     "n": "045",
+     "title": "Mastermind de Heads Comerciais 18.06.2026",
+     "id": "1gXt29WoP2NMm4ncpyjykXZF-Ltkkptc6"
+    },
+    {
+     "n": "046",
+     "title": "Mastermind de Heads Comerciais 30.07.26",
+     "id": "1ZCnMRISshtoQ9VlsV6RPQ-FWr0yz_vKJ"
+    },
+    {
+     "n": "047",
+     "title": "Mastermind de Heads Comerciais 06.08.26",
+     "id": "1tkyxBg6DHrR6I-0OVAvMiLWa_6Zw9cmU"
+    }
+   ]
+  },
+  {
+   "course": "Mentoria AVO",
+   "count": 46,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1gZdAs9YKqvhYsDrkSHVnvi3dJ5sfiket"
+    },
+    {
+     "n": "002",
+     "title": "Entenda o Caminho",
+     "id": "1EcEtic1giBKVYj5Uqx4tEGsVOpWKe5Ao"
+    },
+    {
+     "n": "003",
+     "title": "Funil x Oferta (Parte 1)",
+     "id": "1mJIfjhA7B-NnPn2b7gLfXEAZxP3a0bIo"
+    },
+    {
+     "n": "004",
+     "title": "Funil x Oferta (Parte 2)",
+     "id": "1sp_B1dSi-BbI9O-XSj2TLHh9bGKUtxm9"
+    },
+    {
+     "n": "005",
+     "title": "Métricas de otimização - VSL e Tráfego Direto",
+     "id": "1UDSlfWQXYZWqGOtKKvS0Pf-4WGatoQ0r"
+    },
+    {
+     "n": "006",
+     "title": "Métricas de otimização - Lançamento e Sessão Estratégica",
+     "id": "1f_LuScW3UGBkq9rfxx1WthuluzjJxwt_"
+    },
+    {
+     "n": "007",
+     "title": "As 4 perguntas",
+     "id": "1tyCf6zG68UsRg43hyP_hO_HqXLCfvU0w"
+    },
+    {
+     "n": "008",
+     "title": "A base de tudo objetivo, posicionamento e nicho",
+     "id": "1is8sCR2O2REdGMk2bDcD8iL2o3Bicd9W"
+    },
+    {
+     "n": "009",
+     "title": "Imersão Pesquisa - Parte 1",
+     "id": "11LuXoCTHQHal0xqsrijkaacYcZh0bGVP"
+    },
+    {
+     "n": "010",
+     "title": "Imersão Pesquisa - Parte 2",
+     "id": "1zfz61SIsNYa1MjRfA6blL_AI3oV947Pp"
+    },
+    {
+     "n": "011",
+     "title": "Criando a metodologia",
+     "id": "11_GKRsxNA6jkfwEXT0Opl4-EjwpCj0-3"
+    },
+    {
+     "n": "012",
+     "title": "Aumentadores de lucro $$$",
+     "id": "1fpbUyhev8k4N79qiNPohaRYJRfb1rJ8M"
+    },
+    {
+     "n": "013",
+     "title": "Empilhamento de oferta",
+     "id": "1RITE-msux-TIVXwhCK6YB5Ihnwfj57D4"
+    },
+    {
+     "n": "014",
+     "title": "Empilhamento de funis",
+     "id": "1PQhQJarUqu7o-mEhwBwQJ2lHH3b8tqqY"
+    },
+    {
+     "n": "015",
+     "title": "Demonstração Dramática",
+     "id": "1YcWY_HpHFKJ8pcLrfj3O2PmaCquGRVYC"
+    },
+    {
+     "n": "016",
+     "title": "Escala de tráfego",
+     "id": "1o0Cvp6h6EMid5IeUwh9SJaanqgRl2fd8"
+    },
+    {
+     "n": "017",
+     "title": "Lucro, Recompra e Recorrência no Back-End",
+     "id": "17yo4DWap-GqztaBGr7YXjhAsjRH22EiO"
+    },
+    {
+     "n": "018",
+     "title": "BMF - Branding, Movimento e Funis",
+     "id": "1qfNKpSstMJ9Pb8OoGQiYgcw4fqOEXn4K"
+    },
+    {
+     "n": "019",
+     "title": "Criativos para Campanhas",
+     "id": "1X_10v15Wq5-4KV_aAv1jGol0CFP7vJ20"
+    },
+    {
+     "n": "020",
+     "title": "Os Tipos de Funil ( Por Densidade )",
+     "id": "1rR98v5BLbhokUN3un3cZeMw-aH4_tM-g"
+    },
+    {
+     "n": "021",
+     "title": "Linchpin",
+     "id": "1U9tsyMjxsXR6LXiOWo3r-kgXTuLprO5V"
+    },
+    {
+     "n": "022",
+     "title": "VSL!",
+     "id": "1gX8N86e8tQq7BER0_Aj3qYTRAZIsnVK1"
+    },
+    {
+     "n": "023",
+     "title": "Funil de VSL Cole Gordon",
+     "id": "1Tr1jw4y2WPjOltE4rFyl5JgimMRzc-Q3"
+    },
+    {
+     "n": "024",
+     "title": "Funil do Mapa da Otimização",
+     "id": "1NZpsSC_zWAqQJa1D3Wv3p45r_ZQpeIzO"
+    },
+    {
+     "n": "025",
+     "title": "Funil de Desafio",
+     "id": "1yKmP3RsCuqeZomnsOZxQj7Kz4lsrYRoe"
+    },
+    {
+     "n": "026",
+     "title": "Desafio FSS",
+     "id": "1QDFjRC0Ekmgfsgck9ewtIcHLVku6gcKt"
+    },
+    {
+     "n": "027",
+     "title": "Funil de aquisição (isca paga)",
+     "id": "19cjNTkV1u7BiCaup8UFeZ1SfbwYxLGqR"
+    },
+    {
+     "n": "028",
+     "title": "Funil KLT",
+     "id": "1Pyg4eOTnJJLOJfd9rLGGktvZoR6uEloG"
+    },
+    {
+     "n": "029",
+     "title": "Funil de Aplicação",
+     "id": "1sRe61hRG9ZxmnJ5-QYmy6F8ujNnAwstY"
+    },
+    {
+     "n": "030",
+     "title": "Funil de Typeform que vende tickets de 497 a 100k reais",
+     "id": "1wHD3ntsW5Pt-bv9e4IE1_H8XgAEcZq8L"
+    },
+    {
+     "n": "031",
+     "title": "Funil Express - Aula 1",
+     "id": "1SJSEuqA0KPsgzji1n5OhQ-iRYKMjidif"
+    },
+    {
+     "n": "032",
+     "title": "Funil Express - Aula 2",
+     "id": "1CuT2dkoFeeI04FETlzMxsKYHrdEfmL3c"
+    },
+    {
+     "n": "034",
+     "title": "João Angeloni - da concepção à otimização do funil de isca paga",
+     "id": "1fiPCSthqxt3SQpZTSE-ibxyMZelIniTq"
+    },
+    {
+     "n": "035",
+     "title": "Aula Mestra de Oferta - Olhando pelos olhos de gigantes (Jason Fladlien, Schwartz, Hormozi e Dan Henry)",
+     "id": "1W-8twRalwi6mhEzpNYMQUBFPoWsCh1x7"
+    },
+    {
+     "n": "037",
+     "title": "Webinário - script e estrutura",
+     "id": "1iYFB1NdptwtJjS5IcSfrwhDxEvni_cG9"
+    },
+    {
+     "n": "038",
+     "title": "Webinário na prática com mentorados",
+     "id": "1lti1V81VFxXsA_k0hZ2jJBtGp7vk4SMg"
+    },
+    {
+     "n": "039",
+     "title": "Destrinchando o Webinário da AVO",
+     "id": "1ookfrugPQcW1owBYjexOZbnSuqdTBWpS"
+    },
+    {
+     "n": "041",
+     "title": "Hooks",
+     "id": "19HqIaMItQ9dmXWIpuMy6N4jfz4WUDyDk"
+    },
+    {
+     "n": "042",
+     "title": "Tipos de Produtos e Precificação",
+     "id": "1t6IocNsghq9N5jBxjh_ywAQbKB7H0lYz"
+    },
+    {
+     "n": "044",
+     "title": "Average Cart Value",
+     "id": "1EK62PC6lDlNQY4ovgnUMyLQG5thJF4dx"
+    },
+    {
+     "n": "045",
+     "title": "Social Selling - Vinícius de Sá com Master Sales Script",
+     "id": "1XCmTP2lNUEF3JGyDVk8qhiN9LC_x3Nwl"
+    },
+    {
+     "n": "046",
+     "title": "Matuta e Brasão - Live #120",
+     "id": "18ZwpAuDlZLEYiaN0poLE1TyDzjNUd67d"
+    },
+    {
+     "n": "047",
+     "title": "Workshop de Social Selling - Thiago Germano e Vinícius de Sá",
+     "id": "1deUkiGSo8vqi1r_7OJ5y3HlBHvQ7kwSa"
+    },
+    {
+     "n": "050",
+     "title": "Call de fechamento",
+     "id": "1Fa2Q2cGSpbWZd7HCMKaDnaobv-FRSGYP"
+    },
+    {
+     "n": "051",
+     "title": "Venda (muito) no direct!",
+     "id": "1xwfQK82D8HkoZCDNZffE062y64l5yaQ0"
+    },
+    {
+     "n": "052",
+     "title": "Como se organizar para colocar o funil no ar",
+     "id": "1dXRn2Alw49omQ_1pTkrnf419nGIqbmFS"
+    }
+   ]
+  },
+  {
+   "course": "Treinamento Comercial",
+   "count": 41,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Treinamento Comercial - Acompanhamento Hot Seat 02.07.2025",
+     "id": "1skmlSrs9GhyiL_w2O0gI1ctwXBKC45YZ"
+    },
+    {
+     "n": "002",
+     "title": "Treinamento Comercial - Duvidas sobre vendas- acompanhamento 09.07.2025",
+     "id": "1rK9f388SSZuuj2B1Jz5ejZA_zGWHsPN2"
+    },
+    {
+     "n": "003",
+     "title": "Treinamento Comercial - Retirada de duvidas - hotseat 16.07.2025",
+     "id": "1gT6-_pGDQp1dTeSd9milo0wmUw6IOWaP"
+    },
+    {
+     "n": "004",
+     "title": "Treinamento Comercial - Retirando duvidas 23.07.2025",
+     "id": "1IVCVVk3VC5gC5jw4voePQ1HCYOUZUZHn"
+    },
+    {
+     "n": "005",
+     "title": "Treinamento Comercial - Acompanhamento Hotseat 30.07.2025",
+     "id": "1Zxzf2NC3JQE3L7imTv_5hiwPykdSdGyh"
+    },
+    {
+     "n": "006",
+     "title": "Treinamento Comercial - Revisão de conteudo de script de vendas 06.08.2025",
+     "id": "1WLH_lDqfyeev9alrt4sxZzkvZbhFCXxH"
+    },
+    {
+     "n": "007",
+     "title": "Treinamento Comercial - Retirando duvidas 13.08.2025",
+     "id": "15EmJCliVgo9_Y7iMwAuEonm6ThObYogk"
+    },
+    {
+     "n": "008",
+     "title": "Treinamento Comercial - Acompanhamento hotseat 20.08.2025",
+     "id": "1ke9pTvQgHtRda9BZIQH3KvReJ4JFNFUP"
+    },
+    {
+     "n": "009",
+     "title": "Treinamento Comercial - Retirando duvidas 27.08.2025",
+     "id": "1BBI_R9LGbPbwgfeGTrAW9N5uUVXvrLGu"
+    },
+    {
+     "n": "010",
+     "title": "Treinamento Comercial - Acompanhamento 03.09.2025",
+     "id": "1Kpetle0VTkSwWIz-UXVEsdjHbVVN5Pmq"
+    },
+    {
+     "n": "011",
+     "title": "Treinamento Comercial - Hotseat 10.09.2025",
+     "id": "1hQtgmcmk8PoEiwDBO39niEA5MIuFbmxd"
+    },
+    {
+     "n": "012",
+     "title": "Treinamento Comercial - hotseat 17.09.2025",
+     "id": "1xKfSRK1wrkh6sYAtqSW2CWrakfPq0uRP"
+    },
+    {
+     "n": "013",
+     "title": "Treinamento Comercial - Duvidas e alinhamento 24.09.2025",
+     "id": "15dlXDjBM5sKJaDmoZ6OVV3T-mym4bb3D"
+    },
+    {
+     "n": "014",
+     "title": "Treinamento Comercial - Retirando duvidas 01.10.2025",
+     "id": "1sY0phTyGGU24nlB58xERAesTeWnIhh4s"
+    },
+    {
+     "n": "015",
+     "title": "Treinamento Comercial - Acompanhamento 14.10.2025",
+     "id": "1nUIcntQjnkzrBx2bVIyc7LHLkOXyMQfu"
+    },
+    {
+     "n": "016",
+     "title": "Treinamento Comercial - Retirando duvidas de vendas 15.10.2025",
+     "id": "1TZ7gfQcScxLfm3kIM6p9jML4n4vv2hbR"
+    },
+    {
+     "n": "017",
+     "title": "Treinamento Comercial - Hotseat 22.10.2025",
+     "id": "1dZ6WuIOImgCx7PCGQlEc2fAi_sLjJBi1"
+    },
+    {
+     "n": "018",
+     "title": "Treinamento Comercial - Retirada de duvidas 29.10.2025",
+     "id": "1pK6S_3lJN6WT7x2MMF-B-mJgjzT47peM"
+    },
+    {
+     "n": "019",
+     "title": "Treinamento Comercial - Retirada de duvidas 05.11.2025",
+     "id": "1GhXADCqG-ynWauQj8MaRF5a5n5aw_PDc"
+    },
+    {
+     "n": "020",
+     "title": "Treinamento Comercial - hotseat 12.11.2025",
+     "id": "1TePDvtEiECwBcyOZvxumnw2tWglGsv5_"
+    },
+    {
+     "n": "021",
+     "title": "Treinamento Comercial - Duvidas 19.11.2025",
+     "id": "1mbORfdhlUQup8LPuFgLNDei5qo728-hy"
+    },
+    {
+     "n": "022",
+     "title": "Treinamento Comercial - Retirada de duvidas 26.11.2025",
+     "id": "1dYhGAV3VHAuSV4HryElH_3YZpcq3LAGo"
+    },
+    {
+     "n": "023",
+     "title": "Treinamento Comercial - Acompanhamento 03.12.2025",
+     "id": "1tpIveY1H-0wAbFoIlTw2VMXa4S4MjuE3"
+    },
+    {
+     "n": "024",
+     "title": "Treinamento Comercial - Retirando duvidas 10.12.2025",
+     "id": "1MpzM7dJ_NJLgy2Jk8WvB6s38VPcUXEOW"
+    },
+    {
+     "n": "025",
+     "title": "Treinamento Comercial - Duvidas 07.01.2026",
+     "id": "1G2oAQHWGe5Hx5rrKfpSTeS5KBOjDrWnx"
+    },
+    {
+     "n": "026",
+     "title": "Treinamento Comercial - Retirada de duvidas 21.01.2026",
+     "id": "1d3u9tZAglrW7lk1WZa0iF9cpvpd8_XZE"
+    },
+    {
+     "n": "027",
+     "title": "Treinamento Comercial - Hotseat 28.01.2026",
+     "id": "1UVrvsMgn8Ba7ygwPdBV7CsNAQGNXNXyj"
+    },
+    {
+     "n": "028",
+     "title": "Treinamento Comercial - Acompanhamento 11.02.2026",
+     "id": "13Ro91HNj3y4WguRBDLH2q-c1Bzi3O0yg"
+    },
+    {
+     "n": "029",
+     "title": "Treinamento Comercial - Duvidas 18.02.2026",
+     "id": "1oSPeWBMfijbYpypRjoWjhHpfL6bRPXNz"
+    },
+    {
+     "n": "030",
+     "title": "Treinamento Comercial - Retirada de duvidas 25.02.2026",
+     "id": "1bLpZNGC3RZ8wODHvYfLN6QUb3_UkMQbH"
+    },
+    {
+     "n": "031",
+     "title": "Treinamento Comercial HS&E - Hotseat 18.03.2026",
+     "id": "1MTDN8Z6Nj2FiSriQB0fjjCbGeGsncaKg"
+    },
+    {
+     "n": "032",
+     "title": "Treinamento Comercial - Acompanhamento 01.04.2026",
+     "id": "1Xb_9yMBsbRUFrhx0DK9pnTcP8cqmvZIO"
+    },
+    {
+     "n": "033",
+     "title": "Treinamento Comercial HS&E - Hotseat 08.04.2026",
+     "id": "16QD-Zcw6Gyd-HsL-odAnLVIX3mcqKYd5"
+    },
+    {
+     "n": "034",
+     "title": "Treinamento Comercial HS&E - Acompanhamento 22.04.2026",
+     "id": "19bzGxbHVDlKJdll1y3cNPL6tOuckEONM"
+    },
+    {
+     "n": "035",
+     "title": "Treinamento Comercial HS&E - Retirada de duvidas 29.04.2026",
+     "id": "1HfKulQU9HPwZ4v6gAQqGOcUU7s4c5Iet"
+    },
+    {
+     "n": "036",
+     "title": "Treinamento Comercial HS&E - hotseat 06.05.2026",
+     "id": "1jBGSC7jdy9VzOG-rhlWd7aOlLQ0m8xMq"
+    },
+    {
+     "n": "037",
+     "title": "Treinamento Comercial HS&E - Duvidas 20.05.2026",
+     "id": "1fP8bOBgwynfaZkvhRee2Ljumb339hohQ"
+    },
+    {
+     "n": "038",
+     "title": "Treinamento Comercial HS&E - Resultados, vendas 27.05.2026",
+     "id": "1vkIu4049LQ6C_bPxiPws2J98h_EM3Xru"
+    },
+    {
+     "n": "039",
+     "title": "Treinamento Comercial HS&E - Alinhamento 03.06.2026",
+     "id": "135ma6w5wzrWW6Sy1FwJn9x4prb8gau0n"
+    },
+    {
+     "n": "040",
+     "title": "Treinamento Comercial HS&E - Retirada de duvidas 11.06.2026",
+     "id": "1laC5kw8YjXmkxGeF4LPBklnKPCe0F6Wp"
+    },
+    {
+     "n": "041",
+     "title": "Treinamento Comercial - Acompanhamento 17.06.2026",
+     "id": "1UM39kVVuiRuJPyLCSU4pYFIsvjTMi9Xz"
+    }
+   ]
+  },
+  {
+   "course": "Formação de Liderança - Destravando a Liderança",
+   "count": 39,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1KPKMfJGOzM-Xgh2H0u-KBPNmfwNyWxa_"
+    },
+    {
+     "n": "002",
+     "title": "Instruções",
+     "id": "1SuNuKALeUTs-ElfgGpHn7sEL6QbymliZ"
+    },
+    {
+     "n": "003",
+     "title": "Como Entrar No Grupo Vip",
+     "id": "1pLIEJdYIetpVFax7jYoEhx_czqp0fhbz"
+    },
+    {
+     "n": "004",
+     "title": "Aula 1",
+     "id": "11M4-Gh9Hy40PaAAh2EoEo4bIqJhoNJDz"
+    },
+    {
+     "n": "005",
+     "title": "Aula 2",
+     "id": "1nepGl7gRb7VG5UfYcC_VPs-IdZ-5yGsn"
+    },
+    {
+     "n": "006",
+     "title": "Aula 3",
+     "id": "1aX6pE4yOqcXHI3pe-pON6n51ufamayMO"
+    },
+    {
+     "n": "007",
+     "title": "Aula 4",
+     "id": "1AwmWdSEv3Zt1m_bLjpHCvpABsmjPAQqE"
+    },
+    {
+     "n": "008",
+     "title": "Aula 5",
+     "id": "1NnYUqU3ORJhLQN4K5R8yASiSWYC73Zzh"
+    },
+    {
+     "n": "009",
+     "title": "Aula 6",
+     "id": "1fDy4S014RdUcIzCAk5JNJVUqKiGqu1D4"
+    },
+    {
+     "n": "010",
+     "title": "Aula 7",
+     "id": "1ABS2CwXvxa55xEJaathCLPBb0m-ETGk5"
+    },
+    {
+     "n": "011",
+     "title": "Aula 8",
+     "id": "1D0_QtlsS2d0kWsRBTcfOiKrwfY4SNeKU"
+    },
+    {
+     "n": "012",
+     "title": "Aula 9",
+     "id": "1glf9rKKe2hAmYWrTxDPad43ThaF15fqg"
+    },
+    {
+     "n": "013",
+     "title": "Aula 10",
+     "id": "1mAkcrvgR4gbBSYfsQoLsIQV44HETx4pp"
+    },
+    {
+     "n": "014",
+     "title": "Aula 11",
+     "id": "11JLRsdoXZxvPYT0DNiiyyo8psO8pdW3Z"
+    },
+    {
+     "n": "015",
+     "title": "Aula 12",
+     "id": "1PhC14ihjLleaOy-b37mPtfskHU374k5D"
+    },
+    {
+     "n": "016",
+     "title": "Aula 13",
+     "id": "1JE1AMH8p7mwpQC_yiem4KdAe9cgO46mV"
+    },
+    {
+     "n": "017",
+     "title": "Aula 14",
+     "id": "1uS_B-muud1JvubJpNab_zKr_bANUWCjG"
+    },
+    {
+     "n": "018",
+     "title": "Aula 15",
+     "id": "1DViGqELoQhICOCIViTShxc_4TJS8lR2m"
+    },
+    {
+     "n": "019",
+     "title": "Aula 16",
+     "id": "1rNuK3TDGYAOs1y9gOp9FtnOwCC1dBZML"
+    },
+    {
+     "n": "020",
+     "title": "Aula 17",
+     "id": "1sByRkqJZ_gyBfol_9qzMuAjmJa38LVCc"
+    },
+    {
+     "n": "021",
+     "title": "Aula 18",
+     "id": "1_KPX339_u0U-e7b770m5ym9bwo6jSSld"
+    },
+    {
+     "n": "022",
+     "title": "Aula 19",
+     "id": "1UJGNXt-u1VuiOWd29eSJL6uSpYO4todU"
+    },
+    {
+     "n": "023",
+     "title": "Aula 20",
+     "id": "1Xs9soCtoCYcy0bdcVkoWEkZfqAkNL5hj"
+    },
+    {
+     "n": "024",
+     "title": "Aula 21",
+     "id": "1BEWJo1TR1N7t0mIjZekbdRgyx5Ch6sV-"
+    },
+    {
+     "n": "025",
+     "title": "Aula 22",
+     "id": "1icOUmjMAvqk8iTRKm34R5kuY5HcqfPCR"
+    },
+    {
+     "n": "026",
+     "title": "Aula 23",
+     "id": "1Wq_P59JXaIqRutEIhs3sOPzxjZdXCiyX"
+    },
+    {
+     "n": "027",
+     "title": "Aula 24",
+     "id": "1zTtzh44GgHR6AUxHSHLp3GDwBdNkpkUy"
+    },
+    {
+     "n": "028",
+     "title": "Aula 25",
+     "id": "1FUVkfpBO7JR1XJuunG4vjHrVMM8yNkvR"
+    },
+    {
+     "n": "029",
+     "title": "Aula 26",
+     "id": "16aNQ4VtEaOceB6hBBl5Z9kHf6GCm5eTu"
+    },
+    {
+     "n": "030",
+     "title": "Aula 27",
+     "id": "1RSjqoP7BYrIOqes_WX3G7eTezkL2AXuA"
+    },
+    {
+     "n": "031",
+     "title": "Aula 28",
+     "id": "15YPs_4kytEspHZ5ZZ3ySlLl3o2h6S7gQ"
+    },
+    {
+     "n": "032",
+     "title": "Aula 29",
+     "id": "1PpUHAs0xBwZ7U8eqspWQkSS5TxUp5MjL"
+    },
+    {
+     "n": "033",
+     "title": "Aula 30",
+     "id": "1h_1odY2IQl6HpqoQ06vIWHTCFKrvpfvY"
+    },
+    {
+     "n": "034",
+     "title": "Aula 31",
+     "id": "1iR8bfMb0BlemI5b4Xc9gIe4axzX6_ttE"
+    },
+    {
+     "n": "035",
+     "title": "Aula 1",
+     "id": "1F8P1tFUCHgp67oAsu220QPIOqZ-Jt-zT"
+    },
+    {
+     "n": "036",
+     "title": "Aula 2",
+     "id": "1t5IUrY6HXh-qPXuKFtYCDshLe-9iUCjt"
+    },
+    {
+     "n": "037",
+     "title": "Aula 3",
+     "id": "11ETY-mkOaWOGIuf48aTBRReLIWP_Hung"
+    },
+    {
+     "n": "038",
+     "title": "Aula 4",
+     "id": "11OmUi0U55KrS9WKU4nVUKqN7LBVLS80w"
+    },
+    {
+     "n": "039",
+     "title": "Aula 5",
+     "id": "1rU6CnPX5V4NCA6Qs3ni1Q_aypcQcsJuL"
+    }
+   ]
+  },
+  {
+   "course": "Formação Closer FSS",
+   "count": 30,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Bem Vindo",
+     "id": "14n9H8Ts6jV0WO7KbBzvaBhh886I1o3ov"
+    },
+    {
+     "n": "002",
+     "title": "Conceitos Fundamentais da Venda de Alta Performance",
+     "id": "1qXoqEEPZ9Rep4c-qAaS-AzTsTzk_Kdvb"
+    },
+    {
+     "n": "003",
+     "title": "Mental e Auto-imagem",
+     "id": "11pYukXDp-gLTIiTDnXJIBtIq5mejgixG"
+    },
+    {
+     "n": "004",
+     "title": "Seu Espaço",
+     "id": "1J03JKo1DE2LcjUFdGXiYEv0w2-4ZDMqV"
+    },
+    {
+     "n": "005",
+     "title": "Sua aparência",
+     "id": "1VNedSypUDAGTjW64MQ_vIfW-c3nc0ik7"
+    },
+    {
+     "n": "006",
+     "title": "Conhecimentos Gerais e Mercado",
+     "id": "1_7x2azmtQSUbhFzMX1ip6YLCxOfc4Gse"
+    },
+    {
+     "n": "007",
+     "title": "Ritual de Pré-Atendimento",
+     "id": "1eu-0L3OG5-EH-K_kJV4cQcvz1dgU2Tte"
+    },
+    {
+     "n": "008",
+     "title": "Estrutura da Venda de Impacto",
+     "id": "1Rg9mBRSAMTtpTcNuSevjrYV4dZna-sTK"
+    },
+    {
+     "n": "009",
+     "title": "Introdução (Quebra Gelo)",
+     "id": "1WZQJylsin8F7oF6Dl2P8MGQJv9Cl3yv9"
+    },
+    {
+     "n": "010",
+     "title": "Pacto Inicial",
+     "id": "15-weU8M3x3Gki92unwEnid3mXNUBZdnp"
+    },
+    {
+     "n": "011",
+     "title": "Questionário Spin Selling - Mapa Mental",
+     "id": "1JO0aFvwbSrd2g5y6oiKufey8PaX8Q2EU"
+    },
+    {
+     "n": "012",
+     "title": "Pacto Sim ou Não",
+     "id": "1VYv8UDSZnIuLcutHGnuVgbcED8TMqDYN"
+    },
+    {
+     "n": "013",
+     "title": "Apresentação Pitch Padrão",
+     "id": "1UwbZnPQ4ynO4gRYqdr25POkLTOAzvdSZ"
+    },
+    {
+     "n": "014",
+     "title": "Ancoragem",
+     "id": "1H-dAaR8JXDMt1f3iXVuKlbjKeR85T4ny"
+    },
+    {
+     "n": "015",
+     "title": "Pacto Final",
+     "id": "1b6sEclkC60gW9xtqrmgizd44blW4txfs"
+    },
+    {
+     "n": "016",
+     "title": "Quadro de Estratégias de Fechamento",
+     "id": "1Esk_CUt-Ta-8tIzrhMf80D8TTq5cI_M7"
+    },
+    {
+     "n": "017",
+     "title": "Aviso antes da Parte do Fechamento",
+     "id": "1lXrtx2GRv33s5i6OTFZ83SBpxc5Rj9j-"
+    },
+    {
+     "n": "018",
+     "title": "Princípios de Fechamento",
+     "id": "1LdALg7zXGS72fhAmuCh5Xh1aJcLYQ8pM"
+    },
+    {
+     "n": "019",
+     "title": "Estrutura e Etapas do Fechamento",
+     "id": "1BPuZrP5oM-ygofxo_hEtWD1THkROYzjZ"
+    },
+    {
+     "n": "020",
+     "title": "Apresentando Valor de Tabela e Sustentação do Valor de Tabela",
+     "id": "17QRs2vaZ6Njv4uo-RdREXVZvfDFLVMR8"
+    },
+    {
+     "n": "021",
+     "title": "Speech de Razão de Valor Promocional",
+     "id": "1Vipc6WW_pgtaeM3n-dSB3e9ZMet7zaG-"
+    },
+    {
+     "n": "022",
+     "title": "Armas de Fechamento",
+     "id": "1hMHZ5Jjz8X5JmmFPR347jpeChTmaWiQl"
+    },
+    {
+     "n": "023",
+     "title": "Argumentos de Fechamento",
+     "id": "1aazVKC4EZ8eNYtzE0BsuA5lkHBoJP630"
+    },
+    {
+     "n": "024",
+     "title": "Objeções",
+     "id": "1Kl-8bauikHOpIoG8gr1bhxo0T93aPKSR"
+    },
+    {
+     "n": "025",
+     "title": "Caindo o Produto",
+     "id": "1x_G_3Svz0PoLk50Kn2wO9CzmswZM-Cvg"
+    },
+    {
+     "n": "026",
+     "title": "Pegando o Pagamento e Finalização",
+     "id": "1hCq2TEcdlEFxPbhvPygHaiblQmwA9YsE"
+    },
+    {
+     "n": "027",
+     "title": "Dia 1 - Treinamento",
+     "id": "1VpyAm9i9XA97-B-kgperpbNF89sYZCSc"
+    },
+    {
+     "n": "028",
+     "title": "Dia 2 - Treinamento Diagnóstico",
+     "id": "1f3RDzuKANrqxzyCsHr-lve61gI3FzMat"
+    },
+    {
+     "n": "029",
+     "title": "Dia 3 - Treinamento Rito de Fechamento",
+     "id": "1IxHiR5GEvLMrSkxpfuMuDT2m1IJwa9LH"
+    },
+    {
+     "n": "030",
+     "title": "Dia 4 - Treinamento",
+     "id": "1lPuCjuB31mR7ySb_sieb5gJFCs_gDoxr"
+    }
+   ]
+  },
+  {
+   "course": "Trilha Funis de Marketing para Comercial e High Ticket",
+   "count": 30,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Introdução Funis de Vendas Highticket",
+     "id": "1KreNSf_n64-dMhf85UwrqgyPS40G9hUg"
+    },
+    {
+     "n": "002",
+     "title": "Funis na Pratica",
+     "id": "1QPCZEQDal0i2IKXH0DTFeZPIMpZCH6cH"
+    },
+    {
+     "n": "003",
+     "title": "Distribuição de Conteúdo Pré-Funis",
+     "id": "1uo82e_2EM-OrV2wTqJF-P60_q1HFiE_5"
+    },
+    {
+     "n": "004",
+     "title": "Funis de Diagnóstico, Aplicação e Sessão Estratégia",
+     "id": "1a0K5hoQVeLF0TkxsDZIMOPKzofCqNVQv"
+    },
+    {
+     "n": "005",
+     "title": "Funis de Aquisição (Isca) Gratuita + Paga + Exemplos",
+     "id": "1DgtTzjAVe9pfu6rxJYCBWGPCvzb_aI-B"
+    },
+    {
+     "n": "006",
+     "title": "Funil de Social Selling",
+     "id": "1JXrQaZrUQaNhNNdpkMqwZyCb_jq2QtXD"
+    },
+    {
+     "n": "007",
+     "title": "Como otimizar os Funis na Escala",
+     "id": "1lHpqcyvmKW0CH-PeCruv2EisLfiYsUi0"
+    },
+    {
+     "n": "008",
+     "title": "Distribuição de Conteúdo Pré-Funis parte 1",
+     "id": "17Vg1pQHBLi_pkarK6IJHYAAn9OjGvVdN"
+    },
+    {
+     "n": "009",
+     "title": "Distribuição de Conteúdo Pré-Funis Parte 2",
+     "id": "15Prq3sVznJWhPhKYJVQkjxGRz8jjRTV_"
+    },
+    {
+     "n": "010",
+     "title": "Distribuição de Conteúdo Pré-Funis parte 3",
+     "id": "1Hlmd6TX7e760XEJZOgwWT9MiP20d4lXV"
+    },
+    {
+     "n": "011",
+     "title": "Orientações Práticas de Funis para Comercial",
+     "id": "18bHeyRu26BEUKqTkN05mluWF5rkLDbiP"
+    },
+    {
+     "n": "012",
+     "title": "Funis de Aquisição (Isca) gratuita + Exemplos",
+     "id": "1k6R7c-3OvdaR3EHwprq40UJOK8jBKd9r"
+    },
+    {
+     "n": "013",
+     "title": "Funis de Aquisição (Isca) paga + Exemplos",
+     "id": "1SLuzs0kVZIAv4t4_54xNXeQDHWdgITvr"
+    },
+    {
+     "n": "014",
+     "title": "Funis de Aplicação Sessão Estratégica + Exemplos",
+     "id": "1tD26W_5nBYJI19WVBW_cg3DE2LWWuyIg"
+    },
+    {
+     "n": "015",
+     "title": "Funil de Social Selling",
+     "id": "1X2Ylg_VBbJNrT5ayE96n-Jnvz3rSg6wu"
+    },
+    {
+     "n": "016",
+     "title": "Funis de Webinar",
+     "id": "1YtyEnkaQiN2__H3MXXK4E4BseQ41hpUl"
+    },
+    {
+     "n": "017",
+     "title": "Mensagens de Follow Up Automática",
+     "id": "182IiU05g_6_Blo74u5L97eSDBNMPzLFf"
+    },
+    {
+     "n": "018",
+     "title": "Otimizando os Funis",
+     "id": "1YskifmEfHc-HnkQ_nAd2_YKxFN5SK1Cn"
+    },
+    {
+     "n": "019",
+     "title": "Como construir sua Landing Page e VSL no GreatPages",
+     "id": "14UUl8D8Fjh7EkVC18yulGCLNbeExyl3U"
+    },
+    {
+     "n": "020",
+     "title": "As 4 perguntas",
+     "id": "1Mb-MP7xpkDT3ptwZ4iUYj5ckrsBx9g2g"
+    },
+    {
+     "n": "021",
+     "title": "A base de tudo objetivo, posicionamento e nicho",
+     "id": "1lOHu9xsGFIt8D5fST5LREFc4UEBNhRuf"
+    },
+    {
+     "n": "022",
+     "title": "Imersão Pesquisa - Parte 1",
+     "id": "1o9rjyuFnc7fT9uB8D3w5HM6AVh9U3pRa"
+    },
+    {
+     "n": "023",
+     "title": "Imersão Pesquisa - Parte 2",
+     "id": "1_uQ4xwGQimmDaXiiBUkSk8FsRoJFLXcr"
+    },
+    {
+     "n": "024",
+     "title": "Criando a metodologia",
+     "id": "1QNTLz9XlfEGNCmuT29Q0gR8DhSVqM9Ug"
+    },
+    {
+     "n": "025",
+     "title": "Aumentadores de lucro $$$",
+     "id": "12PG9UgehS6NvBJppt-dqKRjfAo42NDuB"
+    },
+    {
+     "n": "026",
+     "title": "Empilhamento de oferta",
+     "id": "1KL73w7Dbbg5wcPA_OKw6q0j3JTIoVbrI"
+    },
+    {
+     "n": "027",
+     "title": "Empilhamento de funis",
+     "id": "1Tu1x7CLGnT8dukzPBPgTeoaDQdht-jsx"
+    },
+    {
+     "n": "028",
+     "title": "Demonstração Dramática",
+     "id": "1J8V2T6gy43uOMHlQv4rsdxV6ARvcejqC"
+    },
+    {
+     "n": "029",
+     "title": "Escala de tráfego",
+     "id": "1ZemjUF56r4Ocjf0MDdLX6lrQIEMh-ds7"
+    },
+    {
+     "n": "030",
+     "title": "Lucro, Recompra e Recorrência no Back-End",
+     "id": "1Ia7aCdew7G6kLV1nGpBSXSHWG4xgq0Ns"
+    }
+   ]
+  },
+  {
+   "course": "Como Traçar Metas de Vendas",
+   "count": 26,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Boas Vindas",
+     "id": "1rAQ1jQhco0H9nRTWSsMNhwBxa_fCFuoa"
+    },
+    {
+     "n": "002",
+     "title": "Porque Traçar Metas de Vendas",
+     "id": "1HpGmLiKyjg32WbTU0AC10jEzlMDBYWeY"
+    },
+    {
+     "n": "003",
+     "title": "Vantagens de Ter Metas",
+     "id": "16j-M24OrWakOoVFM7nHlXmOGuKtUfrQx"
+    },
+    {
+     "n": "004",
+     "title": "Porque Algumas Pessoas Não Gostam de Metas",
+     "id": "1ppp5wb8OSPLaalLry6a3YOqjGJIMtcX5"
+    },
+    {
+     "n": "005",
+     "title": "Metas Neurologicamente Corretas",
+     "id": "1Bny0qi0XXCRHr3JdPHZQ3sDkbZxV8PRn"
+    },
+    {
+     "n": "006",
+     "title": "Critério 1",
+     "id": "1NFSjnCD7XvbgsD7lxAfzzwrtw1uC7IYf"
+    },
+    {
+     "n": "007",
+     "title": "Critério 2",
+     "id": "1fodPySzPilnCTp7RCqmsT25q4Q8fO5FW"
+    },
+    {
+     "n": "008",
+     "title": "Critério 3",
+     "id": "1WCB0qoMxMfVS2EW6ZRI-gxbGC1dtfNeA"
+    },
+    {
+     "n": "009",
+     "title": "Critério 4",
+     "id": "1x7K9ZjhklAOPTU70LOACxtiQNj3YcErP"
+    },
+    {
+     "n": "010",
+     "title": "Critério 5",
+     "id": "1brFynmhsjMl-L2EpK9577Q_iFFFSBV_d"
+    },
+    {
+     "n": "011",
+     "title": "Critério 6",
+     "id": "1Ks4GWeGNAL50ofuUh3jgQOEHg3bMIPHT"
+    },
+    {
+     "n": "012",
+     "title": "Critério 7",
+     "id": "1Hrn75Q_alfZI4y5h47GVgTl50nxrEP0t"
+    },
+    {
+     "n": "013",
+     "title": "Critério 8",
+     "id": "1VZvZaIa5hoOIWCYFLM1pFfM4agNKVAgS"
+    },
+    {
+     "n": "014",
+     "title": "Critério 9",
+     "id": "1pdXvcB-4UKZUgu1jFkQS0M_-OvANvJ6l"
+    },
+    {
+     "n": "015",
+     "title": "Critério 10",
+     "id": "1YB04awIAZD5AuhTbkwGLHJQxBKV51EVY"
+    },
+    {
+     "n": "016",
+     "title": "Tipos de Metas",
+     "id": "1jx-6qGB6iE5Axf6Oi8yp1KoWkhLuCxKJ"
+    },
+    {
+     "n": "017",
+     "title": "Alavancas",
+     "id": "1JhP3ljy7pF3H4U3uK44S_hnPzKW6ZwGv"
+    },
+    {
+     "n": "018",
+     "title": "Guardiões",
+     "id": "147j2UdjyzlFM4Q9kMyYMXDMpxp1160HR"
+    },
+    {
+     "n": "019",
+     "title": "Propósito da Meta",
+     "id": "1fDDjPcN5Petp6vlcZkzqmC4VxR4KqZwR"
+    },
+    {
+     "n": "020",
+     "title": "Plano de Ação",
+     "id": "1I0JvGcw06kHeLdWaAWtjo8Yeg2b_wBBk"
+    },
+    {
+     "n": "021",
+     "title": "Hora de Definir Metas",
+     "id": "1aEPZH84n5OpWXpUmKxdW7YPOAuwE-mtl"
+    },
+    {
+     "n": "022",
+     "title": "Porque Dobrar a Meta",
+     "id": "11V7dqxFx4eedFVrJSoDA4VRtTc-FxKQk"
+    },
+    {
+     "n": "023",
+     "title": "Ferramenta Não se Iluda",
+     "id": "1FH8lAyqYbLGVnAQBnpIzpuNLX0F8Xjpe"
+    },
+    {
+     "n": "024",
+     "title": "Hiperfoco",
+     "id": "1J5Ht44sv5c6gyrodD7hFLDo0wgigSPJg"
+    },
+    {
+     "n": "025",
+     "title": "História de Sucesso",
+     "id": "1U-mIcWn8NhADxe8waIsV-PBnGvQuN-FQ"
+    },
+    {
+     "n": "026",
+     "title": "Presente Para Você!",
+     "id": "1zHS5FBIwYYJjs-21X00O43MVgDvdVf5G"
+    }
+   ]
+  },
+  {
+   "course": "MasterMind Head de Marketing",
+   "count": 25,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Mastermind de Heads Marketing 16.04.2025",
+     "id": "13OEBCJtT0qtCzWRNLCCi5x-YriSEN6vd"
+    },
+    {
+     "n": "002",
+     "title": "Mastermind de Heads de Marketing 30.04.2025",
+     "id": "1S1zQfmxaaqJXKOk3p8Nrt70x7VzSWJ-Y"
+    },
+    {
+     "n": "003",
+     "title": "Mastermind de Heads Marketing 14.05.2025",
+     "id": "1r9ykrCGVU3Wdv7eik2bS2_q88YR9CDgK"
+    },
+    {
+     "n": "004",
+     "title": "Mastermind de Head de Marketing 09.07.25 Campanha e Empilhamento de Funis",
+     "id": "1fbPdOTzUQpC572lwQH6dlhqeX7fsxy27"
+    },
+    {
+     "n": "005",
+     "title": "Mastermind de Heads Marketing 01.10.25",
+     "id": "1jF1zNngw8I_v4ceYfz1CAlcc6Y6lSWRz"
+    },
+    {
+     "n": "006",
+     "title": "Mastermind de Heads de Marketing 22.10.2025",
+     "id": "1apa-LJ_CeHKphY_PBEI3gDTrpT4YzHwC"
+    },
+    {
+     "n": "007",
+     "title": "Mastermind de Heads de Marketing 29.10.2025",
+     "id": "18UC65Cmp3tKfXBisKsXapGWIJcsGd-O9"
+    },
+    {
+     "n": "008",
+     "title": "Mastermind de Heads de Marketing 12.11.2025",
+     "id": "18-5tA-kg33CDQ5gIoXXuGr3n5VMTwdwl"
+    },
+    {
+     "n": "009",
+     "title": "Mastermind de Heads de Marketing 19.11.2025",
+     "id": "19LSVsax3IVX54SP0xisqjxkZ4QRVLtTt"
+    },
+    {
+     "n": "010",
+     "title": "Mastermind Heads de Marketing 10.12.25",
+     "id": "1n2EdXF_ssLLxVP9j54lZbu_E09e-st_Z"
+    },
+    {
+     "n": "011",
+     "title": "Mastermind de Marketing 17.12.2025",
+     "id": "1IeSAy3eKskPkWnBrHbBZ7tfUU9kNGWBF"
+    },
+    {
+     "n": "012",
+     "title": "Mastermind Head de Marketing 07.01.2026",
+     "id": "1wha5j_SEqndbh_5MLaOV8LZGADhbZ9dK"
+    },
+    {
+     "n": "013",
+     "title": "Mastermind de Marketing 28.01.2026",
+     "id": "1rDLq34ugaS3QBLksebaFYzIg4bZqn2le"
+    },
+    {
+     "n": "014",
+     "title": "Mastermind de Marketing 04.02.2026",
+     "id": "19YbMzLZsKsyoadHM9X3JOh1NwGFtYSUK"
+    },
+    {
+     "n": "015",
+     "title": "Mastermind de Heads Marketing 25.02.26",
+     "id": "1OV668OktefyaS5H7O2yBxaTEtmk19-e9"
+    },
+    {
+     "n": "016",
+     "title": "Mastermind de Marketing 11.03.26",
+     "id": "1IOCIKsAWt5auAfJ7DEA9gb5vGPF79Yiu"
+    },
+    {
+     "n": "017",
+     "title": "Mastermind de Heads de Marketing HS&E - 18.03.2026",
+     "id": "1uNg55IgurVjeLPipUoO90RUHbGYZHFXI"
+    },
+    {
+     "n": "018",
+     "title": "Mastermind de Heads de Marketing 15.04.2026",
+     "id": "1VhLkh53DkCsQQIQVyxLghencnmkrxl0R"
+    },
+    {
+     "n": "019",
+     "title": "Mastermind de Heads de Marketing 13.05.2026",
+     "id": "1lKW0w0naE8Dey14m0KCGu6s4nQqIpDiD"
+    },
+    {
+     "n": "020",
+     "title": "Mastermind de Head de Marketing 27.05.2026",
+     "id": "1NjleXvvCE1wJLOxMjTTT8g-XInHf6vij"
+    },
+    {
+     "n": "021",
+     "title": "Lançamento Meteórico com Arcilio Neto",
+     "id": "13Bjc6rfKGA5ZOs1EC-ZoHCOLkyi0EwVe"
+    },
+    {
+     "n": "022",
+     "title": "Mastermind de Head de Marketing com Arcilio Neto 10.06.26",
+     "id": "1eG_gEV6o9QFfLE_YTZwtUrB3-jasPgCU"
+    },
+    {
+     "n": "023",
+     "title": "Mastermind de Head de Marketing com Arcilio Neto 24.06.26",
+     "id": "1rt-OtBvLTSBiRuG8ABUKV5TDlXlhAslt"
+    },
+    {
+     "n": "024",
+     "title": "Mastermind de Head de Marketing 15.07.2026",
+     "id": "1ppWjjxwrSGd73WNqzwa8ZT-M0kZ3X7Nl"
+    },
+    {
+     "n": "025",
+     "title": "Mastermind de Head de Marketing 12 08 26",
+     "id": "1ywnhx742Xntpmrgee-UP6f2P8BfwWybj"
+    }
+   ]
+  },
+  {
+   "course": "EAD Social Selling",
+   "count": 20,
+   "videos": [
+    {
+     "n": "001",
+     "title": "O que é Social Selling",
+     "id": "1dFvDEpbKhwl9RrXtqP1YGpou5gxxaNOT"
+    },
+    {
+     "n": "002",
+     "title": "Social Selling, SDR ou Closer",
+     "id": "1tsHcGVIW6I2kQyIRe1ALpspKAENlMfr7"
+    },
+    {
+     "n": "003",
+     "title": "Função do SDR Social Selling",
+     "id": "1qFGD8KOlWD1rnQfSFfUWXEwwh080fW7U"
+    },
+    {
+     "n": "004",
+     "title": "Social Selling x Social Media",
+     "id": "1G5pIXYeFDg9NHW2i0S02Hy6QopsNjrNJ"
+    },
+    {
+     "n": "005",
+     "title": "Atribuições e Responsabilidades SDR Social",
+     "id": "1fHjWEcUnwz_HjDLmiKQExhcXHZBpM3NT"
+    },
+    {
+     "n": "006",
+     "title": "8 Princípios de Social Selling",
+     "id": "1kUGKt_ZBxY_gU0iWbWW5gACgXQpVZrC3"
+    },
+    {
+     "n": "007",
+     "title": "Mindset e Truques",
+     "id": "1hEko0y5nzZVotkyFTX8RscP5j_Sigfy_"
+    },
+    {
+     "n": "008",
+     "title": "Branding do Expert",
+     "id": "1geMdqi87-UONqK2hhjajI4b4tG-e8K5N"
+    },
+    {
+     "n": "009",
+     "title": "Etapas do Social Selling",
+     "id": "1WwE1b04rT92wdb7phBgS0iAcwfpqa_Xi"
+    },
+    {
+     "n": "010",
+     "title": "Funis de Social Selling",
+     "id": "1u6cjH2ETS3CR6WX_Xj__ak3TsAkWCcxP"
+    },
+    {
+     "n": "011",
+     "title": "Quem Abordar",
+     "id": "1kdOt1GJQpi3uzgnqUje4KsUAYxVzCsZO"
+    },
+    {
+     "n": "012",
+     "title": "Passo a Passo até a Abordagem",
+     "id": "13XZe0lsPGFWKsWYoRv1YlxtPZ-28tIaY"
+    },
+    {
+     "n": "013",
+     "title": "Follow up",
+     "id": "1p64GR6aplu-WiYNHVPJN8tUorOqP5k-B"
+    },
+    {
+     "n": "014",
+     "title": "Cadência Follow Up - Parte 1",
+     "id": "1lwhUkxnJ6REaFXdS_3qW_cc2zcxg-P6_"
+    },
+    {
+     "n": "015",
+     "title": "Cadência Follow Up - Parte 2",
+     "id": "1QzX-OiAZsEFw737NgT13wG9UpXdDyi8L"
+    },
+    {
+     "n": "016",
+     "title": "Consolidação do Agendamento - Passo a Passo pós confirmação do horário",
+     "id": "1EbVvEvLiz1fwT6k3FioT28NlyLDkLOLL"
+    },
+    {
+     "n": "017",
+     "title": "Gestão do CRM de Social Selling",
+     "id": "1-b5VKQX6ZvZHsimVGZ5j3QJLXjGRB9VU"
+    },
+    {
+     "n": "018",
+     "title": "Gestão do tempo em Blocos",
+     "id": "1ZJPsd1jliNABJDll83d8AOWZu6svptD7"
+    },
+    {
+     "n": "019",
+     "title": "Playbook",
+     "id": "1ma1nkNnC_TOb5ZKwOID9XSrma3mQox01"
+    },
+    {
+     "n": "020",
+     "title": "WorkShop Definitivo de Social Selling",
+     "id": "1IENO-MBW5B7pQmfDVJS64ZG8c4f6H59x"
+    }
+   ]
+  },
+  {
+   "course": "Intensivo Close In Call",
+   "count": 18,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Desafio Close In Call - Dia 01",
+     "id": "1phHRwDirHCpfkp0ejjnWULE0X6OHNtlp"
+    },
+    {
+     "n": "002",
+     "title": "Desafio Close In Call - Tira Dúvidas - Dia 01",
+     "id": "1D-QadL_XZ31o3v-Nu9cpBs2Jq68XDD2k"
+    },
+    {
+     "n": "003",
+     "title": "Desafio Close In Call - Dia 02",
+     "id": "1-LpjLJlkatSbgGSAwLPd7QFev1dLHSUo"
+    },
+    {
+     "n": "004",
+     "title": "Desafio Close in Call - Tira dúvidas - Dia 02",
+     "id": "1d1g8JChjqTxzaEkMHv-CyOSmCbwpvgS_"
+    },
+    {
+     "n": "005",
+     "title": "Desafio Close In Call - Dia 03",
+     "id": "1EDiR2V5SX4cvLFQKgbHrD00v9QpeQ6up"
+    },
+    {
+     "n": "006",
+     "title": "Desafio Close in Call - Tira dúvidas - Dia 03",
+     "id": "1bFwPaeKjh_dZ84qa1giMSZ4xQzfudMiz"
+    },
+    {
+     "n": "007",
+     "title": "Desafio Close in Call - Dia 04",
+     "id": "1WsVyBvjLfbU2OenMgc8_9RsrDkKSfftn"
+    },
+    {
+     "n": "008",
+     "title": "Desafio Close in Call - Tira Dúvidas - Dia 04",
+     "id": "191md69bt2v3YGsmP_TyUbkHimDv8EdzB"
+    },
+    {
+     "n": "009",
+     "title": "Desafio Close in Call - Dia 05",
+     "id": "1j6KqHVDJjz1t86XRhR-BXM38dScgAqHu"
+    },
+    {
+     "n": "010",
+     "title": "Desafio Close in Call - Tira Dúvidas - Dia 05",
+     "id": "1wZtDTxvSLa1uyLLPQL7G7B5mY7aRHU6q"
+    },
+    {
+     "n": "012",
+     "title": "Aula 1 - Padrão",
+     "id": "1JzpWJfcVwSjh-ee30Nmv_-JBDs1Lefng"
+    },
+    {
+     "n": "013",
+     "title": "Aula 1 - VIP",
+     "id": "13hEgfAssvFWLih4DI9s44Ht4JaKh6Hj1"
+    },
+    {
+     "n": "014",
+     "title": "Aula 2 - Padrão",
+     "id": "1o8dPcdMM9mraAulcAnjHFC8rWIQOuUGb"
+    },
+    {
+     "n": "015",
+     "title": "Aula 2 - VIP",
+     "id": "1qXJHMWTEvlkR3uiVTD4E_RsXkIakdP3k"
+    },
+    {
+     "n": "016",
+     "title": "Aula 3 - Padrão",
+     "id": "1c_1PLLwI0hL1kzqeG9ApMvM3lXte_Ulj"
+    },
+    {
+     "n": "017",
+     "title": "Aula 3 - VIP",
+     "id": "1LQMlUASvTj7plakoBal8ABk8hIWJKPNy"
+    },
+    {
+     "n": "018",
+     "title": "Aula 4 - Padrão",
+     "id": "1x53rcfwo8AgBeutXKl__U-HbUr8IxXxo"
+    },
+    {
+     "n": "019",
+     "title": "Aula 4 - VIP",
+     "id": "19jycZtEChagdmNjNEi0AokFgyhyeT1XF"
+    }
+   ]
+  },
+  {
+   "course": "Prospecção Infinita - 10 Formas Diferentes de Prospectar Novos Clientes Diariamente",
+   "count": 17,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Chegou a Hora de Prospectar",
+     "id": "10HvqEe19MVY5UPxvzhtNIS81wleH_SQN"
+    },
+    {
+     "n": "002",
+     "title": "O que é e porque prospectar",
+     "id": "1VZyVgD8K3p9mw8U0ZVAI3vycE27ma2It"
+    },
+    {
+     "n": "003",
+     "title": "Tipos de Prospectos",
+     "id": "1J61fhevln-lzdbqeY_2Q4mmWO9Q6-pHB"
+    },
+    {
+     "n": "004",
+     "title": "O que acontece se você não prospecta",
+     "id": "1yT-fk-JQyZ9-huzKt3vkwMvLKfd786xU"
+    },
+    {
+     "n": "005",
+     "title": "O Que é Funil de Vendas",
+     "id": "17o9WK5IPlRgPxKkXI2mtL_auI-M93Mfn"
+    },
+    {
+     "n": "006",
+     "title": "Introdução para as 10 Formas Diferentes de Prospecção",
+     "id": "1emLbUSA2hcFWrV5LlbS3tOUr4Oz9pqRo"
+    },
+    {
+     "n": "007",
+     "title": "1- Dentro dos seu clientes atuais",
+     "id": "1I1JMDYVz1l5cgq5ULAwDlKRdP7mxwWbY"
+    },
+    {
+     "n": "008",
+     "title": "2 - Pedindo indicações para os clientes que vocês já tem",
+     "id": "1RVpbQ-FxyPvEsPQw_PJGOF4Rqm2E8VM5"
+    },
+    {
+     "n": "009",
+     "title": "3 - Fazendo parcerias estratégicas",
+     "id": "1GHCkUC7YqxVCyFVhibGqZ4ZeUxBJ_N3r"
+    },
+    {
+     "n": "010",
+     "title": "4 - Networking, indicações previamente determinadas com intencionalidade",
+     "id": "1SaSBv072tRzOVEZ4Q3NgXW2jjD4_MceP"
+    },
+    {
+     "n": "011",
+     "title": "5 - Em eventos, feiras, congressos onde seu cliente ideal lucrativo frequenta",
+     "id": "1grTCgDdEAxIk8rp0dkwx17hBpAKjg6yT"
+    },
+    {
+     "n": "012",
+     "title": "6 - Eventos próprios, online e off-line",
+     "id": "1ZS95cFA_u0l7u4mgInjtrgU1FzezjW27"
+    },
+    {
+     "n": "013",
+     "title": "7 - Visita pessoal ou online",
+     "id": "13k4TCEUWnysGVbamrWH44UFd9k-RxuNN"
+    },
+    {
+     "n": "014",
+     "title": "8 - Online, buscando comunidades, pontos de interesse",
+     "id": "1eUZiBmrWA-wGCe9wuYwtXhN4qQLxtv99"
+    },
+    {
+     "n": "015",
+     "title": "9 - Criação de conteúdos online",
+     "id": "1MBCYollCNj5bdZ-75PJsG0n1Nd9dmI1G"
+    },
+    {
+     "n": "016",
+     "title": "10 - Campanhas Pagas",
+     "id": "1hKCPFcT7RoMcOuNuGfFFmjWGEcjJ2C_w"
+    },
+    {
+     "n": "017",
+     "title": "Você ganhou um presente!",
+     "id": "1W_jj-jTNoxm4e0zP56JyWQfRmyI3E5ZT"
+    }
+   ]
+  },
+  {
+   "course": "Trilha de Estruturação Área e Time de Pré-Vendas",
+   "count": 15,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Fundamentos da Área e Time de Pré-Vendas",
+     "id": "1XJuql6szmOBn3bwuuart2Jfv4TAiNeRx"
+    },
+    {
+     "n": "002",
+     "title": "Funções do SDR",
+     "id": "11eOkiyBGQXDFqUzJ4pHNNZuu_aybOr2i"
+    },
+    {
+     "n": "003",
+     "title": "SDR 1 Scripts de WhatsApp - Conectando com os funis",
+     "id": "1QwCLPXcMPHXcEnNT6COwuhjxAW3lSF6w"
+    },
+    {
+     "n": "004",
+     "title": "SDR 1 Scripts de Ligação On Time",
+     "id": "1pmRVmh6TyQgWs_-0wfzvDJNnndmUu8Mq"
+    },
+    {
+     "n": "005",
+     "title": "SDR Scripts de Ligação de Reminder",
+     "id": "1y8kdfDp8hQG8LxP1547JALyjadkfXb-M"
+    },
+    {
+     "n": "006",
+     "title": "Estruturando a Cadência de Contato",
+     "id": "1SWifcW5kA59lrQp9nbOQ2J4Slv682DmE"
+    },
+    {
+     "n": "007",
+     "title": "Estruturando Estágios de Follow Up",
+     "id": "1Vh-1QcnPYX_UgaOXy80_wwHstbkjs5t4"
+    },
+    {
+     "n": "008",
+     "title": "Fechamento Follow Up 3",
+     "id": "1v9k4p5aX6WJ8wuk3f-CMKLruk7ypwfqT"
+    },
+    {
+     "n": "009",
+     "title": "Matriz de Quebra de Objeção",
+     "id": "1MnON-BY_YsRSWVWhO0uM-uYODjHag4fF"
+    },
+    {
+     "n": "010",
+     "title": "Procedimento de Pós Agendamento e Pré-Comparecimento",
+     "id": "1EYloM3sAjVPDqNYlmxwpVDiJOXCCFfEu"
+    },
+    {
+     "n": "011",
+     "title": "Treinamento com o Time de Pré-Vendas",
+     "id": "1uIftYhw8GlabGcCa1gEmhMM-Wp078XMv"
+    },
+    {
+     "n": "012",
+     "title": "SDR2 - Social Selling",
+     "id": "156qXJar1ngQ1XWDPGNtF61qx7PBSJSjd"
+    },
+    {
+     "n": "013",
+     "title": "KPIs do Time de Pré-Vendas",
+     "id": "1YWUEN9AsMJPUNLFx47b_5oo3URJ93zBB"
+    },
+    {
+     "n": "014",
+     "title": "SDR2 - Sales Farming parte 1 (conceituação)",
+     "id": "15CAd_hx87iNCWnEwXIcitI8Ub1fDs92D"
+    },
+    {
+     "n": "015",
+     "title": "SDR2 - Sales Farming parte 2 (scripts)",
+     "id": "1fB2vuTpszu5bxXGeNrEqnw430bklI2ry"
+    }
+   ]
+  },
+  {
+   "course": "Mastermind Head Entrega",
+   "count": 13,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Mastermind de Heads de Entrega 05.03.2026",
+     "id": "11O_lwU0eT5zGq4XVyjAqbChHv-JIONf_"
+    },
+    {
+     "n": "002",
+     "title": "Mastermind de Heads de Entrega 12.03.2026",
+     "id": "1fHA_lI90sFzMRTP5WKjgtWtXqjnmoUQx"
+    },
+    {
+     "n": "003",
+     "title": "Mastermind de Heads de Entrega 26.03.2026",
+     "id": "19WWz03Ebn8QGHWc7uJE-4wvKfblJg6PM"
+    },
+    {
+     "n": "004",
+     "title": "Mastermind de Heads de Entrega 02.04.2026",
+     "id": "1TIUGjClEOAIdfVEk-eYeYX_m2-Gfv6hR"
+    },
+    {
+     "n": "005",
+     "title": "Mastermind de Heads de Entrega 02.04.2026",
+     "id": "1sItyV82hdYuSIUfJdzSpJikQUnPVJDt8"
+    },
+    {
+     "n": "006",
+     "title": "Mastermind de Heads de Entrega 30.04.2026",
+     "id": "1KB_UYE0u-i43hb2GCQVwkfkRTHzVPdCS"
+    },
+    {
+     "n": "007",
+     "title": "Mastermind de Heads de Entrega 07.05.2026",
+     "id": "19bL9eCYdVUgSa6bg3Tm9EeIAiUF7qjLX"
+    },
+    {
+     "n": "008",
+     "title": "Mastermind de Heads de Entrega 14.05.2026",
+     "id": "1fOF4EN0YrZB24iAya8I4M_3PGXre1Fxg"
+    },
+    {
+     "n": "009",
+     "title": "Mastermind de Heads de Entrega 22.05.2026",
+     "id": "101FZ5-8l6A2dNXGsuzc53tV4hS2x7rPf"
+    },
+    {
+     "n": "010",
+     "title": "Mastermind de Heads de Entrega 28.05.2026",
+     "id": "1dHlbGdtarYxK9Mncku0yDtf_EGczfAH6"
+    },
+    {
+     "n": "011",
+     "title": "Mastermind de Heads de Entrega 11.06.2026",
+     "id": "1tWS7xYDhgz-1VcE-Ukj4Fb79j5PBl_B5"
+    },
+    {
+     "n": "012",
+     "title": "Mastermind de Heads Entrega 18.06",
+     "id": "1IxwHCzeiW_rcgiPrK_d4XdYNwlGVi5nh"
+    },
+    {
+     "n": "013",
+     "title": "Mastermind de Heads de Entrega 06.08.2026",
+     "id": "1NkZG4Jq6IbiO6ahaE-G_VIE2X8qy_oEQ"
+    }
+   ]
+  },
+  {
+   "course": "Ead para Eventos Presenciais",
+   "count": 9,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Budget do Evento",
+     "id": "10dfRu-WS_DI-COgfyB9W0Isjips-sM6A"
+    },
+    {
+     "n": "002",
+     "title": "Como fazer Planejamento do Seu Evento",
+     "id": "1YoyC28bOzyBTTk1TT6bca_Q_xtSTgHQw"
+    },
+    {
+     "n": "003",
+     "title": "Como Vender Ingressos",
+     "id": "1g7lWxe0DgBop3Q47rXsTrL851rhXrftC"
+    },
+    {
+     "n": "004",
+     "title": "Cronograma de Eventos",
+     "id": "1SQAzxodYMwItP1eLpDIPwIF4G0IxQo3q"
+    },
+    {
+     "n": "005",
+     "title": "Estrutura de Pitch",
+     "id": "1ZtqWB9lFvcwuILXHzOaNJ7zr_9sE50Nc"
+    },
+    {
+     "n": "006",
+     "title": "Performance Para Vender no Palco",
+     "id": "1h91t_QunuqNfAhZiM1jTpIYkMEvvy8pa"
+    },
+    {
+     "n": "007",
+     "title": "Pré-Pitch",
+     "id": "1xm9xzG89nED_RYTfIuWxd7uymTA5osmD"
+    },
+    {
+     "n": "008",
+     "title": "Eventos Dentro da Sua Esteira",
+     "id": "1cBkYpB58lQaOIJhkUp-YaedHwFjFraCu"
+    },
+    {
+     "n": "009",
+     "title": "Pós Evento",
+     "id": "1a-RntEOYr-dXQu5J-Fi6EE4-5m7YAEkc"
+    }
+   ]
+  },
+  {
+   "course": "Gravação Fechamento em Reunião",
+   "count": 9,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Dia 1 Fechamento em Reunião - Turma 6",
+     "id": "1sq_gTT0cLjNeVk-qJ0JcJis35D5H0XvC"
+    },
+    {
+     "n": "002",
+     "title": "Dia 2 Intensivo Fechamento em Reunião - Turma 6",
+     "id": "1svC0CcFfYwe-fohlC8KUpBJrPBjkLOAX"
+    },
+    {
+     "n": "003",
+     "title": "Dia 3 Intensivo Fechamento em Reunião - Turma 6",
+     "id": "18uIAAEy0uBw7dpLSJlJnBObeN9S6iGYK"
+    },
+    {
+     "n": "004",
+     "title": "VIP Dia 1 Fechamento em Reunião - Turma 6",
+     "id": "1jD-SHtqnc-YqQcq7KZO1uzj35YuEdXcA"
+    },
+    {
+     "n": "005",
+     "title": "VIP Dia 2 Intensivo Fechamento em Reunião - Turma 6 - Parte 1",
+     "id": "1QtT6TdKJiesHas_24L4XXB4dnQO7sGN2"
+    },
+    {
+     "n": "006",
+     "title": "VIP Dia 2 Intensivo Fechamento em Reunião - Turma 6 - Parte 2",
+     "id": "1y1G1KhvnuL2GF1-HIYKL7QgsQQxxMQAW"
+    },
+    {
+     "n": "007",
+     "title": "VIP Dia 3 Fechamento em Reunião - Turma 6",
+     "id": "1MXKflt-1rkRkS-l7xuj3kzeCIwlWHl0L"
+    },
+    {
+     "n": "008",
+     "title": "VIP + Padrão Dia 4 Intensivo Fechamento em Reunião - Turma 6",
+     "id": "1L1vGWt6WBh-HuFTNcpbo8SokZmKqvi-v"
+    },
+    {
+     "n": "009",
+     "title": "VIP + Padrão Dia 5 Intensivo Fechamento em Reunião - Turma 6",
+     "id": "14pbj4iSx6cwbTtJtjwBcpT-M5k7q5LlJ"
+    }
+   ]
+  },
+  {
+   "course": "Trilha RH Comercial",
+   "count": 8,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Introdução e Contratação de Equipe Comercial",
+     "id": "1rBu--rc6WNuLK2gFExDisxvMbWDCwvgu"
+    },
+    {
+     "n": "002",
+     "title": "Como começar sua equipe Comercial",
+     "id": "1L5ljsTORB4YKOgItgpdagoVqnqHcFBAD"
+    },
+    {
+     "n": "003",
+     "title": "Funil de RH",
+     "id": "1tP1kqg2NMJkJe1Tq2T8UkIuuHSog6nPt"
+    },
+    {
+     "n": "004",
+     "title": "Procedimento de Entrevista para identificar talentos",
+     "id": "1O96LFN4jCGFmeADh5fGLJyJZWwc0gZ4b"
+    },
+    {
+     "n": "005",
+     "title": "Entendendo o branding empregador",
+     "id": "1kxo4L0c_PiZ9E8pFTZ1JconpdJk6nzpB"
+    },
+    {
+     "n": "006",
+     "title": "Remuneração de Time Comercial",
+     "id": "10KcX-l-BDTeQ2b2QAH7nDKKO7wBHB2e2"
+    },
+    {
+     "n": "007",
+     "title": "Como escalar seu processo de contratação",
+     "id": "16em59cP8Kj_Uz7ARVmqfanXTRVpxQ_8h"
+    },
+    {
+     "n": "008",
+     "title": "Plano de Carreira Closers, gerentes, e Tutores",
+     "id": "1Cu4YWGGHCPTtJY0UagXfGwb7BRATava4"
+    }
+   ]
+  },
+  {
+   "course": "Prospecção Outbound",
+   "count": 5,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Introdução a Prospecção",
+     "id": "1AOLuMmNdxurGMGzNx8-tCeBvcIrqTHba"
+    },
+    {
+     "n": "002",
+     "title": "Numeros da Prospecção",
+     "id": "1dol3Dj0oanJKscWfS0PM69YLOsUcYmlQ"
+    },
+    {
+     "n": "003",
+     "title": "Cadencia Mensagens de Prospecção",
+     "id": "1v_YxyNbBb6HWZBxJLRwKyUyY5fmzfheZ"
+    },
+    {
+     "n": "004",
+     "title": "Remuneração de um Hunter",
+     "id": "1irLH4pMhQBZXzSqJobZvmplxGEVIdvPr"
+    },
+    {
+     "n": "005",
+     "title": "Scripts de Prospecção na Prática Via Swipe File",
+     "id": "1Bu7H03lnMHx9ARcSF3izt-O2xySnL9iC"
+    }
+   ]
+  },
+  {
+   "course": "Como criar uma apresentação comercial - Vinicius de Sá",
+   "count": 1,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Aula Bônus - Vinicius de Sá",
+     "id": "1bWki48cIsj9QmoU4CthdSS7GBOiHbo1E"
+    }
+   ]
+  },
+  {
+   "course": "Guia Definitivo de Recrutamento e Seleção de Times Comerciais",
+   "count": 1,
+   "videos": [
+    {
+     "n": "007",
+     "title": "Bônus 3 Análise e Diagnóstico Comercial 360",
+     "id": "1QjanSX7i8ecLgosH4y4InP23uklXWiw3"
+    }
+   ]
+  },
+  {
+   "course": "Guia Prático de Social Selling",
+   "count": 1,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Workshop Social Selling",
+     "id": "172pFVNsLx4T1HwxeIjqWapwLzmSmgUuF"
+    }
+   ]
+  },
+  {
+   "course": "Programa Acelerador de Caixa",
+   "count": 1,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Comece por aqui...",
+     "id": "1po0hszJ4ExmQ0inijvOyOhujLWh8VTW6"
+    }
+   ]
+  },
+  {
+   "course": "Workshop de Social Selling - Thiago Germano",
+   "count": 1,
+   "videos": [
+    {
+     "n": "001",
+     "title": "Bônus 2 Workshop de Social Selling - Thiago Germano",
+     "id": "1xRXux75EmuaYIitYur1IWbg_twro-JX2"
+    }
+   ]
+  }
+ ]
+};
+
+// estado do player (lista plana filtrada atual pra navegação)
+let curFlat=[], curIdx=-1;
+
+function stats(){
+  const el=document.getElementById('stats');
+  el.innerHTML=`<span class="chip"><b>${CATALOG.total}</b> vídeos</span>
+    <span class="chip"><b>${CATALOG.courses.length}</b> cursos</span>
+    <span class="chip">Streaming direto do Google Drive</span>`;
+}
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function render(){
+  stats();
+  const q=(document.getElementById('q').value||'').toLowerCase().trim();
+  const list=document.getElementById('list');
+  let html='';
+  let shown=0;
+  CATALOG.courses.forEach((c,ci)=>{
+    const courseMatch=c.course.toLowerCase().includes(q);
+    const vids=q?c.videos.filter(v=>courseMatch||v.title.toLowerCase().includes(q)):c.videos;
+    if(!vids.length) return;
+    shown++;
+    const open = q ? 'open' : '';
+    html+=`<div class="course ${open}" data-ci="${ci}">
+      <div class="course-head" onclick="this.parentNode.classList.toggle('open')">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#FF6B2B" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z" fill="#FF6B2B"/></svg></div>
+        <div class="t"><b>${esc(c.course)}</b><small>${vids.length} vídeo${vids.length>1?'s':''}</small></div>
+        <div class="arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></div>
+      </div>
+      <div class="grid">`;
+    vids.forEach(v=>{
+      html+=`<div class="card" onclick='play(${ci},"${v.id}")'>
+        <div class="thumb"><span class="num">${esc(v.n||'')}</span>
+          <span class="play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#1a0e07"><path d="M8 5v14l11-7z"/></svg></span>
+        </div>
+        <div class="cap">${esc(v.title)}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  list.innerHTML = shown ? html : '<div class="empty">Nenhum vídeo encontrado para essa busca.</div>';
+}
+
+function play(ci,id){
+  const c=CATALOG.courses[ci];
+  curFlat=c.videos; curIdx=c.videos.findIndex(v=>v.id===id);
+  openIdx();
+}
+function openIdx(){
+  const v=curFlat[curIdx]; if(!v)return;
+  document.getElementById('pFrame').src=`https://drive.google.com/file/d/${v.id}/preview`;
+  document.getElementById('pTitle').textContent=(v.n?v.n+'. ':'')+v.title;
+  document.getElementById('pOpen').href=`https://drive.google.com/file/d/${v.id}/view`;
+  document.getElementById('modal').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function nav(d){ if(curIdx+d>=0 && curIdx+d<curFlat.length){curIdx+=d;openIdx();} }
+function closePlayer(){document.getElementById('modal').classList.remove('on');document.getElementById('pFrame').src='';document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
+</script>
+</body>
+</html>
