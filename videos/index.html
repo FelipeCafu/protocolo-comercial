@@ -14,7 +14,10 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased;
+  -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none;-khtml-user-drag:none;-moz-user-drag:none;user-drag:none;pointer-events:none}
 a{color:var(--primary2);text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 ::selection{background:rgba(255,107,43,.32)}
@@ -166,7 +169,6 @@ img{max-width:100%}
     <div class="pfoot">
       <button class="nv" onclick="nav(-1)">‹ Anterior</button>
       <button class="nv" onclick="nav(1)">Próxima ›</button>
-      <a class="dl" id="pOpen" href="#" target="_blank" rel="noopener">Abrir no Google Drive ↗</a>
     </div>
   </div>
 </div>
@@ -6555,7 +6557,6 @@ function openIdx(){
   const v=curFlat[curIdx]; if(!v)return;
   document.getElementById('pFrame').src=`https://drive.google.com/file/d/${v.id}/preview`;
   document.getElementById('pTitle').textContent=(v.n?v.n+'. ':'')+v.title;
-  document.getElementById('pOpen').href=`https://drive.google.com/file/d/${v.id}/view`;
   document.getElementById('modal').classList.add('on');
   document.body.style.overflow='hidden';
 }
@@ -6571,5 +6572,6 @@ window.addEventListener('popstate',function(e){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
 if(sessionStorage.getItem('pc_videos_auth')==='1'){enter();}
 </script>
+<script src="../protecao.js"></script>
 </body>
 </html>

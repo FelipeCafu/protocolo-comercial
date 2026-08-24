@@ -15,7 +15,9 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-weight:400;-webkit-font-smoothing:antialiased;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none;-moz-user-drag:none;user-drag:none}
 a{color:var(--primary2);text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 ::selection{background:rgba(255,107,43,.32)}
@@ -344,5 +346,6 @@ function mdToHtml(md){
 function inline(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
 function toast(msg,err){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.className='toast',2600); }
 </script>
+<script src="../protecao.js"></script>
 </body>
 </html>
