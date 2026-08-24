@@ -65,9 +65,10 @@ img{max-width:100%}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .ccard{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column;text-align:left;width:100%}
 .ccard:hover{border-color:var(--primary);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.5)}
-.ccard .cover{aspect-ratio:16/9;background:linear-gradient(135deg,#2a2119,#141110);position:relative;display:grid;place-items:center;border-bottom:1px solid var(--line)}
-.ccard .cover .ic{width:54px;height:54px;border-radius:15px;background:rgba(255,107,43,.16);display:grid;place-items:center}
-.ccard .cover .badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);border:1px solid var(--line);color:var(--text);font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px}
+.ccard .cover{aspect-ratio:16/9;position:relative;display:grid;place-items:center;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(12,12,12,.28),rgba(12,12,12,.74)),url("../felipe%20avatar.jpg") center 20%/cover}
+.ccard .cover .play{width:50px;height:50px;border-radius:50%;background:rgba(255,107,43,.92);display:grid;place-items:center;box-shadow:0 6px 20px rgba(255,107,43,.45);transition:.18s}
+.ccard:hover .cover .play{transform:scale(1.1)}
+.ccard .cover .badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.66);border:1px solid var(--line);color:var(--text);font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px}
 .ccard .cbody{padding:14px 15px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
 .ccard .cbody b{font-size:15.5px;font-weight:600;line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:40px}
 .ccard .cbody small{color:var(--muted);font-size:12.5px}
@@ -84,7 +85,7 @@ img{max-width:100%}
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.18s;display:flex;flex-direction:column}
 .card:hover{border-color:var(--primary);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.45)}
-.thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#241f1a,#15120f);display:grid;place-items:center;position:relative;border-bottom:1px solid var(--line)}
+.thumb{aspect-ratio:16/9;display:grid;place-items:center;position:relative;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(12,12,12,.12),rgba(12,12,12,.7)),url("../felipe%20avatar.jpg") center 20%/cover}
 .thumb .play{width:46px;height:46px;border-radius:50%;background:rgba(255,107,43,.92);display:grid;place-items:center;box-shadow:0 6px 20px rgba(255,107,43,.4);transition:.18s}
 .card:hover .thumb .play{transform:scale(1.12)}
 .thumb .num{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);border:1px solid var(--line);color:var(--muted);font-size:11px;padding:2px 8px;border-radius:7px;font-weight:600}
@@ -172,7 +173,7 @@ img{max-width:100%}
 
 <script>
 const PASSWORD="Protocolo 2026";
-function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='flex';render();}
+function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='flex';history.replaceState({v:'grid'},'');render();}
 function doLogin(){
   const v=document.getElementById('pw').value.trim();
   if(v.toLowerCase()===PASSWORD.toLowerCase()){sessionStorage.setItem('pc_videos_auth','1');enter();}
@@ -6518,7 +6519,7 @@ function render(){
   let html='<div class="cgrid">';
   CATALOG.courses.forEach((c,ci)=>{
     html+=`<button class="ccard" onclick="openCourse(${ci})">
-      <div class="cover"><span class="badge">${c.count} vídeos</span><span class="ic">${courseIcon()}</span></div>
+      <div class="cover"><span class="badge">${c.count} vídeos</span>${playIcon()}</div>
       <div class="cbody">
         <b>${esc(c.course)}</b>
         <small>${c.count} aula${c.count>1?'s':''}</small>
@@ -6541,12 +6542,13 @@ function renderCourse(ci){
   document.getElementById('list').innerHTML=html;
 }
 
-function openCourse(ci){curCourse=ci;const s=document.getElementById('q');if(s)s.value='';window.scrollTo({top:0,behavior:'smooth'});render();}
-function backToCourses(){curCourse=-1;render();}
+function openCourse(ci){curCourse=ci;const s=document.getElementById('q');if(s)s.value='';history.pushState({v:'course',ci:ci},'');window.scrollTo({top:0,behavior:'smooth'});render();}
+function backToCourses(){history.back();}
 
 function play(ci,id){
   const c=CATALOG.courses[ci];
   curFlat=c.videos; curIdx=c.videos.findIndex(v=>v.id===id);
+  history.pushState({v:'player',ci:ci,idx:curIdx},'');
   openIdx();
 }
 function openIdx(){
@@ -6557,8 +6559,15 @@ function openIdx(){
   document.getElementById('modal').classList.add('on');
   document.body.style.overflow='hidden';
 }
-function nav(d){ if(curIdx+d>=0 && curIdx+d<curFlat.length){curIdx+=d;openIdx();} }
-function closePlayer(){document.getElementById('modal').classList.remove('on');document.getElementById('pFrame').src='';document.body.style.overflow='';}
+function nav(d){ if(curIdx+d>=0 && curIdx+d<curFlat.length){curIdx+=d;openIdx();if(history.state&&history.state.v==='player'){history.replaceState({v:'player',ci:history.state.ci,idx:curIdx},'');}} }
+function hidePlayer(){document.getElementById('modal').classList.remove('on');document.getElementById('pFrame').src='';document.body.style.overflow='';}
+function closePlayer(){ if(history.state&&history.state.v==='player'){history.back();} else {hidePlayer();} }
+window.addEventListener('popstate',function(e){
+  const st=e.state||{v:'grid'};
+  if(st.v==='player'){ curCourse=st.ci; render(); curFlat=CATALOG.courses[st.ci].videos; curIdx=st.idx; openIdx(); }
+  else if(st.v==='course'){ hidePlayer(); curCourse=st.ci; render(); }
+  else { hidePlayer(); curCourse=-1; render(); }
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
 if(sessionStorage.getItem('pc_videos_auth')==='1'){enter();}
 </script>

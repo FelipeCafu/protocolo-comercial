@@ -3918,13 +3918,13 @@
 
 <!-- ===== HEADER / FOOTER / QUIZ MATURIDADE (Grupo Velo) ===== -->
 <style>
-  .pc-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:linear-gradient(180deg,rgba(8,8,10,.82),rgba(8,8,10,0));backdrop-filter:blur(6px)}
+  .pc-header{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 30px;background:linear-gradient(180deg,rgba(8,8,10,.82),rgba(8,8,10,0));backdrop-filter:blur(6px)}
   .pc-header__logo{display:flex;align-items:center;text-decoration:none}
   .pc-header__logo img{height:26px;width:auto;display:block}
-  .pc-header__nav{display:flex;gap:8px;align-items:center}
-  .pc-header__nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;font-weight:600;font-size:13px;color:#F0EDE8;text-decoration:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);backdrop-filter:blur(4px);transition:.15s}
-  .pc-header__nav a:hover{border-color:#FF6B2B;color:#FF6B2B}
-  @media(max-width:600px){.pc-header__nav a{padding:7px 11px;font-size:12px}}
+  .pc-header__nav{display:flex;gap:10px;align-items:center;flex:none}
+  .pc-header__nav a{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13px;color:#fff;text-decoration:none;border:1px solid rgba(255,107,43,.55);background:rgba(255,107,43,.16);transition:.15s;white-space:nowrap}
+  .pc-header__nav a:hover{background:#FF6B2B;border-color:#FF6B2B;color:#120a05}
+  @media(max-width:600px){.pc-header__nav a{padding:8px 12px;font-size:12px}.pc-header__nav a .lbl{display:inline}}
   .pc-quizbtn{font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;color:#fff;background:#EE5A24;border:0;border-radius:30px;padding:9px 18px;cursor:pointer;transition:.2s;text-transform:uppercase}
   .pc-quizbtn:hover{transform:translateY(-1px);filter:brightness(1.08)}
   @media(max-width:600px){.pc-header{padding:10px 16px}.pc-header__logo img{height:22px}}
