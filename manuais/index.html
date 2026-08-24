@@ -158,13 +158,13 @@ try{ sb=supabase.createClient(SB_URL,SB_KEY); }catch(e){ console.warn(e); }
 /* ===== Ordem e ícones das seções ===== */
 const GROUPS=[
   {doc:'swipe-file', label:'Protocolo · Swipe File', secs:[
-    ['Narrativa','📖'],['Job Descriptions','👤'],['Playbooks','📘'],['Protocolos','🧩'],['Processos','⚙️'],['Vídeos','🎬'],
+    ['Narrativa','📖'],['Job Descriptions','👤'],['Playbooks','📘'],['Protocolos','🧩'],['Processos','⚙️'],['Vídeos','🎬']
   ]},
   {doc:'modelo-clientes', label:'Modelo para Clientes (template)', secs:[
     ['Template: BD_job_description','🗂️'],['Template: BD_processo','🗂️'],['Template: BD_protocolo','🗂️'],
-    ['Template: BD_playbook','🗂️'],['Template: BD_produto','🗂️'],['Template: BD_videos','🗂️'],
-    ['Template: BD_departamento','🗂️'],['Template: BD_status','🗂️'],
-  ]},
+    ['Template: BD_playbook','🗂️'],['Template: BD_videos','🗂️']
+    
+  ]}
 ];
 
 let INDEX=[];      // itens leves (sem content)
