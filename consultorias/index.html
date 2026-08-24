@@ -550,6 +550,7 @@ small.mut{color:var(--brand-muted)}
     <div class="searchbox" id="searchWrap"><span>🔎</span><input id="globalSearch" placeholder="Buscar clientes, leads, produtos…" oninput="globalSearch(this.value)"></div>
     <span id="cloudBadge" title="Status do banco de dados" style="font-size:11px;color:var(--brand-muted);font-family:var(--mono)">☁</span>
     <button class="iconbtn" id="bellBtn" onclick="showAlerts()" title="Alertas">🔔<span class="dot hidden" id="bellDot">0</span></button>
+    <button class="btn ghost sm hidden" id="backBtn" onclick="openConsultoria()" title="Voltar para Empresas / Biblioteca">← Empresas</button>
     <div class="userchip"><span class="avatar" id="uAv">P</span><span id="uName">—</span><button class="btn ghost sm" onclick="logout()">Sair</button></div>
   </div>
   <div class="sidebar" id="sidebar"></div>
@@ -1022,6 +1023,7 @@ function openConsultoria(){
   document.getElementById("tbName").textContent="";
   document.getElementById("searchWrap").style.visibility="hidden";
   document.getElementById("bellBtn").classList.add("hidden");
+  document.getElementById("backBtn").classList.add("hidden");
   document.getElementById("sidebar").innerHTML=`
    <div class="sb-group">Protocolo</div>
    <div class="nav-item active"><span class="ic">🏢</span> Empresas (Consultoria)</div>
@@ -1096,6 +1098,7 @@ function openTenant(tenant){
   document.getElementById("tbName").textContent=BRANDS[tenant].name;
   document.getElementById("searchWrap").style.visibility="visible";
   document.getElementById("bellBtn").classList.toggle("hidden",!isAdmin());
+  document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
   renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs"].includes(SESSION.role)?"treino":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
 }
