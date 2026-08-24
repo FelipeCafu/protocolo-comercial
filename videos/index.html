@@ -179,10 +179,10 @@ const PASSWORD="Protocolo 2026";
 function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='flex';history.replaceState({v:'grid'},'');render();}
 function doLogin(){
   const v=document.getElementById('pw').value.trim();
-  if(v.toLowerCase()===PASSWORD.toLowerCase()){sessionStorage.setItem('pc_videos_auth','1');enter();}
+  if(v.toLowerCase()===PASSWORD.toLowerCase()){localStorage.setItem('pc_content','1');enter();}
   else{document.getElementById('loginErr').textContent='Senha incorreta. Tente novamente.';}
 }
-function logout(){sessionStorage.removeItem('pc_videos_auth');location.reload();}
+function logout(){['pc_content','pc_sso','pc_sso_user'].forEach(k=>localStorage.removeItem(k));location.reload();}
 const CATALOG = {
  "total": 1217,
  "courses": [
@@ -6571,7 +6571,7 @@ window.addEventListener('popstate',function(e){
   else { hidePlayer(); curCourse=-1; render(); }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
-if(sessionStorage.getItem('pc_videos_auth')==='1'){enter();}
+if(localStorage.getItem('pc_sso')==='1'||localStorage.getItem('pc_content')==='1'){enter();}
 </script>
 <script src="../protecao.js"></script>
 </body>

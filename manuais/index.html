@@ -187,19 +187,19 @@ let curSec=null, curItem=null, editing=false;
 function doLogin(){
   const v=document.getElementById('pw').value.trim();
   if(v.toLowerCase()===PASSWORD.toLowerCase()){
-    sessionStorage.setItem('pc_manuais_auth','1'); enter();
+    localStorage.setItem('pc_content','1'); enter();
   } else {
     document.getElementById('loginErr').textContent='Senha incorreta. Tente novamente.';
     document.getElementById('pw').select();
   }
 }
-function logout(){ sessionStorage.removeItem('pc_manuais_auth'); location.reload(); }
+function logout(){ ['pc_content','pc_sso','pc_sso_user'].forEach(k=>localStorage.removeItem(k)); location.reload(); }
 function enter(){
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='grid';
   loadIndex();
 }
-if(sessionStorage.getItem('pc_manuais_auth')==='1'){ enter(); }
+if(localStorage.getItem('pc_sso')==='1'||localStorage.getItem('pc_content')==='1'){ enter(); }
 window.addEventListener('load',()=>{ const p=document.getElementById('pw'); if(p) p.focus(); });
 
 /* ===== DADOS ===== */

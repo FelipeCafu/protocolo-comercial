@@ -1005,6 +1005,7 @@ function doLogin(){
   const p=document.getElementById("lgPass").value;const acc=USERS[u];
   if(!acc||acc.pass!==p){toast("Usuário ou senha inválidos","bad");return;}
   SESSION=acc;
+  try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);}catch(e){}
   stopBgFx();clearInterval(lgTimer);
   document.getElementById("login").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
@@ -1012,7 +1013,7 @@ function doLogin(){
   document.getElementById("uName").textContent=acc.name;
   if(acc.tenant==="all"){openConsultoria();}else{openTenant(acc.tenant);}
 }
-function logout(){SESSION=null;CURRENT_TENANT=null;location.reload();}
+function logout(){try{['pc_sso','pc_sso_user','pc_content'].forEach(k=>localStorage.removeItem(k));}catch(e){}SESSION=null;CURRENT_TENANT=null;location.reload();}
 function enterAs(tenant){openTenant(tenant);}
 
 function openConsultoria(){
@@ -3752,6 +3753,8 @@ function toast(msg,type){const t=document.getElementById("toast");t.textContent=
 initCloud();seed();seedB2();document.getElementById("loginFelipe").src=FELIPE_BIG;setLoginBrand("protocolo");startBgFx();rotatePhrases();
 document.getElementById("lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:"protocolo";setLoginBrand(BRANDS[b]?b:"protocolo");});
+/* Login único (SSO): se já entrou antes, restaura sozinho sem pedir senha de novo */
+(function restoreSSO(){try{if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];if(acc){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=acc.pass;doLogin();}}}catch(e){}})();
 </script>
 </body>
 </html>
