@@ -1069,8 +1069,7 @@ const NAV=[
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
- {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
- {g:"Biblioteca"},{id:"manuais",ic:"📖",t:"Manuais",url:"../manuais/"},{id:"videos",ic:"🎬",t:"Vídeos",url:"../videos/"}
+ {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"}
 ];
 const NAV_B2=[
  {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
@@ -1079,8 +1078,7 @@ const NAV_B2=[
  {id:"scripts",ic:"💬",t:"Playbook de Vendas"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
- {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},
- {g:"Biblioteca"},{id:"manuais",ic:"📖",t:"Manuais",url:"../manuais/"},{id:"videos",ic:"🎬",t:"Vídeos",url:"../videos/"}
+ {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"}
 ];
 const NAV_CEO=[
  {g:"Executivo"},{id:"exec",ic:"📈",t:"Painel Executivo"},{id:"painel",ic:"📊",t:"Painel Comercial"},
@@ -1088,8 +1086,7 @@ const NAV_CEO=[
  {id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},{id:"fidelidade",ic:"💚",t:"Carteira & NPS"},
  {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Playbook de Vendas"},
- {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},
- {g:"Biblioteca"},{id:"manuais",ic:"📖",t:"Manuais",url:"../manuais/"},{id:"videos",ic:"🎬",t:"Vídeos",url:"../videos/"}
+ {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"}
 ];
 function activeNav(){if(SESSION&&SESSION.role==="ceo")return NAV_CEO;return CURRENT_TENANT==="b2if"?NAV_B2:NAV;}
 function openTenant(tenant){
