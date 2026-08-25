@@ -650,7 +650,22 @@ const FUNNELS=[
 ];
 function seed(){
   const t="lideres";
-  if(localStorage.getItem("pc.lideres.seeded")==="v4")return;
+  if(localStorage.getItem("pc.lideres.seeded")==="v5")return;
+  /* Base fictícia REMOVIDA (24/08): Líderes começa limpo. A nuvem é a fonte da verdade;
+     aqui gravamos só no localStorage (NUNCA na nuvem) — o syncTenant traz a base real. */
+  {
+    const sL=(c,v)=>localStorage.setItem(DB.key(t,c),JSON.stringify(v));
+    sL("funnels",FUNNELS);
+    sL("products",[
+     {id:"master",nome:"Membro Master",preco:698,recorrencia:698,parcelas:12,cor:"#5470d6",beneficios:["Comunidade Líderes do Brasil","Sociedade dos 12 com mentorias multilaterais","Encontro das Comunidades (networking) todo mês","Evento Imersão O MAPA","O MAPA – banca de consultores especialistas","+1h de consultoria individualizada"]},
+     {id:"premium",nome:"Membro Premium Board",preco:1698,recorrencia:1698,parcelas:12,cor:"#e7b53c",beneficios:["Tudo do Master","Board de Membros Premium mensal (até 12 membros)","High Table exclusivo (a cada 2 meses)","Visita dos consultores à empresa do membro","Acesso ilimitado a reuniões e eventos","+1h de consultoria individualizada"]}
+    ]);
+    sL("cadences",defaultCadences());sL("quizBank",quizBank());
+    sL("sellers",[]);sL("leads",[]);sL("members",[]);sL("activities",[]);sL("history",[]);sL("coupons",[]);sL("alerts",[]);
+    sL("goals",{fatMeta:0,fatReal:0,projecao:0,metaMembros:0,comissaoSDR:150,comissaoCloserPct:12,comissaoCS:80});
+    localStorage.setItem("pc.lideres.seeded","v5");
+    return;
+  }
   DB.set(t,"funnels",FUNNELS);
   DB.set(t,"products",[
    {id:"master",nome:"Membro Master",preco:698,recorrencia:698,parcelas:12,cor:"#5470d6",
@@ -1150,8 +1165,8 @@ function kpi(ic,lab,val,delta,dir){return `<div class="card kpi"><div class="lab
 /* ===== PAINEL COMERCIAL ===== */
 function vPainel(){
   const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads"),members=DB.get(T(),"members"),sellers=DB.get(T(),"sellers");
-  const fatReal=g.fatReal||0,fatMeta=g.fatMeta||1,proj=g.projecao||0;
-  const pctMeta=Math.round(fatReal/fatMeta*100),gap=Math.max(fatMeta-fatReal,0);
+  const fatReal=g.fatReal||0,fatMeta=g.fatMeta||0,proj=g.projecao||0;
+  const pctMeta=fatMeta?Math.round(fatReal/fatMeta*100):0,gap=Math.max(fatMeta-fatReal,0);
   const abertos=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
   const pipeline=abertos.reduce((s,l)=>s+(l.valor||0),0);
   const mrr=members.filter(m=>m.status!=="churn").reduce((s,m)=>s+(m.mrr||0),0);
@@ -1214,8 +1229,8 @@ function vPainel(){
 /* ===== PAINEL EXECUTIVO (CEO) ===== */
 function vExec(){
   const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads"),members=DB.get(T(),"members"),sellers=DB.get(T(),"sellers");
-  const fatReal=g.fatReal||0,fatMeta=g.fatMeta||1,proj=g.projecao||0;
-  const pctMeta=Math.round(fatReal/fatMeta*100),gap=Math.max(fatMeta-fatReal,0);
+  const fatReal=g.fatReal||0,fatMeta=g.fatMeta||0,proj=g.projecao||0;
+  const pctMeta=fatMeta?Math.round(fatReal/fatMeta*100):0,gap=Math.max(fatMeta-fatReal,0);
   const abertos=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
   const pipeline=abertos.reduce((s,l)=>s+(l.valor||0),0);
   const ativos=members.filter(m=>m.status==="ativo"),inad=members.filter(m=>m.status==="inadimplente");
