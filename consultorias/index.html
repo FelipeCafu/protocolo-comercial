@@ -1205,7 +1205,7 @@ function vPainel(){
    <div class="grid mt" style="grid-template-columns:1.2fr 1fr">
      <div class="card"><div class="flex between"><h2 style="margin:0;font-size:15px">Ranking de vendedores</h2><small class="mut">no mês</small></div>
        <table class="mt8"><thead><tr><th>#</th><th>Vendedor</th><th>Papel</th><th>Meta</th><th>Realiz.</th><th>%</th></tr></thead><tbody>
-       ${[...sellers].sort((a,b)=>(b.realizado/b.meta)-(a.realizado/a.meta)).map((x,i)=>{const pct=Math.round(x.realizado/x.meta*100);
+       ${[...sellers].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0))||(b.realizado-a.realizado)).map((x,i)=>{const pct=x.meta?Math.round(x.realizado/x.meta*100):0;
          return `<tr><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><b>${x.nome}</b></td><td>${x.papel}</td><td>${x.meta}</td><td>${x.realizado}</td><td><span class="pill ${pct>=100?'ok':pct>=70?'warn':'bad'}">${pct}%</span></td></tr>`;}).join("")}
        </tbody></table></div>
      <div class="card"><div class="flex between"><h2 style="margin:0;font-size:15px">Clientes em potencial</h2><span class="pill warn">${potencial.length} quentes</span></div>
@@ -1291,7 +1291,7 @@ function vExec(){
    <div class="grid mt" style="grid-template-columns:1.2fr 1fr">
      <div class="card"><div class="flex between"><h2 style="margin:0;font-size:15px">Performance do time</h2><small class="mut">${naMeta}/${sellers.length} na meta</small></div>
        <table class="mt8"><thead><tr><th>#</th><th>Pessoa</th><th>Papel</th><th>Meta</th><th>Realiz.</th><th>%</th></tr></thead><tbody>
-       ${[...sellers].sort((a,b)=>(b.realizado/b.meta)-(a.realizado/a.meta)).map((x,i)=>{const pct=Math.round(x.realizado/x.meta*100);
+       ${[...sellers].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0))||(b.realizado-a.realizado)).map((x,i)=>{const pct=x.meta?Math.round(x.realizado/x.meta*100):0;
          return `<tr><td>${["🥇","🥈","🥉"][i]||i+1}</td><td><b>${x.nome}</b></td><td>${x.papel}</td><td>${x.meta}</td><td>${x.realizado}</td><td><span class="pill ${pct>=100?'ok':pct>=70?'warn':'bad'}">${pct}%</span></td></tr>`;}).join("")}
        </tbody></table></div>
      <div class="card"><h2 style="margin:0 0 8px;font-size:15px">Política de comissionamento</h2>
@@ -3614,7 +3614,7 @@ function vPerf(){
    <div class="view-title"><h1>Performance do Time</h1></div>
    <p class="view-sub">Metas, atividades, conversão e desempenho na prova (treino).</p>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-   ${s.map(x=>{const pct=Math.round(x.realizado/x.meta*100);const owned=leads.filter(l=>l.owner===x.id).length;
+   ${s.map(x=>{const pct=x.meta?Math.round(x.realizado/x.meta*100):0;const owned=leads.filter(l=>l.owner===x.id).length;
      const uName=Object.values(USERS).find(u=>u.sellerId===x.id)?.name;const prov=uName?(hist[uName]||[])[0]:null;
      return `<div class="card"><div class="flex" style="gap:12px"><span class="avatar" style="width:44px;height:44px;font-size:15px">${x.foto}</span>
        <div><b>${x.nome}</b><br><small class="mut">${x.papel}</small></div>
