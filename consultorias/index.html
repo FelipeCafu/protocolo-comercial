@@ -615,7 +615,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase) — nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(r=>{if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}}
@@ -1535,46 +1535,103 @@ function saveNewLead(){
   closeModal();toast("Lead criado");renderSidebar();if(CURRENT_VIEW==="crm")vCRM();else if(CURRENT_VIEW==="base")vBase();
 }
 /* ===== BASE DE CLIENTES ===== */
+function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function baseOrigens(){const s=new Set();DB.get(T(),"base").forEach(b=>(b.origens||[]).forEach(o=>o&&s.add(o)));return[...s].sort();}
+function baseRamos(){const s=new Set();DB.get(T(),"base").forEach(b=>b.ramo&&s.add(b.ramo));return[...s].sort();}
+let BASE_SEL=new Set();
 function vBase(){
-  const leads=DB.get(T(),"leads");
+  const base=DB.get(T(),"base");
   M().innerHTML=`
-   <div class="view-title"><h1>Base de Clientes & Leads</h1></div>
-   <p class="view-sub">Toda a carteira gravada. Importe por planilha, PDF, foto ou áudio.</p>
-   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:16px">
-     ${importBtn("📄","Planilha (CSV/XLSX)","planilha")}${importBtn("📕","PDF","pdf")}${importBtn("📷","Foto (OCR)","foto")}${importBtn("🎙️","Áudio","audio")}
-   </div>
-   <div class="card"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">Carteira (${leads.length})</h2>
-     <div class="flex"><input class="in" id="baseSearch" placeholder="🔎 buscar…" style="width:220px" oninput="vBaseRows()"><button class="btn sm" onclick="leadModal()">+ Novo</button></div></div>
-     <div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Nome</th><th>Empresa</th><th>Contato</th><th>Funil / Etapa</th><th>Temp.</th><th>Valor</th></tr></thead><tbody id="baseRows"></tbody></table></div></div>`;
+   <div class="view-title"><h1>Base de Clientes</h1><span class="pill pri">${base.length}</span></div>
+   <p class="view-sub">Carteira completa do ${BRANDS[T()].name}. Filtre, selecione e envie para o CRM escolhendo o funil. Nada é apagado ao enviar — o contato continua aqui.</p>
+   <div class="card">
+     <div class="flex wrap" style="gap:8px;align-items:center">
+       <input class="in" id="bSearch" placeholder="🔎 nome, empresa, telefone, e-mail…" style="width:250px" oninput="vBaseRows()">
+       <select class="in" id="bOrigem" style="max-width:200px" onchange="vBaseRows()"><option value="">Todas as origens/eventos</option>${baseOrigens().map(o=>`<option>${esc(o)}</option>`).join("")}</select>
+       <select class="in" id="bRamo" style="max-width:180px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>
+       <select class="in" id="bMembro" style="max-width:150px" onchange="vBaseRows()"><option value="">Membro: todos</option><option value="sim">Só membros</option><option value="nao">Não-membros</option></select>
+       <select class="in" id="bCrm" style="max-width:150px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
+     </div>
+     <div class="flex between wrap mt8" style="gap:8px">
+       <div class="mut" id="bCount" style="font-size:12.5px"></div>
+       <div class="flex" style="gap:8px"><button class="btn sm" onclick="baseSendSelected()">➡️ Enviar selecionados p/ CRM</button><button class="btn ghost sm" onclick="baseNovo()">+ Novo contato</button></div>
+     </div>
+     <div style="overflow:auto;margin-top:10px;max-height:62vh"><table><thead><tr>
+       <th style="width:26px"><input type="checkbox" id="bAll" onclick="baseToggleAll(this.checked)"></th>
+       <th>Nome</th><th>Empresa</th><th>Ramo</th><th>Telefone</th><th>E-mail</th><th>Origem / Evento</th><th>Membro</th><th>CRM</th><th></th>
+     </tr></thead><tbody id="baseRows"></tbody></table></div>
+   </div>`;
   vBaseRows();
 }
-function importBtn(ic,lab,type){return `<button class="card" style="text-align:center;cursor:pointer;border:1px dashed var(--brand-line);color:var(--brand-text)" onclick="importModal('${type}','${lab}')">
-  <div style="font-size:26px">${ic}</div><div style="font-size:12.5px;margin-top:6px;font-weight:700;color:var(--brand-text)">${lab}</div></button>`;}
+function baseFiltered(){
+  const q=(document.getElementById("bSearch")?.value||"").toLowerCase().trim();
+  const org=document.getElementById("bOrigem")?.value||"",ram=document.getElementById("bRamo")?.value||"";
+  const mem=document.getElementById("bMembro")?.value||"",crm=document.getElementById("bCrm")?.value||"";
+  return DB.get(T(),"base").filter(b=>{
+    if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")).toLowerCase().includes(q))return false;
+    if(org && !(b.origens||[]).includes(org))return false;
+    if(ram && b.ramo!==ram)return false;
+    if(mem==="sim" && b.membro!=="sim")return false;
+    if(mem==="nao" && b.membro==="sim")return false;
+    if(crm==="fora" && b.inCrm)return false;
+    if(crm==="dentro" && !b.inCrm)return false;
+    return true;});
+}
 function vBaseRows(){
-  const q=(document.getElementById("baseSearch")?.value||"").toLowerCase();
-  let leads=DB.get(T(),"leads");
-  if(q)leads=leads.filter(l=>(l.nome+(l.fantasia||"")+(l.razaoSocial||"")+((l.contato||{}).email||"")+((l.contato||{}).tel||"")).toLowerCase().includes(q));
-  document.getElementById("baseRows").innerHTML=leads.map(l=>{const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";const f=funnelOf(l.estagio);
-    return `<tr style="cursor:pointer" onclick="leadDetail('${l.id}')"><td><b>${l.nome}</b></td><td>${l.fantasia||l.razaoSocial||"—"}</td>
-      <td><small class="mut">${(l.contato||{}).tel||(l.contato||{}).email||"—"}</small></td>
-      <td><span class="pill">${f?f.name:""} · ${stageName(l.estagio)}</span></td>
-      <td><span class="temp ${tc}"></span> ${l.temp}</td><td><b>${money(l.valor)}</b></td></tr>`;}).join("")||`<tr><td colspan="6"><small class="mut">Nenhum registro.</small></td></tr>`;
+  const list=baseFiltered(),CAP=400,show=list.slice(0,CAP);
+  document.getElementById("baseRows").innerHTML=show.map(b=>`<tr>
+    <td><input type="checkbox" ${BASE_SEL.has(b.id)?'checked':''} onclick="baseSel('${b.id}',this.checked)"></td>
+    <td><b>${esc(b.nome)}</b></td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
+    <td><small>${esc(b.tel||'')}</small></td><td><small class="mut">${esc(b.email||'')}</small></td>
+    <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}</td>
+    <td>${b.membro==="sim"?'<span class="pill ok">membro</span>':'—'}</td>
+    <td>${b.inCrm?'<span class="pill ok">no CRM</span>':'—'}</td>
+    <td><button class="btn xs" onclick="baseSend('${b.id}')">➡️ CRM</button></td></tr>`).join("")||`<tr><td colspan="10"><small class="mut">Nenhum contato encontrado.</small></td></tr>`;
+  const el=document.getElementById("bCount");if(el)el.textContent=`${list.length} contato(s)${list.length>CAP?` · mostrando ${CAP} — refine a busca`:""} · ${BASE_SEL.size} selecionado(s)`;
 }
-function importModal(type,lab){
-  const demo={planilha:"nome,fantasia,telefone,email,plano\nJoão Silva,Silva ME,(61) 99000-0000,joao@silva.com,master",
-    pdf:"Arraste o PDF da lista de contatos / proposta. Extraímos nome, empresa e telefone.",
-    foto:"Foto do cartão de visita ou de uma lista. O OCR lê e cadastra.",
-    audio:"Grave um áudio ('falei com o Ricardo da Almeida Construções, telefone…') e transcrevemos."}[type];
-  openModal(`<h3>Importar por ${lab}</h3><p class="mut" style="font-size:13px">${type==='planilha'?"Cole no formato abaixo (cabeçalho + linhas). Em produção vira upload de arquivo.":demo}</p>
-   ${type==='planilha'?`<textarea class="in" id="impData" rows="6">${demo}</textarea>`:`<div class="card" style="border:1px dashed var(--brand-line);text-align:center;padding:28px"><div style="font-size:32px">⬆️</div><div class="mut" style="font-size:13px;margin-top:6px">Selecionar arquivo</div><small class="mut">(demo — cria leads de exemplo)</small></div>`}
-   <div class="flex between mt"><small class="mut">Grava no banco do ${BRANDS[T()].name}.</small><div class="flex"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="doImport('${type}')">Importar</button></div></div>`);
+function baseSel(id,ck){ck?BASE_SEL.add(id):BASE_SEL.delete(id);const el=document.getElementById("bCount");if(el)el.textContent=`${baseFiltered().length} contato(s) · ${BASE_SEL.size} selecionado(s)`;}
+function baseToggleAll(ck){baseFiltered().slice(0,400).forEach(b=>ck?BASE_SEL.add(b.id):BASE_SEL.delete(b.id));vBaseRows();}
+function baseSend(id){BASE_SEL=new Set([id]);baseSendSelected();}
+function baseSendSelected(){
+  if(!BASE_SEL.size){toast("Selecione ao menos 1 contato","warn");return;}
+  const funnels=DB.getObj(T(),"funnels",FUNNELS);
+  openModal(`<h3>Enviar ${BASE_SEL.size} contato(s) para o CRM</h3>
+    <p class="mut" style="font-size:13px">Escolha o funil e a etapa inicial. Os contatos permanecem na Base.</p>
+    <label class="mut" style="font-size:12px">Funil</label>
+    <select class="in" id="sendFunnel" onchange="sendStageOpts()">${funnels.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select>
+    <label class="mut" style="font-size:12px;margin-top:8px;display:block">Etapa</label>
+    <select class="in" id="sendStage"></select>
+    <div class="flex between mt"><small class="mut">${BASE_SEL.size} selecionado(s).</small>
+      <div class="flex"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="baseSendDo()">Enviar p/ CRM</button></div></div>`);
+  sendStageOpts();
 }
-function doImport(type){
-  let n=0;const fid=CRM_FUNNEL||"prospeccao";const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid);
-  const mk=(nome,fant,tel,email,plano)=>{const id=DB.uid();DB.push(T(),"leads",{id,nome,fantasia:fant,razaoSocial:fant,funnelId:fid,estagio:f.stages[0].id,temp:"morno",origem:"Importação",valor:plano==="premium"?1698:698,owner:"ana",score:50,contato:{nome,tel,email},criadoEm:Date.now(),movedAt:Date.now()});DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado (importação "+type+")",ts:Date.now()});n++;};
-  if(type==="planilha"){document.getElementById("impData").value.trim().split("\n").slice(1).forEach(line=>{const[nome,fant,tel,email,plano]=line.split(",");if(nome)mk(nome.trim(),(fant||"").trim(),(tel||"").trim(),(email||"").trim(),(plano||"").trim());});}
-  else{[["Roberto Alves","Alves Distribuidora"],["Marina Costa","MC Eventos"]].forEach(([nm,emp])=>mk(nm,emp,"","",""));}
-  closeModal();toast(n+" leads importados");renderSidebar();vBase();
+function sendStageOpts(){const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===document.getElementById("sendFunnel").value);document.getElementById("sendStage").innerHTML=(f?f.stages:[]).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");}
+function baseSendDo(){
+  const fid=document.getElementById("sendFunnel").value,sid=document.getElementById("sendStage").value;
+  const base=DB.get(T(),"base"),leads=DB.get(T(),"leads");let n=0;
+  BASE_SEL.forEach(id=>{const b=base.find(x=>x.id===id);if(!b||b.inCrm)return;
+    const lid=DB.uid();
+    leads.unshift({id:lid,baseId:b.id,nome:b.nome,fantasia:b.empresa,razaoSocial:b.empresa,setor:b.ramo||"",
+      contato:{nome:b.nome,tel:b.tel||"",email:b.email||""},origem:(b.origens||[]).join(", "),
+      funnelId:fid,estagio:sid,temp:"morno",valor:0,score:0,owner:"",criadoEm:Date.now(),movedAt:Date.now(),notas:b.obs||""});
+    b.inCrm=true;b.crmLeadId=lid;n++;});
+  DB.set(T(),"leads",leads);DB.set(T(),"base",base);
+  closeModal();BASE_SEL=new Set();toast(n+" contato(s) enviado(s) ao CRM");vBase();
+}
+function baseNovo(){
+  openModal(`<h3>Novo contato na Base</h3>
+   <input class="in" id="nbNome" placeholder="Nome" style="margin-bottom:6px"><input class="in" id="nbEmp" placeholder="Empresa" style="margin-bottom:6px">
+   <input class="in" id="nbTel" placeholder="Telefone" style="margin-bottom:6px"><input class="in" id="nbEmail" placeholder="E-mail" style="margin-bottom:6px">
+   <input class="in" id="nbRamo" placeholder="Ramo / tipo de empresa" style="margin-bottom:6px"><input class="in" id="nbOrig" placeholder="Origem / evento" style="margin-bottom:6px">
+   <div class="flex between mt"><span></span><div class="flex"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="baseNovoDo()">Salvar</button></div></div>`);
+}
+function baseNovoDo(){
+  const nome=document.getElementById("nbNome").value.trim();if(!nome){toast("Informe o nome","bad");return;}
+  const base=DB.get(T(),"base");
+  base.unshift({id:DB.uid(),nome,empresa:document.getElementById("nbEmp").value.trim(),tel:document.getElementById("nbTel").value.trim(),
+    email:document.getElementById("nbEmail").value.trim(),cpf:"",cargo:"",instagram:"",membro:"",ramo:document.getElementById("nbRamo").value.trim(),
+    origens:[document.getElementById("nbOrig").value.trim()||"Manual"],obs:"",inCrm:false});
+  DB.set(T(),"base",base);closeModal();toast("Contato adicionado à Base");vBase();
 }
 
 /* ===== CONFIG DOS FUNIS ===== */
