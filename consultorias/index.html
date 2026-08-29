@@ -1198,14 +1198,34 @@ function vPainel(){
   const ativos=members.filter(m=>m.status==="ativo").length;
   const naMeta=sellers.filter(s=>s.realizado>=s.meta).length;
   const potencial=leads.filter(l=>l.temp==="quente"&&!["ganho","perdido"].includes(l.estagio));
+  const projPct=fatMeta?Math.round(proj/fatMeta*100):0,projGap=Math.max(fatMeta-proj,0),hotValue=potencial.reduce((x,l)=>x+(l.valor||0),0),hotN=potencial.length,onTrack=fatMeta>0&&proj>=fatMeta;
   M().innerHTML=`
    <div class="view-title"><h1>Painel Comercial</h1><span class="pill pri">Visão de liderança</span></div>
    <p class="view-sub">Fotografia completa do comercial do ${BRANDS[T()].name}.</p>
-   <div class="grid kpis">
-     ${kpi("💰","Faturamento total (mês)",money(fatReal),`${pctMeta}% da meta`,pctMeta>=100?"up":"down")}
-     ${kpi("🎯","Realizado / Meta",money(fatReal)+" / "+money(fatMeta),`faltam ${money(gap)}`,pctMeta>=100?"up":"down")}
-     ${kpi("📈","Projeção de entrega",money(proj),proj>=fatMeta?"bate a meta":"abaixo da meta",proj>=fatMeta?"up":"down")}
+   <div class="card" style="background:linear-gradient(160deg,${onTrack?'rgba(76,175,120,.14)':'rgba(240,180,80,.12)'},transparent);border:1px solid ${onTrack?'rgba(76,175,120,.4)':'rgba(240,180,80,.4)'}">
+     <div class="flex" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
+       <div style="flex:1;min-width:240px">
+         <div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.06em">Projeção de fechar o mês</div>
+         <div style="font-size:clamp(30px,4vw,50px);font-weight:800;line-height:1.05">${money(proj)} <span style="font-size:.42em;color:${onTrack?'var(--brand-ok)':'var(--brand-warn)'}">· ${projPct}% da meta</span></div>
+         <div style="font-size:14px;color:${onTrack?'var(--brand-ok)':'var(--brand-warn)'};margin-top:4px">${fatMeta<=0?'Defina a meta do mês pra o painel te guiar':(onTrack?'✅ No caminho de bater a meta':('⚠️ Abaixo — faltam '+money(projGap)+' de projeção'))}</div>
+       </div>
+       <div style="text-align:right;min-width:170px">
+         <div class="mut" style="font-size:12px">Perto de fechar</div>
+         <div style="font-size:26px;font-weight:800;color:var(--brand-ok)">${money(hotValue)}</div>
+         <div class="mut" style="font-size:12px">${hotN} ${hotN===1?'deal quente':'deals quentes'}</div>
+       </div>
+     </div>
+     <div class="flex" style="align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.07);padding-top:12px">
+       <div style="flex:1;min-width:220px;font-size:13.5px">${fatMeta<=0?'Defina a meta do mês em <b>Metas &amp; Comissões</b> pra o painel calcular o que falta.':(gap>0?('Pra bater a meta faltam <b>'+money(gap)+'</b> — priorize os '+hotN+' deals quentes.'):'🎉 Meta batida! Segure o ritmo e proteja a recorrência.')}</div>
+       <button class="btn gold sm" onclick="go('crm')">Ver deals quentes →</button>
+       ${isAdmin()?`<button class="btn ghost sm" onclick="go('metas')">Metas & comissões</button>`:''}
+     </div>
+   </div>
+   <div class="grid kpis mt" style="opacity:.92">
      ${kpi("🔁","MRR (recorrência)",money(mrr),`${ativos} ${lx('clientes')} ativos`,"up")}
+     ${kpi("💰","Realizado (mês)",money(fatReal),`${pctMeta}% da meta`,pctMeta>=100?"up":"down")}
+     ${kpi("📊","Pipeline aberto",money(pipeline),`${abertos.length} em aberto`,"up")}
+     ${kpi("🏆","Vendedores na meta",naMeta+"/"+sellers.length,"",naMeta*2>=sellers.length?"up":"down")}
    </div>
    <div class="grid mt" style="grid-template-columns:1.1fr 1fr">
      <div class="card">
