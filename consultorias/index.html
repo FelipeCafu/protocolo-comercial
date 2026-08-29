@@ -618,7 +618,20 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
-function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(r=>{if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}}
+/* BLINDAGEM: salva por REGISTRO (merge por id) — ninguem apaga o dado do outro. Fallback seguro. */
+var _pushQ={};
+function _mergeById(remote,local){var s=new Set((local||[]).filter(function(x){return x&&x.id!=null;}).map(function(x){return x.id;}));var ro=(remote||[]).filter(function(x){return x&&x.id!=null&&!s.has(x.id);});return (local||[]).concat(ro);}
+function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;
+ if(!Array.isArray(v)){try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r){if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}return;}
+ var key=t+"|"+c;
+ var run=function(){return sb.from("pc_store").select("data").eq("tenant",t).eq("col",c).maybeSingle().then(function(r){
+   var remote=(r&&r.data&&Array.isArray(r.data.data))?r.data.data:[];
+   var merged=_mergeById(remote,v);
+   try{localStorage.setItem(DB.key(t,c),JSON.stringify(merged));}catch(e){}
+   return sb.from("pc_store").upsert({tenant:t,col:c,data:merged,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r2){if(r2&&r2.error)console.warn("push",c,r2.error.message);});
+ }).catch(function(){try{return sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"});}catch(e){}});};
+ _pushQ[key]=(_pushQ[key]||Promise.resolve()).then(run,run);
+}
 window.__cloudPush=cloudPush;
 async function cloudPull(t){if(!CLOUD_ON)return false;try{const r=await sb.from("pc_store").select("col,data").eq("tenant",t);if(r.error)throw r.error;if(!r.data||!r.data.length)return "empty";r.data.forEach(row=>localStorage.setItem(DB.key(t,row.col),JSON.stringify(row.data)));return true;}catch(e){console.warn("pull",e.message);return false;}}
 async function cloudPushAll(t){if(!CLOUD_ON)return;const rows=SYNC_COLS.map(c=>{const v=localStorage.getItem(DB.key(t,c));return v==null?null:{tenant:t,col:c,data:JSON.parse(v)};}).filter(Boolean);if(!rows.length)return;try{await sb.from("pc_store").upsert(rows,{onConflict:"tenant,col"});}catch(e){console.warn("pushAll",e.message);}}
