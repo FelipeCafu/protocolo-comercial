@@ -1639,13 +1639,15 @@ function baseToggleAll(ck){baseFiltered().slice(0,400).forEach(b=>ck?BASE_SEL.ad
 function baseSend(id){BASE_SEL=new Set([id]);baseSendSelected();}
 function baseSendSelected(){
   if(!BASE_SEL.size){toast("Selecione ao menos 1 contato","warn");return;}
-  const funnels=DB.getObj(T(),"funnels",FUNNELS);
+  const funnels=DB.getObj(T(),"funnels",FUNNELS);const sellersB=DB.get(T(),"sellers");
   openModal(`<h3>Enviar ${BASE_SEL.size} contato(s) para o CRM</h3>
     <p class="mut" style="font-size:13px">Escolha o funil e a etapa inicial. Os contatos permanecem na Base.</p>
     <label class="mut" style="font-size:12px">Funil</label>
     <select class="in" id="sendFunnel" onchange="sendStageOpts()">${funnels.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select>
     <label class="mut" style="font-size:12px;margin-top:8px;display:block">Etapa</label>
     <select class="in" id="sendStage"></select>
+    <label class="mut" style="font-size:12px;margin-top:8px;display:block">Vendedor responsável (vai pra fila dele)</label>
+    <select class="in" id="sendOwner"><option value="__auto">Distribuir automaticamente (rodízio)</option>${sellersB.map(x=>`<option value="${x.id}">${esc(x.nome)} · ${x.papel}</option>`).join("")}</select>
     <div class="flex between mt"><small class="mut">${BASE_SEL.size} selecionado(s).</small>
       <div class="flex"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="baseSendDo()">Enviar p/ CRM</button></div></div>`);
   sendStageOpts();
@@ -1653,12 +1655,13 @@ function baseSendSelected(){
 function sendStageOpts(){const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===document.getElementById("sendFunnel").value);document.getElementById("sendStage").innerHTML=(f?f.stages:[]).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");}
 function baseSendDo(){
   const fid=document.getElementById("sendFunnel").value,sid=document.getElementById("sendStage").value;
+  const own=document.getElementById("sendOwner").value,sellersD=DB.get(T(),"sellers");let rr=0;
   const base=DB.get(T(),"base"),leads=DB.get(T(),"leads");let n=0;
   BASE_SEL.forEach(id=>{const b=base.find(x=>x.id===id);if(!b||b.inCrm)return;
     const lid=DB.uid();
     leads.unshift({id:lid,baseId:b.id,nome:b.nome,fantasia:b.empresa,razaoSocial:b.empresa,setor:b.ramo||"",
       contato:{nome:b.nome,tel:b.tel||"",email:b.email||""},origem:(b.origens||[]).join(", "),
-      funnelId:fid,estagio:sid,temp:"morno",valor:0,score:0,owner:"",criadoEm:Date.now(),movedAt:Date.now(),notas:b.obs||""});
+      funnelId:fid,estagio:sid,temp:"morno",valor:0,score:0,owner:(own==="__auto"?(sellersD.length?sellersD[rr++%sellersD.length].id:""):own),criadoEm:Date.now(),movedAt:Date.now(),notas:b.obs||""});
     b.inCrm=true;b.crmLeadId=lid;n++;});
   DB.set(T(),"leads",leads);DB.set(T(),"base",base);
   closeModal();BASE_SEL=new Set();toast(n+" contato(s) enviado(s) ao CRM");vBase();
@@ -3280,7 +3283,7 @@ function vMeuDia(){
   const overdue=acts.filter(a=>a.data<today), dueToday=acts.filter(a=>a.data===today);
   const first=(SESSION.name||"").split(" ")[0];
   const openLeads=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
-  const hot=openLeads.map(l=>({l,s:leadScore(l).score})).filter(o=>o.s>=50).sort((a,b)=>b.s-a.s).map(o=>o.l);
+  const hot=openLeads.map(l=>({l,s:leadScore(l).score})).sort((a,b)=>b.s-a.s).map(o=>o.l);
   function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=tel?"https://wa.me/55"+tel:"";
     return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
       <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
@@ -3294,7 +3297,7 @@ function vMeuDia(){
   if(overdue.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:6px 0">🔴 Atrasadas (${overdue.length})</div>`+overdue.map(a=>{const l=leadById[a.leadId];return l?card(l,'atrasada','bad'):'';}).join("");
   if(dueToday.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🟢 Para hoje (${dueToday.length})</div>`+dueToday.map(a=>{const l=leadById[a.leadId];return l?card(l,'hoje','ok'):'';}).join("");
   const semT=hot.filter(l=>!acts.some(a=>a.leadId===l.id));
-  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade — maior chance (${semT.length})</div>`+semT.slice(0,12).map(l=>card(l)).join("");
+  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade — maior chance (${semT.length})</div>`+semT.slice(0,20).map(l=>card(l)).join("");
   if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
   M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
