@@ -1197,7 +1197,7 @@ function vPainel(){
   const mrr=members.filter(m=>m.status!=="churn").reduce((s,m)=>s+(m.mrr||0),0);
   const ativos=members.filter(m=>m.status==="ativo").length;
   const naMeta=sellers.filter(s=>s.realizado>=s.meta).length;
-  const potencial=leads.filter(l=>l.temp==="quente"&&!["ganho","perdido"].includes(l.estagio));
+  const potencial=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio)&&leadScore(l).score>=70);
   const projPct=fatMeta?Math.round(proj/fatMeta*100):0,projGap=Math.max(fatMeta-proj,0),hotValue=potencial.reduce((x,l)=>x+(l.valor||0),0),hotN=potencial.length,onTrack=fatMeta>0&&proj>=fatMeta;
   M().innerHTML=`
    <div class="view-title"><h1>Painel Comercial</h1><span class="pill pri">Visão de liderança</span></div>
@@ -3258,6 +3258,19 @@ function vAcademy(){
    bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
 }
 
+function leadScore(l){
+  if(!l)return{score:0,reasons:[]};
+  const st=l.estagio||"";
+  const M={novo:12,tentativa:20,contato:30,mql:42,qualif:48,spin:56,agendou:66,noshow:38,reuniao:72,apresent:78,proposta:84,negoc:90,ganho:100,perdido:0,onboarding:95,ativado:100,recorrente:100,risco:58,churn:0};
+  let sc=(M[st]!=null?M[st]:30);const r=[];
+  if(M[st]!=null&&sc>0)r.push(stageName(st));
+  if(l.temp==="quente"){sc+=8;r.push("🔥 quente");}else if(l.temp==="frio"){sc-=10;r.push("🔵 frio");}
+  const ref=l.movedAt||l.criadoEm;
+  if(ref){const d=(Date.now()-ref)/864e5;if(d<=3){sc+=6;r.push("ativo há pouco");}else if(d>14){sc-=15;r.push("parado "+Math.round(d)+"d");}else if(d>7){sc-=6;r.push("esfriando");}}
+  if((l.valor||0)>=1500)sc+=4;
+  sc=Math.max(0,Math.min(100,Math.round(sc)));
+  return{score:sc,reasons:r.slice(0,3)};
+}
 function vMeuDia(){
   const me=SESSION.sellerId||SESSION.name;
   const leads=DB.get(T(),"leads").filter(l=>l.owner===me);
@@ -3267,11 +3280,11 @@ function vMeuDia(){
   const overdue=acts.filter(a=>a.data<today), dueToday=acts.filter(a=>a.data===today);
   const first=(SESSION.name||"").split(" ")[0];
   const openLeads=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
-  const hot=openLeads.filter(l=>l.temp==="quente").sort((a,b)=>(b.score||0)-(a.score||0));
-  function card(l,tag,tc){const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=tel?"https://wa.me/55"+tel:"";
+  const hot=openLeads.map(l=>({l,s:leadScore(l).score})).filter(o=>o.s>=50).sort((a,b)=>b.s-a.s).map(o=>o.l);
+  function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=tel?"https://wa.me/55"+tel:"";
     return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
-      <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}
-      <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${stageName(l.estagio)} · ${l.temp==='quente'?'🔥 quente':l.temp==='morno'?'🟡 morno':'🔵 frio'}</span></div>
+      <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
+      <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${S.reasons.join(' · ')||stageName(l.estagio)}</span></div>
       <div style="font-weight:800">${money(l.valor)}</div></div>
       <div class="flex" style="gap:7px;margin-top:9px;flex-wrap:wrap">
       ${tel?`<a class="btn ghost sm" href="tel:${tel}">📞 Ligar</a>`:''}${wa?`<a class="btn ghost sm" href="${wa}" target="_blank">💬 WhatsApp</a>`:''}
@@ -3281,7 +3294,7 @@ function vMeuDia(){
   if(overdue.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:6px 0">🔴 Atrasadas (${overdue.length})</div>`+overdue.map(a=>{const l=leadById[a.leadId];return l?card(l,'atrasada','bad'):'';}).join("");
   if(dueToday.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🟢 Para hoje (${dueToday.length})</div>`+dueToday.map(a=>{const l=leadById[a.leadId];return l?card(l,'hoje','ok'):'';}).join("");
   const semT=hot.filter(l=>!acts.some(a=>a.leadId===l.id));
-  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🔥 Quentes pra avançar (${semT.length})</div>`+semT.slice(0,12).map(l=>card(l)).join("");
+  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade — maior chance (${semT.length})</div>`+semT.slice(0,12).map(l=>card(l)).join("");
   if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
   M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
