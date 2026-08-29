@@ -1354,6 +1354,7 @@ function vCRM(){
   if(!funnels.find(f=>f.id===CRM_FUNNEL))CRM_FUNNEL=funnels[0].id;
   M().innerHTML=`
    <div class="view-title"><h1>CRM & Funis</h1></div>
+   ${lossBreakdown()}
    <div class="flex between wrap" style="margin-bottom:10px">
      <p class="view-sub" style="margin:0">Arraste os cards · <b style="color:var(--brand-bad)">🔴 atrasada</b> · <b style="color:var(--brand-ok)">🟢 hoje</b> · <b style="color:#8ea0cf">⚪ futura</b> · <b style="color:var(--brand-warn)">🟡 sem atividade</b> · clique p/ abrir.</p>
      <div class="flex">
@@ -1439,6 +1440,7 @@ function leadDetail(id){
      <button class="btn ok sm" onclick="winLead('${l.id}')">✓ Ganho</button>
      <button class="btn bad sm" onclick="loseLead('${l.id}')">✕ Perdido</button>
    </div>
+   ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(' — <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
    <div class="ld-grid">
      <div>
@@ -1535,7 +1537,39 @@ function saveLeadDetail(id){
   toast("Cadastro salvo");
 }
 function winLead(id){moveLeadStage(id,'ganho');DB.update(T(),"leads",id,{funnelId:'closer'});toast("🎉 Lead marcado como GANHO ("+lx('cliente')+")!");leadDetail(id);}
-function loseLead(id){moveLeadStage(id,'perdido');DB.update(T(),"leads",id,{funnelId:'closer'});toast("Lead marcado como Perdido","warn");leadDetail(id);}
+function loseLead(id){
+  openModal(`<h3>Por que perdemos?</h3>
+   <p class="mut" style="font-size:13px">O motivo real ajuda o time a vender melhor — e o lead não some da base.</p>
+   <label class="fl mt">Motivo</label>
+   <select class="in" id="lossReason">
+     <option value="Preço">Preço / achou caro</option>
+     <option value="Timing">Timing / momento errado</option>
+     <option value="Concorrente">Foi pra concorrente</option>
+     <option value="Não decisor">Não era o decisor</option>
+     <option value="Sem verba">Sem verba agora</option>
+     <option value="Sem interesse">Sem interesse / não viu valor</option>
+     <option value="Não respondeu">Sumiu / não respondeu</option>
+     <option value="Outro">Outro (escrever)</option>
+   </select>
+   <label class="fl mt8">Detalhe (o que o cliente disse de verdade)</label>
+   <input class="in" id="lossDetail" placeholder="opcional, mas ajuda muito">
+   <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="lossWinback" checked> Tentar recuperar mais pra frente (win-back)</label>
+   <div class="flex mt" style="justify-content:flex-end;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn bad sm" onclick="loseLeadDo('${id}')">Marcar como Perdido</button></div>`);
+}
+function loseLeadDo(id){
+  const reason=document.getElementById("lossReason").value,detail=(document.getElementById("lossDetail").value||"").trim(),winback=document.getElementById("lossWinback").checked;
+  moveLeadStage(id,'perdido');
+  DB.update(T(),"leads",id,{funnelId:'closer',lossReason:reason,lossDetail:detail,winback:winback,lostAt:Date.now()});
+  closeModal();toast("Perdido registrado · motivo: "+reason,"warn");leadDetail(id);
+}
+function lossBreakdown(){
+  const lost=DB.get(T(),"leads").filter(l=>l.estagio==="perdido"&&l.lossReason);
+  if(lost.length<2)return"";
+  const by={};lost.forEach(l=>{by[l.lossReason]=(by[l.lossReason]||0)+1;});
+  const arr=Object.entries(by).sort((a,b)=>b[1]-a[1]);const top=arr[0];const pct=Math.round(top[1]/lost.length*100);const wb=lost.filter(l=>l.winback).length;
+  return `<div class="card" style="margin-bottom:12px;border-color:rgba(240,102,122,.25)"><div class="flex between wrap" style="gap:10px;align-items:center"><div><b style="font-size:13px">Por que perdemos</b> <span class="mut" style="font-size:12px">· ${lost.length} perdidos</span><div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">${arr.slice(0,4).map(e=>`<span class="pill">${esc(e[0])} · ${e[1]}</span>`).join("")}</div></div><div style="text-align:right"><div class="mut" style="font-size:11px">maior motivo</div><b style="color:var(--brand-bad)">${esc(top[0])} (${pct}%)</b>${wb?`<div class="mut" style="font-size:11px;margin-top:2px">${wb} p/ win-back</div>`:''}</div></div>${(top[0]==='Preço'&&pct>=40)?`<div class="mut" style="font-size:12px;margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">💡 ${pct}% perde por <b>preço</b> — geralmente não é preço, é <b>comunicação de valor</b>. Reforce a ancoragem no roteiro.</div>`:''}</div>`;
+}
+function loseLead_OLD(id){moveLeadStage(id,'perdido');DB.update(T(),"leads",id,{funnelId:'closer'});leadDetail(id);}
 function transferLead(id){const sellers=DB.get(T(),"sellers");
   openModal(`<h3>Transferir lead</h3><label class="fl mt">Novo responsável</label>
    <select class="in" id="tr_owner">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
