@@ -1188,6 +1188,21 @@ function renderLockGate(){
 function kpi(ic,lab,val,delta,dir){return `<div class="card kpi"><div class="lab">${ic} ${lab}</div><div class="val">${val}</div><div class="delta ${dir==='down'?'down':'up'}">${dir==='down'?'▾':'▴'} ${delta}</div></div>`;}
 
 /* ===== PAINEL COMERCIAL ===== */
+function firstSteps(){
+  if(!["consultor","gestor"].includes(SESSION.role))return"";
+  const t=CURRENT_TENANT;if(!t)return"";
+  const team=(typeof accList==='function'?accList():[]).filter(a=>a.tenant===t&&["sdr","closer","cs"].includes(a.role));
+  const leads=DB.get(t,"leads");
+  const s1=team.length>0,s2=leads.length>0;
+  if(s1&&s2)return"";
+  const step=(done,txt,btn,act,cur)=>`<div class="flex" style="align-items:center;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)"><div style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;flex:none;${done?'background:rgba(82,192,138,.16);color:var(--brand-ok)':'border:1px solid rgba(255,255,255,.2);color:var(--brand-muted)'}">${done?'✓':(cur?'▸':'')}</div><div style="flex:1;font-size:14px;${done?'opacity:.55;text-decoration:line-through':''}">${txt}</div>${(done||!btn)?'':`<button class="btn gold sm" onclick="${act}">${btn}</button>`}</div>`;
+  return `<div class="card" style="border:1px solid rgba(201,162,75,.4);background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);margin-bottom:14px">
+    <b style="font-size:15px">🚀 Comece por aqui</b><p class="mut" style="font-size:12.5px;margin:2px 0 2px">3 passos pra ligar o comercial. Este guia some quando você terminar.</p>
+    ${step(s1,'Crie o acesso do seu time (SDR, Closer, CS)','Criar time →',"go('acessos')",false)}
+    ${step(s2,'Distribua leads da Base pro CRM — escolhendo o vendedor','Ir pra Base →',"go('base')",false)}
+    ${step(false,'Acompanhe o resultado aqui no Painel','','',true)}
+  </div>`;
+}
 function vPainel(){
   const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads"),members=DB.get(T(),"members"),sellers=DB.get(T(),"sellers");
   const fatReal=g.fatReal||0,fatMeta=g.fatMeta||0,proj=g.projecao||0;
@@ -1202,6 +1217,7 @@ function vPainel(){
   M().innerHTML=`
    <div class="view-title"><h1>Painel Comercial</h1><span class="pill pri">Visão de liderança</span></div>
    <p class="view-sub">Fotografia completa do comercial do ${BRANDS[T()].name}.</p>
+   ${firstSteps()}
    <div class="card" style="background:linear-gradient(160deg,${onTrack?'rgba(76,175,120,.14)':'rgba(240,180,80,.12)'},transparent);border:1px solid ${onTrack?'rgba(76,175,120,.4)':'rgba(240,180,80,.4)'}">
      <div class="flex" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
        <div style="flex:1;min-width:240px">
