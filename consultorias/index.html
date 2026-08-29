@@ -1126,7 +1126,8 @@ const NAV_CEO=[
  {id:"funil",ic:"⚙️",t:"Config. dos Funis"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Playbook de Vendas"},
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"}
 ];
-function activeNav(){if(SESSION&&SESSION.role==="ceo")return NAV_CEO;return CURRENT_TENANT==="b2if"?NAV_B2:NAV;}
+const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
+function activeNav(){if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;if(SESSION&&SESSION.role==="ceo")return NAV_CEO;return CURRENT_TENANT==="b2if"?NAV_B2:NAV;}
 function openTenant(tenant){
   CURRENT_TENANT=tenant;applyBrand(BRANDS[tenant].brand);
   document.getElementById("tbMark").innerHTML=BRANDS[tenant].mark(28);
@@ -1134,7 +1135,7 @@ function openTenant(tenant){
   document.getElementById("searchWrap").style.visibility="visible";
   document.getElementById("bellBtn").classList.toggle("hidden",!isAdmin());
   document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
-  renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs"].includes(SESSION.role)?"treino":"painel"));
+  renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs"].includes(SESSION.role)?"meudia":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
 }
 const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
@@ -1159,8 +1160,8 @@ function go(view){
   document.querySelectorAll(".nav-item[data-view]").forEach(e=>e.classList.toggle("active",e.dataset.view===view));
   const nav=activeNav().find(n=>n.id===view);
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
-  if(["sdr","closer","cs"].includes(SESSION.role)&&!quizPassedToday()&&!["treino","scripts","academy","roteiro"].includes(view))return renderLockGate();
-  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,roteiro:vRoteiro,
+  /* prova nao trava mais o trabalho (Pergunta 1) — vira habito, nao cadeado */
+  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
 }
@@ -3237,6 +3238,58 @@ function vAcademy(){
    bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
 }
 
+function vMeuDia(){
+  const me=SESSION.sellerId||SESSION.name;
+  const leads=DB.get(T(),"leads").filter(l=>l.owner===me);
+  const acts=DB.get(T(),"activities").filter(a=>a.owner===me&&!a.done);
+  const today=new Date().toISOString().slice(0,10);
+  const leadById={};leads.forEach(l=>leadById[l.id]=l);
+  const overdue=acts.filter(a=>a.data<today), dueToday=acts.filter(a=>a.data===today);
+  const first=(SESSION.name||"").split(" ")[0];
+  const openLeads=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
+  const hot=openLeads.filter(l=>l.temp==="quente").sort((a,b)=>(b.score||0)-(a.score||0));
+  function card(l,tag,tc){const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=tel?"https://wa.me/55"+tel:"";
+    return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
+      <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}
+      <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${stageName(l.estagio)} · ${l.temp==='quente'?'🔥 quente':l.temp==='morno'?'🟡 morno':'🔵 frio'}</span></div>
+      <div style="font-weight:800">${money(l.valor)}</div></div>
+      <div class="flex" style="gap:7px;margin-top:9px;flex-wrap:wrap">
+      ${tel?`<a class="btn ghost sm" href="tel:${tel}">📞 Ligar</a>`:''}${wa?`<a class="btn ghost sm" href="${wa}" target="_blank">💬 WhatsApp</a>`:''}
+      <button class="btn ghost sm" onclick="go('roteiro')">🎤 Roteiro</button><div style="flex:1"></div>
+      <button class="btn gold sm" onclick="mdDone('${l.id}')">✓ Feito</button></div></div>`;}
+  let fila="";
+  if(overdue.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:6px 0">🔴 Atrasadas (${overdue.length})</div>`+overdue.map(a=>{const l=leadById[a.leadId];return l?card(l,'atrasada','bad'):'';}).join("");
+  if(dueToday.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🟢 Para hoje (${dueToday.length})</div>`+dueToday.map(a=>{const l=leadById[a.leadId];return l?card(l,'hoje','ok'):'';}).join("");
+  const semT=hot.filter(l=>!acts.some(a=>a.leadId===l.id));
+  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🔥 Quentes pra avançar (${semT.length})</div>`+semT.slice(0,12).map(l=>card(l)).join("");
+  if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
+  M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
+   <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
+   <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
+   ${fila}`;
+}
+function mdDone(leadId){var acts=DB.get(T(),"activities");var i=acts.findIndex(a=>a.leadId===leadId&&a.owner===SESSION.sellerId&&!a.done);if(i>=0){acts[i]=Object.assign({},acts[i],{done:true});}else{acts.unshift({id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:new Date().toISOString().slice(0,10),done:true,owner:SESSION.sellerId});}DB.set(T(),"activities",acts);toast("Registrado ✓");vMeuDia();}
+function vMeuPlacar(){
+  const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
+  const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
+  const pct=meS.meta?Math.round(meS.realizado/meS.meta*100):0;
+  const ranked=[...sellers].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0)));
+  const pos=ranked.findIndex(s=>s.id===me)+1;const role=SESSION.role;
+  let comiss="—";
+  if(role==="sdr")comiss=money(meS.realizado*150)+" · R$150 × "+meS.realizado+" reuniões";
+  else if(role==="closer")comiss="12% sobre as adesões fechadas";
+  else if(role==="cs")comiss=money(meS.realizado*80)+" · R$80 × "+meS.realizado+" renovações";
+  M().innerHTML=`<div class="view-title"><h1>Meu Placar 🏆</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
+   <p class="view-sub">Seu desempenho do mês, sua posição no time e sua comissão.</p>
+   <div class="grid2" style="gap:14px">
+     <div class="card"><div class="mut" style="font-size:12px">Meta do mês</div><div style="font-size:34px;font-weight:800">${meS.realizado}<span class="mut" style="font-size:16px">/${meS.meta}</span></div><div class="mut" style="font-size:12px">${pct}% da meta</div></div>
+     <div class="card"><div class="mut" style="font-size:12px">Posição no time</div><div style="font-size:34px;font-weight:800">${pos>0?pos+'º':'—'}</div><div class="mut" style="font-size:12px">de ${sellers.length}</div></div>
+   </div>
+   <div class="card" style="margin-top:14px"><div class="mut" style="font-size:12px">Comissão estimada (mês)</div><div style="font-size:20px;font-weight:800;color:var(--brand-ok)">${comiss}</div><p class="mut" style="font-size:12px;margin-top:4px">Paga todo dia 15 sobre o mês anterior.</p></div>
+   <div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px;font-size:14px">Ranking do time</h3>
+     ${ranked.map((x,i)=>{const pp=x.meta?Math.round(x.realizado/x.meta*100):0;const meRow=x.id===me;return `<div class="flex" style="align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);${meRow?'font-weight:700':''}"><span style="width:22px">${i+1}º</span><span style="flex:1">${x.nome}${meRow?' (você)':''}</span><span class="mut" style="font-size:12px">${x.papel}</span><span class="pill ${pp>=100?'ok':'warn'}" style="font-size:11px">${pp}%</span></div>`;}).join("")}
+   </div>`;
+}
 function vAcessos(){
   const admin=SESSION.role==="consultor";const myT=CURRENT_TENANT;
   const list=admin?accList():accList().filter(a=>a.tenant===myT);
