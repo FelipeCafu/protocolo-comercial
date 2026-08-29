@@ -615,7 +615,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase) — nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 /* BLINDAGEM: salva por REGISTRO (merge por id) — ninguem apaga o dado do outro. Fallback seguro. */
@@ -633,6 +633,12 @@ function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;
  _pushQ[key]=(_pushQ[key]||Promise.resolve()).then(run,run);
 }
 window.__cloudPush=cloudPush;
+/* ===== ACESSOS (usuários no banco, senha criptografada) ===== */
+async function hashPass(p){var b=new TextEncoder().encode(String(p));var h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+function accAll(){return DB.get('_sys_','accounts');}
+function accList(){return accAll().filter(function(a){return a&&!a.deleted;});}
+function accSave(a){DB.set('_sys_','accounts',a);}
+async function loadAccounts(){if(!CLOUD_ON)return;try{var r=await sb.from('pc_store').select('data').eq('tenant','_sys_').eq('col','accounts').maybeSingle();if(r&&r.data&&Array.isArray(r.data.data))localStorage.setItem(DB.key('_sys_','accounts'),JSON.stringify(r.data.data));}catch(e){}}
 async function cloudPull(t){if(!CLOUD_ON)return false;try{const r=await sb.from("pc_store").select("col,data").eq("tenant",t);if(r.error)throw r.error;if(!r.data||!r.data.length)return "empty";r.data.forEach(row=>localStorage.setItem(DB.key(t,row.col),JSON.stringify(row.data)));return true;}catch(e){console.warn("pull",e.message);return false;}}
 async function cloudPushAll(t){if(!CLOUD_ON)return;const rows=SYNC_COLS.map(c=>{const v=localStorage.getItem(DB.key(t,c));return v==null?null:{tenant:t,col:c,data:JSON.parse(v)};}).filter(Boolean);if(!rows.length)return;try{await sb.from("pc_store").upsert(rows,{onConflict:"tenant,col"});}catch(e){console.warn("pushAll",e.message);}}
 async function syncTenant(t){
@@ -1029,12 +1035,14 @@ function rotatePhrases(){
   }
   show();lgTimer=setInterval(show,3800);
 }
-function doLogin(){
+async function doLogin(){
   const u=document.getElementById("lgUser").value.trim().toLowerCase();
-  const p=document.getElementById("lgPass").value;const acc=USERS[u];
-  if(!acc||acc.pass!==p){toast("Usuário ou senha inválidos","bad");return;}
+  const p=document.getElementById("lgPass").value;let acc=null;
+  if(USERS[u]&&USERS[u].pass===p){acc=USERS[u];}
+  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,tenant:dba.tenant,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
+  if(!acc){toast("Usuário ou senha inválidos","bad");return;}
   SESSION=acc;
-  try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);}catch(e){}
+  try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);localStorage.setItem('pc_sso_pass',p);}catch(e){}
   stopBgFx();clearInterval(lgTimer);
   document.getElementById("login").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
@@ -1097,7 +1105,8 @@ const NAV=[
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial",ten:"lideres"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
- {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"}
+ {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
+ {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 const NAV_B2=[
  {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
@@ -1106,7 +1115,8 @@ const NAV_B2=[
  {id:"scripts",ic:"💬",t:"Playbook de Vendas"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
- {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"}
+ {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},
+ {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 const NAV_CEO=[
  {g:"Executivo"},{id:"exec",ic:"📈",t:"Painel Executivo"},{id:"painel",ic:"📊",t:"Painel Comercial"},
@@ -1150,7 +1160,7 @@ function go(view){
   const nav=activeNav().find(n=>n.id===view);
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
   if(["sdr","closer","cs"].includes(SESSION.role)&&!quizPassedToday()&&!["treino","scripts","academy","roteiro"].includes(view))return renderLockGate();
-  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,roteiro:vRoteiro,
+  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,roteiro:vRoteiro,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
 }
@@ -3227,6 +3237,47 @@ function vAcademy(){
    bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
 }
 
+function vAcessos(){
+  const admin=SESSION.role==="consultor";const myT=CURRENT_TENANT;
+  const list=admin?accList():accList().filter(a=>a.tenant===myT);
+  const roleOpts=admin?'<option value="gestor">Gestor</option><option value="sdr">SDR</option><option value="closer">Closer</option><option value="cs">CS</option>':'<option value="sdr">SDR</option><option value="closer">Closer</option><option value="cs">CS</option>';
+  const tField=admin?`<div><label class="mut" style="font-size:12px">Empresa</label><select id="acTenant" style="width:100%"><option value="lideres">Líderes do Brasil</option><option value="b2if">B2 Inteligência Financeira</option></select></div>`:`<input type="hidden" id="acTenant" value="${myT}">`;
+  M().innerHTML=`
+   <div class="view-title"><h1>Gestão de Acessos</h1><span class="pill pri">${admin?'Admin do Protocolo':'Gestor'}</span></div>
+   <p class="view-sub">${admin?'Você cria o gestor de cada empresa. Depois cada gestor cria o time dele (SDR, Closer, CS).':'Crie os acessos do seu time — cada um entra com a própria senha.'} Senha guardada <b>criptografada</b>.</p>
+   <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Criar acesso</h3>
+     <div class="grid2" style="gap:10px">
+       <div><label class="mut" style="font-size:12px">Nome</label><input id="acName" placeholder="Ex.: Ana Martins" style="width:100%"></div>
+       <div><label class="mut" style="font-size:12px">Usuário (login)</label><input id="acUser" placeholder="ex.: ana" style="width:100%"></div>
+     </div>
+     <div class="grid2" style="gap:10px;margin-top:10px">
+       <div><label class="mut" style="font-size:12px">Papel</label><select id="acRole" style="width:100%">${roleOpts}</select></div>
+       ${tField}
+     </div>
+     <div style="margin-top:10px"><label class="mut" style="font-size:12px">Senha</label><input id="acPass" type="text" placeholder="defina uma senha (mín. 4)" style="width:100%"></div>
+     <div class="flex" style="margin-top:10px"><button class="btn gold sm" onclick="acCreate()">Criar acesso</button></div>
+   </div>
+   <div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px;font-size:14px">Acessos ativos (${list.length})</h3>
+     ${list.length?list.map(a=>`<div class="flex" style="align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06)">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-panel2);display:grid;place-items:center;font-weight:700;font-size:12px">${(a.name||a.u).slice(0,2).toUpperCase()}</div>
+        <div style="flex:1"><b style="font-size:13px">${a.name||a.u}</b> <span class="mut" style="font-size:12px">· ${a.u}</span><br><span class="pill pri" style="font-size:10px">${(a.role||'').toUpperCase()}</span> <span class="mut" style="font-size:11px">${a.tenant}</span></div>
+        <button class="btn ghost sm" onclick="acDelete('${a.id}')">remover</button>
+      </div>`).join(''):'<p class="mut" style="font-size:13px">Nenhum acesso criado ainda.</p>'}
+   </div>`;
+}
+async function acCreate(){
+  const name=(document.getElementById("acName").value||"").trim();
+  const u=(document.getElementById("acUser").value||"").trim().toLowerCase();
+  const role=document.getElementById("acRole").value,tenant=document.getElementById("acTenant").value;
+  const pass=(document.getElementById("acPass").value||"").trim();
+  if(!name||!u||!pass)return toast("Preencha nome, usuário e senha","bad");
+  if(u.length<3||pass.length<4)return toast("Usuário mín. 3, senha mín. 4","bad");
+  if(USERS[u]||accList().some(a=>a.u===u))return toast("Esse usuário já existe","bad");
+  const passHash=await hashPass(pass);
+  const acc={id:DB.uid(),u,pass:passHash,role,tenant,name,initials:name.split(" ").filter(Boolean).map(x=>x[0]).slice(0,2).join("").toUpperCase(),sellerId:u,createdBy:SESSION.name,ts:Date.now()};
+  accSave([...accAll(),acc]);toast("Acesso criado ✓");vAcessos();
+}
+function acDelete(id){if(!confirm("Remover este acesso?"))return;const all=accAll();const i=all.findIndex(a=>a.id===id);if(i>=0){all[i]={...all[i],deleted:true};accSave(all);}vAcessos();}
 function vScripts(){
   const tabs=scriptTabsFor();
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=(isAdmin()?"visao":SESSION.role);
@@ -3868,7 +3919,7 @@ initCloud();seed();seedB2();document.getElementById("loginFelipe").src=FELIPE_BI
 document.getElementById("lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:"protocolo";setLoginBrand(BRANDS[b]?b:"protocolo");});
 /* Login único (SSO): se já entrou antes, restaura sozinho sem pedir senha de novo */
-(function restoreSSO(){try{if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];if(acc){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=acc.pass;doLogin();}}}catch(e){}})();
+(async function restoreSSO(){try{await loadAccounts();if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];const pass=acc?acc.pass:localStorage.getItem('pc_sso_pass');if(u&&pass!=null){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=pass;doLogin();}}}catch(e){}})();
 </script>
 </body>
 </html>
