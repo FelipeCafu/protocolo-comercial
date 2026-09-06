@@ -1171,7 +1171,7 @@ const money=v=>"R$ "+(Math.round(v||0)).toLocaleString("pt-BR");
 function allStages(){return DB.getObj(T(),"funnels",FUNNELS).flatMap(f=>f.stages);}
 function stageName(id){const s=allStages().find(s=>s.id===id);return s?s.name:id;}
 function funnelOf(id){return DB.getObj(T(),"funnels",FUNNELS).find(f=>f.stages.some(s=>s.id===id));}
-function sellerName(id){return (DB.get(T(),"sellers").find(s=>s.id===id)||{}).nome||id;}
+function sellerName(id){return (DB.get(T(),"sellers").find(s=>s.id===id)||{}).nome||(id||"sem dono");}
 function relTime(ts){const s=(Date.now()-ts)/1000;if(s<60)return"agora";if(s<3600)return Math.floor(s/60)+"min";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
 function quizPassedToday(){const r=DB.getObj(T(),"quizPass",{});return r[SESSION.name]===new Date().toDateString();}
 function renderLockGate(){
@@ -1406,9 +1406,10 @@ function renderKanban(){
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>s.sla*36e5;const as=actStatus(l.id);
         const cls=as==="late"?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
+        const sc=leadScore(l).score;const scc=sc>=70?'var(--brand-ok)':sc>=45?'var(--brand-primary-2)':'var(--brand-muted)';
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
           <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div class="co">${l.fantasia||l.razaoSocial||""}</div>
-          <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px">★${l.score||0} · ${sellerName(l.owner)}</small>${slaLate?'<span class="pill bad" style="padding:1px 6px">SLA</span>':''}<span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
+          <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small>${slaLate?'<span class="pill bad" style="padding:1px 6px">SLA</span>':''}<span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
       </div></div>`;}).join("");
   bindDrag();
 }
