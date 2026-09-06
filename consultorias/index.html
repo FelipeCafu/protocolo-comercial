@@ -1456,6 +1456,7 @@ function leadDetail(id){
      <button class="btn ok sm" onclick="winLead('${l.id}')">✓ Ganho</button>
      <button class="btn bad sm" onclick="loseLead('${l.id}')">✕ Perdido</button>
    </div>
+   ${l.estagio!=='perdido'?leadBriefing(l):''}
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(' — <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
    <div class="ld-grid">
@@ -1577,6 +1578,18 @@ function loseLeadDo(id){
   moveLeadStage(id,'perdido');
   DB.update(T(),"leads",id,{funnelId:'closer',lossReason:reason,lossDetail:detail,winback:winback,lostAt:Date.now()});
   closeModal();toast("Perdido registrado · motivo: "+reason,"warn");leadDetail(id);
+}
+function leadBriefing(l){
+  const S=(typeof leadScore==='function'?leadScore(l):{score:l.score||0});const c=l.contato||{};
+  const bits=[];if(l.setor)bits.push('Setor: '+esc(l.setor));if(l.fat)bits.push('Faturamento: '+esc(l.fat));if(l.origem)bits.push('Origem: '+esc(l.origem));
+  const acts=DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const prox=acts[0];
+  return `<div class="card" style="border-color:rgba(91,116,214,.35);background:linear-gradient(160deg,rgba(91,116,214,.10),transparent);margin:0 0 10px">
+    <div class="flex between wrap" style="gap:8px;align-items:center"><b style="font-size:14px">🧭 Briefing — continue de onde o time parou</b><span class="pill ${S.score>=70?'ok':(S.score>=45?'warn':'')}">${S.score}% de chance</span></div>
+    ${l.notas?`<p style="font-size:13.5px;margin-top:8px;line-height:1.5"><b>Dor / contexto:</b> ${esc(l.notas)}</p>`:'<p class="mut" style="font-size:12.5px;margin-top:8px">Sem anotação do time ainda — pergunte a dor e registre.</p>'}
+    ${bits.length?`<p class="mut" style="font-size:12.5px;margin-top:6px">${bits.join(' · ')}</p>`:''}
+    ${prox?`<p style="font-size:12.5px;margin-top:6px;color:var(--brand-warn)">▶ Próximo passo: ${esc(prox.titulo||prox.tipo)} · ${esc(prox.data||'')}</p>`:''}
+  </div>`;
 }
 function lossBreakdown(){
   const lost=DB.get(T(),"leads").filter(l=>l.estagio==="perdido"&&l.lossReason);
