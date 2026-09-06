@@ -3342,7 +3342,6 @@ function vMeuDia(){
   const leads=DB.get(T(),"leads").filter(l=>l.owner===me);
   const acts=DB.get(T(),"activities").filter(a=>a.owner===me&&!a.done);
   const today=new Date().toISOString().slice(0,10);
-  const doneToday=DB.get(T(),"activities").filter(a=>a.owner===me&&a.done&&a.doneDate===today).length;
   const leadById={};leads.forEach(l=>leadById[l.id]=l);
   const overdue=acts.filter(a=>a.data<today), dueToday=acts.filter(a=>a.data===today);
   const first=(SESSION.name||"").split(" ")[0];
@@ -3365,11 +3364,10 @@ function vMeuDia(){
   if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
   M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
-   ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
    ${fila}`;
 }
-function mdDone(leadId){var acts=DB.get(T(),"activities");var i=acts.findIndex(a=>a.leadId===leadId&&a.owner===SESSION.sellerId&&!a.done);var hoje=new Date().toISOString().slice(0,10);if(i>=0){acts[i]=Object.assign({},acts[i],{done:true,doneDate:hoje});}else{acts.unshift({id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:hoje,done:true,doneDate:hoje,owner:SESSION.sellerId});}DB.set(T(),"activities",acts);toast("Registrado ✓");vMeuDia();}
+function mdDone(leadId){var acts=DB.get(T(),"activities");var i=acts.findIndex(a=>a.leadId===leadId&&a.owner===SESSION.sellerId&&!a.done);if(i>=0){acts[i]=Object.assign({},acts[i],{done:true});}else{acts.unshift({id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:new Date().toISOString().slice(0,10),done:true,owner:SESSION.sellerId});}DB.set(T(),"activities",acts);toast("Registrado ✓");vMeuDia();}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
   const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
