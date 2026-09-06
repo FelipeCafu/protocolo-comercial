@@ -1463,7 +1463,7 @@ function leadDetail(id){
    <div class="ld-grid">
      <div>
        <div class="card">
-         <div class="flex wrap" style="gap:6px">${late?'<span class="pill bad">● Atrasada</span>':'<span class="pill ok">● No prazo</span>'}<span class="pill">★ ${l.score||0}</span><span class="pill pri">${sellerName(l.owner)}</span></div>
+         <div class="flex wrap" style="gap:6px">${late?'<span class="pill bad">● Atrasada</span>':'<span class="pill ok">● No prazo</span>'}<span class="pill">${leadScore(l).score}% chance</span><span class="pill pri">${esc(sellerName(l.owner))}</span></div>
          <div class="flex between mt8" style="font-size:12px"><span class="mut">⏱ ${tempoEtapa} nesta etapa</span><span class="mut">📅 ${tempoFunil} no funil</span></div>
          <label class="fl mt">Etapa</label>
          <select class="in" onchange="moveLeadStage('${l.id}',this.value);leadDetail('${l.id}')">${stages.map(s=>`<option value="${s.id}" ${l.estagio===s.id?'selected':''}>${s.name}</option>`).join("")}</select>
