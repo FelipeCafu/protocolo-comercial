@@ -1646,6 +1646,12 @@ function saveNewLead(){
 function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function baseOrigens(){const s=new Set();DB.get(T(),"base").forEach(b=>(b.origens||[]).forEach(o=>o&&s.add(o)));return[...s].sort();}
 function baseRamos(){const s=new Set();DB.get(T(),"base").forEach(b=>b.ramo&&s.add(b.ramo));return[...s].sort();}
+function baseStatuses(){const s=new Set();DB.get(T(),"base").forEach(b=>b.oldStatus&&s.add(b.oldStatus));return[...s].sort();}
+function baseResps(){const s=new Set();DB.get(T(),"base").forEach(b=>b.oldResp&&s.add(b.oldResp));return[...s].sort();}
+function baseYears(b){const t=String(b.obs||"")+" "+String(b.oldStatus||"");const ys=new Set();(t.match(/20\d{2}/g)||[]).forEach(y=>ys.add(y));(t.match(/\d{1,2}\/\d{1,2}\/(\d{2})(?!\d)/g)||[]).forEach(m=>{const yy=m.slice(-2);ys.add((yy>="90"?"19":"20")+yy);});return ys;}
+function baseMaxYear(b){let mx="";baseYears(b).forEach(y=>{if(y>mx)mx=y;});return mx;}
+function baseAllYears(){const s=new Set();DB.get(T(),"base").forEach(b=>baseYears(b).forEach(y=>s.add(y)));return[...s].sort().reverse();}
+function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
 let BASE_SEL=new Set();
 function vBase(){
   const base=DB.get(T(),"base");
@@ -1654,11 +1660,17 @@ function vBase(){
    <p class="view-sub">Carteira completa do ${BRANDS[T()].name}. Filtre, selecione e envie para o CRM escolhendo o funil. Nada é apagado ao enviar — o contato continua aqui.</p>
    <div class="card">
      <div class="flex wrap" style="gap:8px;align-items:center">
-       <input class="in" id="bSearch" placeholder="🔎 nome, empresa, telefone, e-mail…" style="width:250px" oninput="vBaseRows()">
-       <select class="in" id="bOrigem" style="max-width:200px" onchange="vBaseRows()"><option value="">Todas as origens/eventos</option>${baseOrigens().map(o=>`<option>${esc(o)}</option>`).join("")}</select>
-       <select class="in" id="bRamo" style="max-width:180px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>
-       <select class="in" id="bMembro" style="max-width:150px" onchange="vBaseRows()"><option value="">Membro: todos</option><option value="sim">Só membros</option><option value="nao">Não-membros</option></select>
-       <select class="in" id="bCrm" style="max-width:150px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
+       <input class="in" id="bSearch" placeholder="🔎 nome, empresa, telefone, e-mail…" style="width:230px" oninput="vBaseRows()">
+       <select class="in" id="bOrigem" style="max-width:190px" onchange="vBaseRows()"><option value="">Todas as origens/eventos</option>${baseOrigens().map(o=>`<option>${esc(o)}</option>`).join("")}</select>
+       ${baseStatuses().length?`<select class="in" id="bStatus" style="max-width:180px" onchange="vBaseRows()"><option value="">Todos os status</option>${baseStatuses().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
+       ${baseResps().length?`<select class="in" id="bResp" style="max-width:170px" onchange="vBaseRows()"><option value="">Todos os responsáveis</option>${baseResps().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
+       ${baseAllYears().length?`<select class="in" id="bPeriodo" style="max-width:150px" onchange="vBaseRows()"><option value="">Qualquer período</option>${baseAllYears().map(y=>`<option value="${y}">${y}</option>`).join("")}<option value="__none">Sem data</option></select>`:''}
+       <select class="in" id="bTel" style="max-width:150px" onchange="vBaseRows()"><option value="">Telefone: todos</option><option value="com">Com telefone</option><option value="sem">Sem telefone</option></select>
+       ${baseRamos().length?`<select class="in" id="bRamo" style="max-width:160px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
+       <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">Membro: todos</option><option value="sim">Só membros</option><option value="nao">Não-membros</option></select>
+       <select class="in" id="bCrm" style="max-width:140px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
+       <select class="in" id="bSort" style="max-width:150px" onchange="vBaseRows()"><option value="">Ordem: nome</option><option value="recent">Mais recente</option><option value="empresa">Empresa</option></select>
+       <button class="btn ghost sm" onclick="baseClearFilters()">✕ Limpar filtros</button>
      </div>
      <div class="flex between wrap mt8" style="gap:8px">
        <div class="mut" id="bCount" style="font-size:12.5px"></div>
@@ -1675,23 +1687,35 @@ function baseFiltered(){
   const q=(document.getElementById("bSearch")?.value||"").toLowerCase().trim();
   const org=document.getElementById("bOrigem")?.value||"",ram=document.getElementById("bRamo")?.value||"";
   const mem=document.getElementById("bMembro")?.value||"",crm=document.getElementById("bCrm")?.value||"";
-  return DB.get(T(),"base").filter(b=>{
-    if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")).toLowerCase().includes(q))return false;
+  const st=document.getElementById("bStatus")?.value||"",rsp=document.getElementById("bResp")?.value||"";
+  const per=document.getElementById("bPeriodo")?.value||"",tel=document.getElementById("bTel")?.value||"";
+  const sort=document.getElementById("bSort")?.value||"";
+  const out=DB.get(T(),"base").filter(b=>{
+    if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
     if(org && !(b.origens||[]).includes(org))return false;
     if(ram && b.ramo!==ram)return false;
+    if(st && b.oldStatus!==st)return false;
+    if(rsp && b.oldResp!==rsp)return false;
+    if(tel==="com" && !(b.tel||"").trim())return false;
+    if(tel==="sem" && (b.tel||"").trim())return false;
+    if(per){ if(per==="__none"){ if(baseMaxYear(b))return false; } else if(!baseYears(b).has(per))return false; }
     if(mem==="sim" && b.membro!=="sim")return false;
     if(mem==="nao" && b.membro==="sim")return false;
     if(crm==="fora" && b.inCrm)return false;
     if(crm==="dentro" && !b.inCrm)return false;
     return true;});
+  if(sort==="empresa")out.sort((a,b)=>(a.empresa||"~").localeCompare(b.empresa||"~","pt"));
+  else if(sort==="recent")out.sort((a,b)=>(baseMaxYear(b)||"").localeCompare(baseMaxYear(a)||""));
+  else out.sort((a,b)=>(a.nome||"").localeCompare(b.nome||"","pt"));
+  return out;
 }
 function vBaseRows(){
   const list=baseFiltered(),CAP=400,show=list.slice(0,CAP);
   document.getElementById("baseRows").innerHTML=show.map(b=>`<tr>
     <td><input type="checkbox" ${BASE_SEL.has(b.id)?'checked':''} onclick="baseSel('${b.id}',this.checked)"></td>
-    <td><b>${esc(b.nome)}</b></td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
+    <td><b>${esc(b.nome)}</b>${b.oldResp?`<br><small class="mut">👤 ${esc(b.oldResp)}</small>`:''}</td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
     <td><small>${esc(b.tel||'')}</small></td><td><small class="mut">${esc(b.email||'')}</small></td>
-    <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}</td>
+    <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}${b.oldStatus?`<br><span class="pill warn" style="font-size:9.5px;padding:1px 6px">${esc(b.oldStatus)}</span>`:''}</td>
     <td>${b.membro==="sim"?'<span class="pill ok">membro</span>':'—'}</td>
     <td>${b.inCrm?'<span class="pill ok">no CRM</span>':'—'}</td>
     <td><button class="btn xs" onclick="baseSend('${b.id}')">➡️ CRM</button></td></tr>`).join("")||`<tr><td colspan="10"><small class="mut">Nenhum contato encontrado.</small></td></tr>`;
