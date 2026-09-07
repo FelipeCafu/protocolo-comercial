@@ -629,7 +629,7 @@ function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;
    var merged=_mergeById(remote,v);
    try{localStorage.setItem(DB.key(t,c),JSON.stringify(merged));}catch(e){}
    return sb.from("pc_store").upsert({tenant:t,col:c,data:merged,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r2){if(r2&&r2.error)console.warn("push",c,r2.error.message);});
- }).catch(function(){try{return sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"});}catch(e){}});};
+ }).catch(function(e){console.warn("push-skip: leitura remota falhou, NÃO sobrescrevo (anti-perda)",c,e&&e.message);setCloudBadge&&setCloudBadge("local");});};
  _pushQ[key]=(_pushQ[key]||Promise.resolve()).then(run,run);
 }
 window.__cloudPush=cloudPush;
