@@ -3401,17 +3401,24 @@ function vMeuPlacar(){
   const pct=meS.meta?Math.round(meS.realizado/meS.meta*100):0;
   const ranked=[...sellers].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0)));
   const pos=ranked.findIndex(s=>s.id===me)+1;const role=SESSION.role;
+  const faltam=Math.max(0,(meS.meta||0)-(meS.realizado||0));
+  const ahead=pos>1?ranked[pos-2]:null;
+  const aheadGap=ahead?Math.max(1,(ahead.realizado||0)-(meS.realizado||0)):0;
   let comiss="—";
   if(role==="sdr")comiss=money(meS.realizado*150)+" · R$150 × "+meS.realizado+" reuniões";
   else if(role==="closer")comiss="12% sobre as adesões fechadas";
   else if(role==="cs")comiss=money(meS.realizado*80)+" · R$80 × "+meS.realizado+" renovações";
   M().innerHTML=`<div class="view-title"><h1>Meu Placar 🏆</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
    <p class="view-sub">Seu desempenho do mês, sua posição no time e sua comissão.</p>
-   <div class="grid2" style="gap:14px">
-     <div class="card"><div class="mut" style="font-size:12px">Meta do mês</div><div style="font-size:34px;font-weight:800">${meS.realizado}<span class="mut" style="font-size:16px">/${meS.meta}</span></div><div class="mut" style="font-size:12px">${pct}% da meta</div></div>
-     <div class="card"><div class="mut" style="font-size:12px">Posição no time</div><div style="font-size:34px;font-weight:800">${pos>0?pos+'º':'—'}</div><div class="mut" style="font-size:12px">de ${sellers.length}</div></div>
+   <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.12),transparent);border:1px solid rgba(201,162,75,.4)">
+     <div class="flex between" style="align-items:baseline"><b style="font-size:13.5px">🎯 Meta do mês</b><span class="mut" style="font-size:12.5px">${meS.realizado} de ${meS.meta||0} · ${pct}%</span></div>
+     <div style="height:14px;margin-top:8px;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${Math.min(100,pct)}%;background:var(--brand-primary,#C9A24B);transition:width .5s"></i></div>
+     <div style="margin-top:9px;font-size:13.5px">${pct>=100?'🎉 <b style="color:var(--brand-ok)">Meta batida! Você é fera.</b>':(meS.meta?('Faltam <b>'+faltam+'</b> pra bater a meta. Bora! 💪'):'Defina sua meta com o gestor.')}</div>
    </div>
-   <div class="card" style="margin-top:14px"><div class="mut" style="font-size:12px">Comissão estimada (mês)</div><div style="font-size:20px;font-weight:800;color:var(--brand-ok)">${comiss}</div><p class="mut" style="font-size:12px;margin-top:4px">Paga todo dia 15 sobre o mês anterior.</p></div>
+   <div class="grid2" style="gap:14px;margin-top:14px">
+     <div class="card"><div class="mut" style="font-size:12px">Posição no time</div><div style="font-size:34px;font-weight:800">${pos>0?pos+'º':'—'}</div><div class="mut" style="font-size:12px">de ${sellers.length}${pos===1&&sellers.length>1?' · 🥇 lidera!':(ahead?' · a '+aheadGap+' de '+esc(ahead.nome.split(' ')[0]):'')}</div></div>
+     <div class="card"><div class="mut" style="font-size:12px">Comissão estimada (mês)</div><div style="font-size:20px;font-weight:800;color:var(--brand-ok)">${comiss}</div><p class="mut" style="font-size:11.5px;margin-top:4px">Paga todo dia 15 sobre o mês anterior.</p></div>
+   </div>
    <div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px;font-size:14px">Ranking do time</h3>
      ${ranked.map((x,i)=>{const pp=x.meta?Math.round(x.realizado/x.meta*100):0;const meRow=x.id===me;return `<div class="flex" style="align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);${meRow?'font-weight:700':''}"><span style="width:22px">${i+1}º</span><span style="flex:1">${x.nome}${meRow?' (você)':''}</span><span class="mut" style="font-size:12px">${x.papel}</span><span class="pill ${pp>=100?'ok':'warn'}" style="font-size:11px">${pp}%</span></div>`;}).join("")}
    </div>`;
