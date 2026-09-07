@@ -1653,12 +1653,14 @@ function baseYears(b){const t=String(b.obs||"")+" "+String(b.oldStatus||"");cons
 function baseMaxYear(b){let mx="";baseYears(b).forEach(y=>{if(y>mx)mx=y;});return mx;}
 function baseAllYears(){const s=new Set();DB.get(T(),"base").forEach(b=>baseYears(b).forEach(y=>s.add(y)));return[...s].sort().reverse();}
 function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
+function baseReativar(){const e=document.getElementById("bSearch");if(e){e.value="perdido";vBaseRows();e.scrollIntoView({behavior:"smooth",block:"center"});}}
 let BASE_SEL=new Set();
 function vBase(){
   const base=DB.get(T(),"base");
   M().innerHTML=`
    <div class="view-title"><h1>Base de Clientes</h1><span class="pill pri">${base.length}</span></div>
    <p class="view-sub">Carteira completa do ${BRANDS[T()].name}. Filtre, selecione e envie para o CRM escolhendo o funil. Nada é apagado ao enviar — o contato continua aqui.</p>
+   ${(function(){var perd=base.filter(function(b){return /perdido/i.test((b.oldStatus||"")+" "+(b.estagio||""));}).length;return perd?`<div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.35);margin-bottom:12px;padding:12px 16px"><div class="flex between" style="align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:13px">♻️ <b>${perd}</b> contato(s) marcados como <b>perdido</b> no histórico — muita gente volta a comprar. Vale reativar.</span><button class="btn sm" onclick="baseReativar()">Ver perdidos →</button></div></div>`:'';})()}
    <div class="card">
      <div class="flex wrap" style="gap:8px;align-items:center">
        <input class="in" id="bSearch" placeholder="🔎 nome, empresa, telefone, e-mail…" style="width:230px" oninput="vBaseRows()">
@@ -3390,11 +3392,13 @@ function vMeuDia(){
   if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
   M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
+   ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar — a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
    ${fila}`;
 }
 function mdDone(leadId){var acts=DB.get(T(),"activities");var i=acts.findIndex(a=>a.leadId===leadId&&a.owner===SESSION.sellerId&&!a.done);var hoje=new Date().toISOString().slice(0,10);if(i>=0){acts[i]=Object.assign({},acts[i],{done:true,doneDate:hoje});}else{acts.unshift({id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:hoje,done:true,doneDate:hoje,owner:SESSION.sellerId});}DB.set(T(),"activities",acts);toast("Registrado ✓");vMeuDia();}
+function mdOnbClose(){try{localStorage.setItem('pc_onb_'+(SESSION.sellerId||SESSION.name||''),'1');}catch(e){}var c=document.getElementById('onbCard');if(c)c.remove();}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
   const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
@@ -3420,7 +3424,7 @@ function vMeuPlacar(){
      <div class="card"><div class="mut" style="font-size:12px">Comissão estimada (mês)</div><div style="font-size:20px;font-weight:800;color:var(--brand-ok)">${comiss}</div><p class="mut" style="font-size:11.5px;margin-top:4px">Paga todo dia 15 sobre o mês anterior.</p></div>
    </div>
    <div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px;font-size:14px">Ranking do time</h3>
-     ${ranked.map((x,i)=>{const pp=x.meta?Math.round(x.realizado/x.meta*100):0;const meRow=x.id===me;return `<div class="flex" style="align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);${meRow?'font-weight:700':''}"><span style="width:22px">${i+1}º</span><span style="flex:1">${x.nome}${meRow?' (você)':''}</span><span class="mut" style="font-size:12px">${x.papel}</span><span class="pill ${pp>=100?'ok':'warn'}" style="font-size:11px">${pp}%</span></div>`;}).join("")}
+     ${ranked.map((x,i)=>{const pp=x.meta?Math.round(x.realizado/x.meta*100):0;const meRow=x.id===me;return `<div class="flex" style="align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);${meRow?'font-weight:700':''}"><span style="width:24px;text-align:center;font-size:${i<3?'16px':'13px'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</span><span style="flex:1">${esc(x.nome)}${meRow?' (você)':''}</span><span class="mut" style="font-size:12px">${x.papel}</span><span class="pill ${pp>=100?'ok':'warn'}" style="font-size:11px">${pp}%</span></div>`;}).join("")}
    </div>`;
 }
 function vAcessos(){
@@ -3950,10 +3954,10 @@ function vPerf(){
    <div class="view-title"><h1>Performance do Time</h1></div>
    <p class="view-sub">Metas, atividades, conversão e desempenho na prova (treino).</p>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-   ${s.map(x=>{const pct=x.meta?Math.round(x.realizado/x.meta*100):0;const owned=leads.filter(l=>l.owner===x.id).length;
-     const uName=Object.values(USERS).find(u=>u.sellerId===x.id)?.name;const prov=uName?(hist[uName]||[])[0]:null;
-     return `<div class="card"><div class="flex" style="gap:12px"><span class="avatar" style="width:44px;height:44px;font-size:15px">${x.foto}</span>
-       <div><b>${x.nome}</b><br><small class="mut">${x.papel}</small></div>
+   ${[...s].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0))||(b.realizado-a.realizado)).map((x,i)=>{const pct=x.meta?Math.round(x.realizado/x.meta*100):0;const owned=leads.filter(l=>l.owner===x.id).length;
+     const uName=Object.values(USERS).find(u=>u.sellerId===x.id)?.name;const prov=uName?(hist[uName]||[])[0]:null;const medal=['🥇','🥈','🥉'][i]||'';
+     return `<div class="card"${i===0?' style="border-color:rgba(201,162,75,.5)"':''}><div class="flex" style="gap:12px"><span class="avatar" style="width:44px;height:44px;font-size:15px">${x.foto}</span>
+       <div><b>${medal?medal+' ':''}${x.nome}</b><br><small class="mut">${x.papel}</small></div>
        <div style="margin-left:auto" class="ring" style="--p:${Math.min(pct,100)}"><i>${pct}%</i></div></div>
        <div class="flex between mt" style="font-size:12.5px"><span class="mut">${x.papel==="SDR"?"Reuniões":x.papel==="CS"?"Retenções":"Fechados"}</span><b>${x.realizado}/${x.meta}</b></div>
        <div class="flex between" style="font-size:12.5px"><span class="mut">Leads na carteira</span><b>${owned}</b></div>
