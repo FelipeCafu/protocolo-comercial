@@ -3382,6 +3382,8 @@ function leadScore(l){
   sc=Math.max(0,Math.min(100,Math.round(sc)));
   return{score:sc,reasons:r.slice(0,3)};
 }
+function waText(l){var c=(l&&l.contato)||{};var raw=(c.nome||l.nome||'').replace(/^\s*(dr|dra|sr|sra|prof)\.?\s+/i,'');var nome=(raw.split(' ')[0])||'';var vend=((SESSION.name||'').split(' ')[0])||'';var marca=(BRANDS[T()]&&BRANDS[T()].name)||'';return encodeURIComponent('Olá '+nome+'! Aqui é '+vend+(marca?', do '+marca:'')+'. Tudo bem? Você tem um minutinho pra eu me apresentar?');}
+function waLink(l){var d=(((l&&l.contato)||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';if(!(d.length>=12&&d.slice(0,2)==='55'))d='55'+d;return 'https://wa.me/'+d+'?text='+waText(l);}
 function vMeuDia(){
   const me=SESSION.sellerId||SESSION.name;
   const leads=DB.get(T(),"leads").filter(l=>l.owner===me&&!l.deleted);
@@ -3393,7 +3395,7 @@ function vMeuDia(){
   const first=(SESSION.name||"").split(" ")[0];
   const openLeads=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
   const hot=openLeads.map(l=>({l,s:leadScore(l).score})).sort((a,b)=>b.s-a.s).map(o=>o.l);
-  function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=tel?"https://wa.me/55"+tel:"";
+  function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=waLink(l);
     return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
       <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
       <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${S.reasons.join(' · ')||stageName(l.estagio)}</span></div>
