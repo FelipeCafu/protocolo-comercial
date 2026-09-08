@@ -1463,6 +1463,7 @@ function leadDetail(id){
      <h1 style="font-size:20px;margin:0">${l.nome}</h1>
      <span class="pill">${funnel.name}</span>
      <div class="spacer" style="flex:1"></div>
+     ${(function(){var d=((l.contato||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';var tl=(d.length>=12&&d.slice(0,2)==='55')?d:('55'+d);var w=waLink(l);return '<a class="btn ghost sm" href="tel:+'+tl+'">📞 Ligar</a>'+(w?'<a class="btn ghost sm" href="'+w+'" target="_blank">💬 WhatsApp</a>':'');})()}
      <button class="btn ghost sm" onclick="battlecard('${l.id}')">🛡️ Battlecard</button>
      <button class="btn ghost sm" onclick="transferLead('${l.id}')">⇄ Transferir</button>
      <button class="btn ok sm" onclick="winLead('${l.id}')">✓ Ganho</button>
