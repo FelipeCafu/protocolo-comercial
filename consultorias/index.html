@@ -1206,7 +1206,7 @@ function firstSteps(){
   </div>`;
 }
 function vPainel(){
-  const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads"),members=DB.get(T(),"members"),sellers=DB.get(T(),"sellers");
+  const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads").filter(l=>!l.deleted),members=DB.get(T(),"members").filter(m=>!m.deleted),sellers=DB.get(T(),"sellers");
   const fatReal=g.fatReal||0,fatMeta=g.fatMeta||0,proj=g.projecao||0;
   const pctMeta=fatMeta?Math.round(fatReal/fatMeta*100):0,gap=Math.max(fatMeta-fatReal,0);
   const abertos=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
@@ -1291,7 +1291,7 @@ function vPainel(){
 }
 /* ===== PAINEL EXECUTIVO (CEO) ===== */
 function vExec(){
-  const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads"),members=DB.get(T(),"members"),sellers=DB.get(T(),"sellers");
+  const g=DB.getObj(T(),"goals",{}),leads=DB.get(T(),"leads").filter(l=>!l.deleted),members=DB.get(T(),"members").filter(m=>!m.deleted),sellers=DB.get(T(),"sellers");
   const fatReal=g.fatReal||0,fatMeta=g.fatMeta||0,proj=g.projecao||0;
   const pctMeta=fatMeta?Math.round(fatReal/fatMeta*100):0,gap=Math.max(fatMeta-fatReal,0);
   const abertos=leads.filter(l=>!["ganho","perdido","churn"].includes(l.estagio));
@@ -1383,7 +1383,7 @@ function vCRM(){
          ${DB.get(T(),"sellers").map(s=>`<option value="${s.id}" ${CRM_SELLER===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>
        <input class="in" id="crmSearch" placeholder="🔎 buscar no funil…" style="width:200px" oninput="renderKanban()">
        <button class="btn sm" onclick="leadModal()">+ Novo lead</button></div></div>
-   <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${DB.get(T(),"leads").filter(l=>l.funnelId===f.id).length})</small></span>`).join("")}
+   <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${DB.get(T(),"leads").filter(l=>l.funnelId===f.id&&!l.deleted).length})</small></span>`).join("")}
      ${isAdmin()?`<span class="chip" onclick="go('funil')">⚙️ editar funis</span>`:""}</div>
    <div class="kanban" id="kanban"></div>`;
   renderKanban();
@@ -1604,7 +1604,7 @@ function leadBriefing(l){
   </div>`;
 }
 function lossBreakdown(){
-  const lost=DB.get(T(),"leads").filter(l=>l.estagio==="perdido"&&l.lossReason);
+  const lost=DB.get(T(),"leads").filter(l=>!l.deleted&&l.estagio==="perdido"&&l.lossReason);
   if(lost.length<2)return"";
   const by={};lost.forEach(l=>{by[l.lossReason]=(by[l.lossReason]||0)+1;});
   const arr=Object.entries(by).sort((a,b)=>b[1]-a[1]);const top=arr[0];const pct=Math.round(top[1]/lost.length*100);const wb=lost.filter(l=>l.winback).length;
@@ -1821,8 +1821,8 @@ function myActivities(){
 function taskCount(){const t=new Date().toISOString().slice(0,10);return myActivities().filter(a=>a.data<=t).length;}
 function vTarefas(){
   const today=new Date().toISOString().slice(0,10);
-  const acts=myActivities().sort((a,b)=>a.data<b.data?-1:1);
-  const byId={};DB.get(T(),"leads").forEach(l=>byId[l.id]=l);
+  const byId={};DB.get(T(),"leads").forEach(l=>{if(!l.deleted)byId[l.id]=l;});
+  const acts=myActivities().filter(a=>!a.leadId||byId[a.leadId]).sort((a,b)=>a.data<b.data?-1:1);
   const g={late:[],today:[],future:[]};
   acts.forEach(a=>{g[a.data<today?"late":a.data===today?"today":"future"].push(a);});
   const item=(a,color)=>{const l=byId[a.leadId]||{};
@@ -1846,6 +1846,7 @@ function delStage(fid,sid){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.
 function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();if(!nm)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages.push({id:DB.uid(),name:nm,sla:24});DB.set(T(),"funnels",fs);vFunil();toast("Etapa adicionada");}
 
 /* ===== PROSPECÇÃO & CADÊNCIAS (por papel) ===== */
+function cadCopy(di,ti){var c=(DB.getObj(T(),"cadences",defaultCadences())[CAD_ROLE]||[]);var t=(((c[di]||{}).toques||[])[ti]||{});if(t.texto){try{navigator.clipboard.writeText(t.texto);toast('Mensagem copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}}
 function vProspec(){
   const cads=DB.getObj(T(),"cadences",defaultCadences());
   const allRoles=[["sdr","🎯 SDR"],["closer","🤝 "+lx('closerRole')],["cs","💚 CS"]];
@@ -1867,7 +1868,7 @@ function vProspec(){
          ${day.toques.map((tk,ti)=>`<div class="touch"><div class="h">${tk.h}</div>
            <div style="flex:1"><div class="flex wrap" style="gap:8px"><span class="chan ${tk.canal}">${chanLabel(tk.canal)}</span><b style="font-size:13px">${tk.cond}</b></div>
              <p class="mut" style="font-size:12.5px;margin:5px 0 0">${tk.texto}</p></div>
-           ${isAdmin()?`<div><button class="btn xs ghost" onclick="editTouch(${di},${ti})">✎</button><button class="btn xs ghost" onclick="delTouch(${di},${ti})">✕</button></div>`:""}</div>`).join("")}
+           <div class="flex" style="gap:4px"><button class="btn xs ghost" onclick="cadCopy(${di},${ti})" title="copiar mensagem">📋</button>${isAdmin()?`<button class="btn xs ghost" onclick="editTouch(${di},${ti})">✎</button><button class="btn xs ghost" onclick="delTouch(${di},${ti})">✕</button>`:""}</div></div>`).join("")}
          ${di<cad.length-1?`<span class="go">↓ sem resposta? siga pro D${cad[di+1].dia}</span>`:`<span class="go">✔ fim da régua — break-up amigável / devolver pro fluxo</span>`}
        </div>`).join("")}
        </div>
@@ -3966,7 +3967,7 @@ function showAlerts(){const a=DB.get(T(),"alerts");
 
 /* ===== PERFORMANCE / METAS / FIDELIDADE / RECORRÊNCIA ===== */
 function vPerf(){
-  const s=DB.get(T(),"sellers"),leads=DB.get(T(),"leads"),hist=DB.getObj(T(),"quizHistory",{});
+  const s=DB.get(T(),"sellers"),leads=DB.get(T(),"leads").filter(l=>!l.deleted),hist=DB.getObj(T(),"quizHistory",{});
   M().innerHTML=`
    <div class="view-title"><h1>Performance do Time</h1></div>
    <p class="view-sub">Metas, atividades, conversão e desempenho na prova (treino).</p>
@@ -3985,38 +3986,39 @@ function vPerf(){
 function vMetas(){
   const g=DB.getObj(T(),"goals",{}),members=DB.get(T(),"members"),s=DB.get(T(),"sellers");
   const pct=Math.round((g.fatReal||0)/(g.fatMeta||1)*100);
+  const _prods=DB.get(T(),"products")||[];const _ticket=g.ticketMedio||(_prods.length?Math.max.apply(null,_prods.map(p=>p.preco||0)):0)||1198;
   M().innerHTML=`
    <div class="view-title"><h1>Metas & Comissões</h1></div>
    <p class="view-sub">Metas do mês e regras de comissionamento.</p>
    <div class="grid kpis">
-     ${kpi("🎯","Meta faturamento",money(g.fatMeta),pct+"% atingido",pct>=100?"up":"down")}
-     ${kpi("👥","Meta de "+lx('clientes'),g.metaMembros,"no mês","up")}
-     ${kpi("💵","Comissão SDR",money(g.comissaoSDR),"por reunião","up")}
-     ${kpi("🤝","Comissão "+lx('closerRole'),g.comissaoCloserPct+"%","sobre a "+lx('venda'),"up")}
+     ${kpi("🎯","Meta faturamento",money(g.fatMeta||0),pct+"% atingido",pct>=100?"up":"down")}
+     ${kpi("👥","Meta de "+lx('clientes'),g.metaMembros||0,"no mês","up")}
+     ${kpi("💵","Comissão SDR",money(g.comissaoSDR||0),"por reunião","up")}
+     ${kpi("🤝","Comissão "+lx('closerRole'),(g.comissaoCloserPct||0)+"%","sobre a "+lx('venda'),"up")}
    </div>
    <div class="card mt"><h2 style="font-size:15px;margin:0 0 6px">Progresso da meta</h2>
      <div class="bar gold" style="height:14px"><i style="width:${Math.min(pct,100)}%"></i></div>
-     <div class="flex between mt8" style="font-size:12.5px"><span class="mut">${money(g.fatReal)} realizado</span><span class="mut">meta ${money(g.fatMeta)}</span></div></div>
+     <div class="flex between mt8" style="font-size:12.5px"><span class="mut">${money(g.fatReal||0)} realizado</span><span class="mut">meta ${money(g.fatMeta||0)}</span></div></div>
    <div class="card mt"><h2 style="font-size:15px;margin:0 0 10px">Comissão estimada por vendedor</h2>
      <table><thead><tr><th>Vendedor</th><th>Papel</th><th>Base</th><th>Comissão</th></tr></thead><tbody>
      ${s.map(x=>{let com,base;if(x.papel==="SDR"){com=x.realizado*g.comissaoSDR;base=x.realizado+" reuniões";}
        else if(x.papel==="CS"){com=x.realizado*(g.comissaoCS||80);base=x.realizado+" retenções";}
-       else{const rev=x.realizado*1198;com=Math.round(rev*g.comissaoCloserPct/100);base=x.realizado+" fechados";}
+       else{const rev=x.realizado*_ticket;com=Math.round(rev*(g.comissaoCloserPct||0)/100);base=x.realizado+" fechados";}
        return `<tr><td><b>${x.nome}</b></td><td>${x.papel}</td><td class="mut">${base}</td><td><b style="color:var(--brand-ok)">${money(com)}</b></td></tr>`;}).join("")}
      </tbody></table></div>
    <div class="card mt"><h2 style="font-size:15px;margin:0 0 8px">Editar metas & comissões</h2>
-     <div class="row"><div><label class="fl">Meta faturamento</label><input class="in" type="number" id="g_fat" value="${g.fatMeta}"></div>
-       <div><label class="fl">Realizado</label><input class="in" type="number" id="g_real" value="${g.fatReal}"></div>
-       <div><label class="fl">Projeção</label><input class="in" type="number" id="g_proj" value="${g.projecao}"></div></div>
-     <div class="row mt8"><div><label class="fl">Meta ${lx('clientes')}</label><input class="in" type="number" id="g_mem" value="${g.metaMembros}"></div>
-       <div><label class="fl">Comissão SDR</label><input class="in" type="number" id="g_sdr" value="${g.comissaoSDR}"></div>
-       <div><label class="fl">% ${lx('closerRole')}</label><input class="in" type="number" id="g_clo" value="${g.comissaoCloserPct}"></div>
+     <div class="row"><div><label class="fl">Meta faturamento</label><input class="in" type="number" id="g_fat" value="${g.fatMeta||''}"></div>
+       <div><label class="fl">Realizado</label><input class="in" type="number" id="g_real" value="${g.fatReal||''}"></div>
+       <div><label class="fl">Projeção</label><input class="in" type="number" id="g_proj" value="${g.projecao||''}"></div></div>
+     <div class="row mt8"><div><label class="fl">Meta ${lx('clientes')}</label><input class="in" type="number" id="g_mem" value="${g.metaMembros||''}"></div>
+       <div><label class="fl">Comissão SDR</label><input class="in" type="number" id="g_sdr" value="${g.comissaoSDR||''}"></div>
+       <div><label class="fl">% ${lx('closerRole')}</label><input class="in" type="number" id="g_clo" value="${g.comissaoCloserPct||''}"></div>
        <div><label class="fl">Comissão CS</label><input class="in" type="number" id="g_cs" value="${g.comissaoCS||80}"></div></div>
      <button class="btn sm mt" onclick="saveGoals()">Salvar</button></div>`;
 }
 function saveGoals(){DB.set(T(),"goals",{fatMeta:+g_fat.value,fatReal:+g_real.value,projecao:+g_proj.value,metaMembros:+g_mem.value,comissaoSDR:+g_sdr.value,comissaoCloserPct:+g_clo.value,comissaoCS:+g_cs.value});toast("Metas salvas");vMetas();}
 function vFidelidade(){
-  const members=DB.get(T(),"members"),coupons=DB.get(T(),"coupons");
+  const members=DB.get(T(),"members").filter(m=>!m.deleted),coupons=DB.get(T(),"coupons");
   const ativos=members.filter(m=>m.status==="ativo"),inad=members.filter(m=>m.status==="inadimplente"),churn=members.filter(m=>m.status==="churn");
   const nps=(()=>{const sc=members.filter(m=>m.nps!=null).map(m=>m.nps);return sc.length?Math.round((sc.filter(n=>n>=9).length-sc.filter(n=>n<=6).length)/sc.length*100):0;})();
   const cash=members.reduce((s,m)=>s+(m.cashback||0),0);
