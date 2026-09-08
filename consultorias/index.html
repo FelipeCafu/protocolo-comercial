@@ -4130,6 +4130,12 @@ function toast(msg,type){const t=document.getElementById("toast");t.textContent=
 initCloud();seed();seedB2();document.getElementById("loginFelipe").src=FELIPE_BIG;setLoginBrand("protocolo");startBgFx();rotatePhrases();
 document.getElementById("lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:"protocolo";setLoginBrand(BRANDS[b]?b:"protocolo");});
+/* SEGURANÇA — bloqueio automático por inatividade (30 min): protege dados numa tela deixada aberta */
+var _idleMs=30*60*1000,_idleTimer=null;
+function _doIdleLogout(){if(!(typeof SESSION!=='undefined'&&SESSION))return;try{localStorage.removeItem('pc_sso');localStorage.removeItem('pc_sso_user');localStorage.removeItem('pc_sso_pass');}catch(e){}try{toast&&toast('Sessão encerrada por inatividade 🔒');}catch(e){}location.reload();}
+function resetIdle(){if(_idleTimer)clearTimeout(_idleTimer);_idleTimer=setTimeout(_doIdleLogout,_idleMs);}
+['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev){try{document.addEventListener(ev,resetIdle,{passive:true});}catch(e){}});
+resetIdle();
 /* Login único (SSO): se já entrou antes, restaura sozinho sem pedir senha de novo */
 (async function restoreSSO(){try{await loadAccounts();if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];const pass=acc?acc.pass:localStorage.getItem('pc_sso_pass');if(u&&pass!=null){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=pass;doLogin();}}}catch(e){}})();
 </script>
