@@ -3402,7 +3402,7 @@ function vMeuDia(){
       <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${S.reasons.join(' · ')||stageName(l.estagio)}</span></div>
       <div style="font-weight:800">${money(l.valor)}</div></div>
       <div class="flex" style="gap:7px;margin-top:9px;flex-wrap:wrap">
-      ${tel?`<a class="btn ghost sm" href="tel:${tel}">📞 Ligar</a>`:''}${wa?`<a class="btn ghost sm" href="${wa}" target="_blank">💬 WhatsApp</a>`:''}
+      ${tel&&tel.length>=10?`<a class="btn ghost sm" href="tel:+${(tel.length>=12&&tel.slice(0,2)==='55')?tel:('55'+tel)}">📞 Ligar</a>`:''}${wa?`<a class="btn ghost sm" href="${wa}" target="_blank">💬 WhatsApp</a>`:''}
       <button class="btn ghost sm" onclick="openRoteiro('${l.id}')">🎤 Roteiro</button><div style="flex:1"></div>
       <button class="btn gold sm" onclick="mdDone('${l.id}')">✓ Feito</button></div></div>`;}
   let fila="";
