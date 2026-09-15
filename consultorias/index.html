@@ -601,6 +601,7 @@ const USERS={
   csb2:       {pass:"1234", role:"cs",    tenant:"b2if",name:"Camila Duarte (CS)",       initials:"CD",sellerId:"camila"}
 };
 const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role);
+const myRoles=()=>(SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""];
 const DB={
   key(t,c){return `pc.${t}.${c}`},
   get(t,c){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??[]}catch(e){return []}},
@@ -1041,7 +1042,7 @@ async function doLogin(){
   const u=document.getElementById("lgUser").value.trim().toLowerCase();
   const p=document.getElementById("lgPass").value;let acc=null;
   if(USERS[u]&&USERS[u].pass===p){acc=USERS[u];}
-  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,tenant:dba.tenant,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
+  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,roles:dba.roles,tenant:dba.tenant,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
   if(!acc){toast("Usuário ou senha inválidos","bad");return;}
   SESSION=acc;
   try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);localStorage.setItem('pc_sso_pass',p);}catch(e){}
@@ -3304,6 +3305,9 @@ function rSub(t){if(!t)return t;var L=ROTEIRO_LEAD||{};var c=L.contato||{};var f
  return String(t).replace(/\{([^}]+)\}/g,function(m,k){var v=map[k.toUpperCase()];return (v!==undefined&&v!=='')?v:m;});}
 function roteiroCopy(n){var arr=ROTEIRO_LIDERES[ROTEIRO_TAB]||[];var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
 function vRoteiro(){
+ var allowed=isAdmin()?['sdr','closer']:myRoles().filter(function(r){return r==='sdr'||r==='closer';});
+ if(!allowed.length)allowed=['sdr','closer'];
+ if(allowed.indexOf(ROTEIRO_TAB)<0)ROTEIRO_TAB=allowed[0];
  var data=ROTEIRO_LIDERES,tab=ROTEIRO_TAB,arr=data[tab]||[];
  function fmtR(t){return rSub(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1<\/b>').replace(/\n/g,'<br>');}
  var cards=arr.map(function(x){
@@ -3315,12 +3319,12 @@ function vRoteiro(){
    +(x.av?'<div class="mut" style="font-size:12.5px;margin-top:3px"><b style="color:var(--brand-bad)">Evite:</b> '+x.av+'</div>':'')
    +'</div>';
  }).join('');
- M().innerHTML='<div class="view-title"><h1>Roteiro Comercial</h1><span class="pill pri">SDR + Closer</span></div>'
+ M().innerHTML='<div class="view-title"><h1>Roteiro Comercial</h1><span class="pill pri">'+allowed.map(function(r){return r==='sdr'?'SDR':'Closer';}).join(' + ')+'</span></div>'
   +'<p class="view-sub">O mesmo roteiro das apresentações comerciais — estude aqui ou dentro do deck. Aperte <b>S</b> no deck para o roteiro do apresentador. Use <b>📋 copiar</b> pra colar no WhatsApp.</p>'
   +(ROTEIRO_LEAD?('<div class="card" style="background:rgba(31,200,202,.08);border:1px solid rgba(31,200,202,.4);padding:10px 14px;margin-bottom:12px"><span style="font-size:13px">🎯 Personalizado para <b>'+esc((ROTEIRO_LEAD.contato||{}).nome||ROTEIRO_LEAD.nome||'este lead')+'</b> — o nome e o evento já entram no texto.</span> <button class="btn ghost xs" style="margin-left:8px" onclick="ROTEIRO_LEAD=null;vRoteiro()">usar genérico</button></div>'):'')
   +'<div class="flex" style="gap:8px;margin-bottom:14px;flex-wrap:wrap">'
-  +'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>'
-  +'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>'
+  +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>':'')
+  +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
   +'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR.html\',\'_blank\')">▶ Abrir apresentação SDR</button>'
   +'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
