@@ -351,10 +351,10 @@ h2{font-family:var(--disp);font-weight:400;line-height:1.02;padding-top:.06em;te
   <div class="kick"><div class="stripe"></div><div class="eyebrow">O investimento oficial</div></div>
   <h2>Valor de <span class="gold">tabela.</span></h2>
   <div class="cols c2" style="margin-top:26px;gap:24px">
-    <div class="card gold"><div class="tag" id="p9aname">Premium Board</div>
+    <div class="card gold"><div class="tag" id="p9aname">Nível Referência</div>
       <div class="num" style="margin-top:14px">R$ <span id="p9aval">1.898</span><span style="font-size:.4em;color:var(--muted)"> adesão</span></div>
       <p style="margin-top:6px">+ 12x de R$ <span id="p9aval2">1.898</span> via recorrência. Um ano inteiro de comunidade, educação e experiência.</p></div>
-    <div class="card"><div class="tag" id="p9bname">Super Premium</div>
+    <div class="card"><div class="tag" id="p9bname">Nível Legado</div>
       <div class="num" style="margin-top:14px">R$ <span id="p9bval">2.500</span><span style="font-size:.4em;color:var(--muted)"> adesão</span></div>
       <p style="margin-top:6px">+ 12x de R$ <span id="p9bval2">2.500</span> via recorrência. O nível máximo da mesa.</p></div>
   </div>
@@ -417,7 +417,7 @@ h2{font-family:var(--disp);font-weight:400;line-height:1.02;padding-top:.06em;te
     <div class="counter"><b id="cnow">1</b> / <span id="ctot">11</span></div>
     <button class="btn icon" onclick="go(1)" title="Próximo (→)">›</button>
     <button class="btn" onclick="toggleRoteiro()" title="Roteiro do apresentador (S) — janela separada, só você vê">📜 Roteiro</button>
-    <button class="btn gold" id="btnTrack" onclick="toggleTrack()" title="Escolher a trilha da apresentação (T) — muda planos e valores no fim">🎚️ Trilha: Premium</button>
+    <button class="btn gold" id="btnTrack" onclick="toggleTrack()" title="Escolher a trilha da apresentação (T) — muda planos e valores no fim">🎚️ Níveis: Referência/Legado</button>
     <button class="btn" id="btnProtag" onclick="toggleProtag()" title="Mostrar/pular Condição Protagonista (P)">🏷️ Condição: on</button>
     <button class="btn" onclick="openObj()" title="Objeções (O)">🛡️</button>
     <span class="timer" id="timer">00:00</span>
@@ -710,10 +710,10 @@ rs();addEventListener('resize',rs);if(!reduce)draw();else{draw();cancelAnimation
 })();
 /* ===== TRILHAS + CONDIÇÃO PROTAGONISTA (botões T / P) ===== */
 var PLANS={
- premium:{a:{nome:'Premium Board',tab:'1.898',prot:'1.518',feats:['Comunidade + Sociedade dos 12','Board premium mensal (até 12)','High Table exclusivo (bimestral)','Consultor visitando a sua empresa','Acesso ilimitado a reuniões e eventos']},
-          b:{nome:'Super Premium',tab:'2.500',prot:'2.000',feats:['Tudo do Premium Board, e mais:','Mentoria individual com o board','Curadoria e acesso VIP','Membro diferenciado da mesa']}},
- master:{a:{nome:'Membro Master',tab:'898',prot:'718',feats:['Comunidade Líderes do Brasil','Sociedade dos 12 · mentorias','Networking todo mês','Imersão O MAPA + banca','+1h de consultoria individual']},
-         b:{nome:'Sabor Premium',tab:'1.298',prot:'1.038',feats:['Tudo do Master, e mais:','Encontros premium selecionados','Consultoria 1:1 ampliada','Prioridade nos eventos']}}
+ premium:{a:{nome:'Nível Referência',tab:'1.898',prot:'1.518',feats:['Comunidade + Sociedade dos 12','Board premium mensal (até 12)','High Table exclusivo (bimestral)','Consultor visitando a sua empresa','Acesso ilimitado a reuniões e eventos']},
+          b:{nome:'Nível Legado',tab:'2.500',prot:'2.000',feats:['Tudo do Nível Referência, e mais:','Mentoria individual com o board','Curadoria e acesso VIP','Membro diferenciado da mesa']}},
+ master:{a:{nome:'Nível Evolução',tab:'898',prot:'718',feats:['Comunidade Líderes do Brasil','Sociedade dos 12 · mentorias','Networking todo mês','Imersão O MAPA + banca','+1h de consultoria individual']},
+         b:{nome:'Nível Protagonista',tab:'1.298',prot:'1.038',feats:['Tudo do Nível Evolução, e mais:','Encontros premium selecionados','Consultoria 1:1 ampliada','Prioridade nos eventos']}}
 };
 var track='premium', showProtag=true;
 function setTxt(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
@@ -726,7 +726,7 @@ function applyMode(){
  setTxt('p9bname',b.nome);setTxt('p9bval',b.tab);setTxt('p9bval2',b.tab);
  setTxt('p10from','de R$ '+a.tab);setTxt('p10to','R$ '+a.prot);
  var sp=document.getElementById('slideProtag');if(sp)sp.classList.toggle('skipslide',!showProtag);
- setTxt('btnTrack',track==='premium'?'🎚️ Trilha: Premium':'🎚️ Trilha: Master');
+ setTxt('btnTrack',track==='premium'?'🎚️ Níveis: Referência/Legado':'🎚️ Níveis: Evolução/Protagonista');
  setTxt('btnProtag','🏷️ Condição: '+(showProtag?'on':'off'));
 }
 function toggleTrack(){track=(track==='premium'?'master':'premium');applyMode();if(typeof renderPresenter==='function')renderPresenter();}
