@@ -690,9 +690,9 @@ function seed(){
   }
   DB.set(t,"funnels",FUNNELS);
   DB.set(t,"products",[
-   {id:"master",nome:"Membro Master",preco:698,recorrencia:698,parcelas:12,cor:"#5470d6",
+   {id:"evolucao",nome:"Nível Evolução",preco:898,recorrencia:698,parcelas:12,cor:"#5470d6",
     beneficios:["Comunidade Líderes do Brasil","Sociedade dos 12 com mentorias multilaterais","Encontro das Comunidades (networking) todo mês","Evento Imersão O MAPA","O MAPA – banca de consultores especialistas","+1h de consultoria individualizada"]},
-   {id:"premium",nome:"Membro Premium Board",preco:1698,recorrencia:1698,parcelas:12,cor:"#e7b53c",
+   {id:"referencia",nome:"Nível Referência",preco:1898,recorrencia:1698,parcelas:12,cor:"#e7b53c",
     beneficios:["Tudo do Master","Board de Membros Premium mensal (até 12 membros)","High Table exclusivo (a cada 2 meses)","Visita dos consultores à empresa do membro","Acesso ilimitado a reuniões e eventos","+1h de consultoria individualizada"]}
   ]);
   DB.set(t,"sellers",[
@@ -708,7 +708,7 @@ function seed(){
    L({nome:"Juliana Prado",razaoSocial:"Prado Contabilidade ME",fantasia:"Prado Contábil",setor:"Serviços contábeis",contato:{nome:"Juliana Prado",tel:"(61) 98822-1100",email:"ju@pradocont.com.br"},origem:"Evento",estagio:"contato",funnelId:"prospeccao",valor:698,temp:"morno",fat:"R$ 200k–500k/ano",score:64}),
    L({nome:"Marcos Vinícius",razaoSocial:"MV Logística S/A",fantasia:"MV Log",setor:"Transporte/Logística",contato:{nome:"Marcos Vinícius",tel:"(61) 99700-4455",email:"marcos@mvlog.com.br"},origem:"Indicação",estagio:"qualif",funnelId:"sdr",valor:1698,temp:"quente",fat:"R$ 2M–5M/ano",owner:"ana",score:90,notas:"Dor: isolamento na tomada de decisão."}),
    L({nome:"Patrícia Gomes",razaoSocial:"Gomes Estética LTDA",fantasia:"Gomes Estética",setor:"Beleza/Estética",contato:{nome:"Patrícia Gomes",tel:"(61) 98111-9090",email:"pat@gomesestetica.com"},origem:"Tráfego pago",estagio:"agendou",funnelId:"sdr",valor:698,temp:"quente",owner:"ana",score:76}),
-   L({nome:"Fernando Luz",razaoSocial:"Luz Engenharia LTDA",fantasia:"Luz Eng",setor:"Engenharia",contato:{nome:"Fernando Luz",tel:"(61) 99555-3322",email:"fernando@luzeng.com.br"},origem:"Indicação",estagio:"proposta",funnelId:"closer",valor:1698,temp:"quente",fat:"R$ 5M+/ano",owner:"bruno",score:92,notas:"Avaliando Premium Board."}),
+   L({nome:"Fernando Luz",razaoSocial:"Luz Engenharia LTDA",fantasia:"Luz Eng",setor:"Engenharia",contato:{nome:"Fernando Luz",tel:"(61) 99555-3322",email:"fernando@luzeng.com.br"},origem:"Indicação",estagio:"proposta",funnelId:"closer",valor:1698,temp:"quente",fat:"R$ 5M+/ano",owner:"bruno",score:92,notas:"Avaliando o Nível Referência."}),
    L({nome:"Camila Rocha",razaoSocial:"Rocha Advocacia",fantasia:"Rocha Adv",setor:"Advocacia",contato:{nome:"Camila Rocha",tel:"(61) 98444-7788",email:"camila@rochaadv.com.br"},origem:"LinkedIn",estagio:"negoc",funnelId:"closer",valor:698,temp:"quente",owner:"diego",score:80}),
    L({nome:"Anderson Melo",razaoSocial:"Melo Autopeças",fantasia:"Melo Autopeças",setor:"Autopeças",contato:{nome:"Anderson Melo",tel:"(61) 99333-1212",email:"anderson@meloauto.com"},origem:"Instagram",estagio:"novo",funnelId:"prospeccao",valor:698,temp:"frio",score:40,movedAt:now-2*d}),
    L({nome:"Sofia Nunes",razaoSocial:"Nunes Cosméticos LTDA",fantasia:"Nunes Cosm",setor:"Cosméticos",contato:{nome:"Sofia Nunes",tel:"(61) 98777-6543",email:"sofia@nunescosm.com.br"},origem:"Evento",estagio:"spin",funnelId:"sdr",valor:1698,temp:"morno",owner:"ana",score:72})
@@ -940,11 +940,11 @@ function quizBank(){return [
  {tag:"empresa",q:"O que é a 'Sociedade dos 12'?",a:["um plano de saúde","grupo com mentorias multilaterais entre membros","um evento único no ano","um desconto"],c:1},
  {tag:"empresa",q:"O que é 'O MAPA'?",a:["um app de trânsito","imersão + mentoria com banca de consultores especialistas","um relatório financeiro","um cupom"],c:1},
  {tag:"empresa",q:"Com que frequência acontece o Encontro das Comunidades (networking)?",a:["1x por ano","todo mês","a cada 6 meses","nunca"],c:1},
- {tag:"empresa",q:"O 'High Table' é um evento exclusivo de qual plano?",a:["Master","Premium Board","de todos","de nenhum"],c:1},
- {tag:"produto",q:"Qual o valor de adesão do Membro Master?",a:["R$ 1.698","R$ 698","R$ 298","R$ 2.500"],c:1},
- {tag:"produto",q:"Qual o valor do Membro Premium Board?",a:["R$ 698","R$ 998","R$ 1.698","R$ 3.000"],c:2},
- {tag:"produto",q:"Diferença central entre Master e Premium Board:",a:["nenhuma","Premium tem Board até 12 membros, High Table e visita dos consultores à empresa","Master é mais caro","Premium não tem networking"],c:1},
- {tag:"produto",q:"A 'visita dos consultores à empresa do membro' é benefício de qual plano?",a:["Master","Premium Board","ambos","nenhum"],c:1},
+ {tag:"empresa",q:"O 'High Table' é um evento exclusivo de qual nível?",a:["Evolução","Referência","de todos","de nenhum"],c:1},
+ {tag:"produto",q:"Qual o valor de adesão do Nível Evolução?",a:["R$ 1.898","R$ 898","R$ 298","R$ 2.500"],c:1},
+ {tag:"produto",q:"Qual o valor do Nível Legado?",a:["R$ 898","R$ 1.298","R$ 1.898","R$ 2.500"],c:3},
+ {tag:"produto",q:"Diferença central entre Evolução e Referência:",a:["nenhuma","Referência tem Board até 12 membros, High Table e visita dos consultores à empresa","Evolução é mais caro","Referência não tem networking"],c:1},
+ {tag:"produto",q:"A 'visita dos consultores à empresa' é benefício de qual nível?",a:["Evolução","Referência","ambos","nenhum"],c:1},
  {tag:"produto",q:"Como o membro paga (recorrência)?",a:["à vista apenas","adesão + 12x via recorrência de cartão","boleto anual","dinheiro"],c:1},
  {tag:"produto",q:"Ambos os planos incluem:",a:["nenhum benefício","comunidade + Sociedade dos 12 + encontro mensal + O MAPA + 1h consultoria","só networking","só o app"],c:1},
  {tag:"spin",q:"Na letra S do SPIN, o objetivo é:",a:["falar preço","entender a situação atual do cliente","fechar","dar desconto"],c:1},
@@ -963,7 +963,7 @@ function quizBank(){return [
  {tag:"objecao",q:"Objeção 'está caro'. Melhor resposta:",a:["dar desconto na hora","mostrar que um único negócio fechado na comunidade paga o ano","desligar","concordar"],c:1},
  {tag:"objecao",q:"Objeção 'preciso falar com meu sócio'. Melhor conduta:",a:["desistir","oferecer condição 'com sócio' e agendar call com os dois, reservando a vaga","ignorar","brigar"],c:1},
  {tag:"objecao",q:"Objeção 'vou entrar mês que vem'. Boa resposta usa:",a:["nada","escassez real (vagas limitadas + data do próximo encontro)","desconto de 50%","ameaça"],c:1},
- {tag:"objecao",q:"Na ancoragem de preço, você apresenta primeiro:",a:["o Master","o Premium Board (âncora alta)","o mais barato","nenhum"],c:1},
+ {tag:"objecao",q:"Na ancoragem de preço, você apresenta primeiro:",a:["o mais baixo","o Nível Legado (âncora alta)","o mais barato","nenhum"],c:1},
  {tag:"script",q:"Regra de ouro no fechamento após a pergunta:",a:["falar sem parar","fazer silêncio — quem falar primeiro, perde","dar desconto","remarcar"],c:1}
 ];}
 
@@ -2520,7 +2520,7 @@ S("Módulo 6","2:58","SCRIPT DO CLOSER — para ler durante o role-play",
    <div><span>1</span><b>Abertura e recap</b><p>"<u>[nome]</u>, prazer! O <u>[SDR]</u> me passou que você <b>[repita a dor registrada no CRM]</b>. É isso mesmo, ou mudou alguma coisa de lá pra cá?"</p></div>
    <div><span>2</span><b>Diagnóstico ao vivo</b><p>"Me conta como isso acontece no dia a dia." → "Já tentou resolver de que jeito?" → "O que faltou?"<br><i>Aprofunde com Implicação: "e o que isso já te custou até hoje?"</i></p></div>
    <div><span>3</span><b>Apresentação por valor</b><p>Fale <b>só</b> do que resolve a dor que ele citou. Um benefício por dor.<br>"Você falou que decide sozinho — na Sociedade dos 12 você senta todo mês com 11 donos que passaram por isso."</p></div>
-   <div><span>4</span><b>Ancoragem</b><p>Apresente <b>o Premium Board primeiro</b> (R$ 1.698), depois o Master (R$ 698). O segundo número sempre parece menor depois do primeiro.</p></div>
+   <div><span>4</span><b>Ancoragem</b><p>Apresente <b>o Nível Legado primeiro</b> (R$ 2.500), depois o Master (R$ 698). O segundo número sempre parece menor depois do primeiro.</p></div>
    <div><span>5</span><b>Objeção</b><p>ACRD: acolhe → confirma a raiz → reformula curto → devolve pergunta.</p></div>
    <div><span>6</span><b>Fechamento</b><p>"Pelo que você me contou, o <b>[plano]</b> é o que encaixa. A gente começa na <b>turma de [data]</b>. Faz sentido garantir sua vaga agora?"<br><i>Silêncio. Quem falar primeiro depois do fechamento, perde.</i></p></div>
   </div>`,
@@ -3009,7 +3009,7 @@ function acadConteudo(){
    <div><b style="font-size:13px">GPCT</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Goals, Plans, Challenges, Timeline. Evolução do BANT focada no objetivo do cliente, não no seu. Útil quando o cliente já sabe o que quer.</p></div>
    <div><b style="font-size:13px">Escuta ativa</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Repetir em outras palavras o que ele disse: "Então, se entendi, o problema não é vender — é que trava tudo em você, é isso?" Ele confirma e se sente entendido.</p></div>
    <div><b style="font-size:13px">Prova social</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Gente decide olhando gente parecida. "Tem um dono de [ramo parecido] no grupo que chegou com esse mesmo problema." Vale mais que qualquer adjetivo.</p></div>
-   <div><b style="font-size:13px">Ancoragem</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Apresente sempre o plano maior primeiro (Premium Board), depois o Master. O segundo número sempre parece menor depois de um maior.</p></div>
+   <div><b style="font-size:13px">Ancoragem</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Apresente sempre o nível maior primeiro (Legado), depois os menores. O segundo número sempre parece menor depois de um maior.</p></div>
    <div><b style="font-size:13px">Escassez honesta</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Vagas e turmas são reais — use isso, nunca invente. Escassez falsa destrói confiança e a cidade é pequena.</p></div>
    <div><b style="font-size:13px">Duas opções (alternativa)</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Nunca pergunte "quer marcar?". Pergunte "prefere terça 9h ou quinta 16h?". Você tira o sim/não e deixa só o quando.</p></div>
   </div>
@@ -3032,7 +3032,7 @@ const ACAD_PERSONAS=[
  ["🧍 Carlos, 48 — o empresário solitário","Dono de uma construtora, 22 funcionários, fatura ~R$4M/ano. Decide tudo sozinho desde que se separou do sócio há 3 anos. Cansado, desconfiado de 'grupinho'.","Só se abre se você for direto e não parecer vendedor. Se sentir script decorado, corta.","Solidão do topo — não tem com quem trocar. <b>Encaixe:</b> Sociedade dos 12 + Board."],
  ["🚀 Juliana, 35 — quer escalar","Sócia de uma clínica com 3 unidades, ~R$2,5M/ano. Bateu num teto e sabe disso. Já fez curso demais e está cética com 'mais um'.","Vai perguntar resultado concreto e quem mais está no grupo. Quer nome, não promessa.","Teto de crescimento e falta de rede qualificada. <b>Encaixe:</b> networking mensal + indicações entre membros."],
  ["🌱 Rafael, 29 — em ascensão","Dono de uma agência, 6 pessoas, ~R$600k/ano. Animado, fala muito, tem pouco tempo e pouco caixa. Vai puxar preço cedo.","Fácil de engajar, difícil de qualificar. Cuidado para não vender para quem não decide o caixa.","Quer aprender com quem já chegou lá. <b>Encaixe:</b> O MAPA + mentorias. Plano Master."],
- ["👑 Ricardo, 55 — o estabelecido","Dono de uma rede de lojas, ~R$20M/ano. Tem agenda cheia, secretária filtrando, e já é convidado para tudo. Só entra onde tem gente do nível dele.","Atende por 40 segundos. Ou você é relevante nos primeiros 15, ou acabou.","Status, legado e pares do mesmo nível. <b>Encaixe:</b> High Table (Premium Board)."]
+ ["👑 Ricardo, 55 — o estabelecido","Dono de uma rede de lojas, ~R$20M/ano. Tem agenda cheia, secretária filtrando, e já é convidado para tudo. Só entra onde tem gente do nível dele.","Atende por 40 segundos. Ou você é relevante nos primeiros 15, ou acabou.","Status, legado e pares do mesmo nível. <b>Encaixe:</b> High Table (Nível Referência)."]
 ];
 const ACAD_DINAMICAS=[
  ["1","🎤 A frase e três intenções","8 min","Duplas","Módulo 2 — Rapport",
@@ -3562,9 +3562,9 @@ function scICP(){return `
  <div class="card"><h2 style="margin:0 0 6px;font-size:15px">O que o Líderes do Brasil vende</h2>
    <p style="font-size:13.5px;line-height:1.7;margin:0">Não vendemos um curso — vendemos <b>pertencimento a um ecossistema de empresários</b> que acelera o desenvolvimento pessoal e empresarial e <b>gera negócios entre os membros</b>. Missão (Luiz Felipe Daher): "criar uma Comunidade de Empresários e Empreendedores, promovendo um ambiente favorável ao desenvolvimento, fomentando infinitas possibilidades de negócios."</p></div>
  <div class="grid mt" style="grid-template-columns:1fr 1fr">
-   <div class="card" style="border-top:3px solid #5470d6"><h2 style="margin:0 0 4px;font-size:15px">Membro Master — R$ 698</h2><small class="mut">adesão + 12x R$ 698</small>
+   <div class="card" style="border-top:3px solid #5470d6"><h2 style="margin:0 0 4px;font-size:15px">Nível Evolução — R$ 898</h2><small class="mut">adesão + 12x R$ 698</small>
      <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${DB.get(T(),"products")[0].beneficios.map(b=>`<li>${b}</li>`).join("")}</ul></div>
-   <div class="card" style="border-top:3px solid #e7b53c"><h2 style="margin:0 0 4px;font-size:15px">Premium Board — R$ 1.698</h2><small class="mut">adesão + 12x R$ 1.698</small>
+   <div class="card" style="border-top:3px solid #e7b53c"><h2 style="margin:0 0 4px;font-size:15px">Nível Referência — R$ 1.898</h2><small class="mut">adesão + 12x R$ 1.698</small>
      <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${DB.get(T(),"products")[1].beneficios.map(b=>`<li>${b}</li>`).join("")}</ul></div></div>
  <div class="section-h"><h2>ICP — Cliente ideal</h2><div class="line"></div></div>
  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
@@ -3686,7 +3686,7 @@ function scCLO(){return `
      <span class="go">↓ Ancore o preço (passo 5).</span></div>
 
    <div class="step" data-n="5"><h3>Ancoragem de preço (Premium primeiro → Master)</h3>
-     <div class="script">"[nome], temos dois caminhos. O <b>Premium Board — R$1.698/mês</b> é o mais completo: board mensal com até 12 empresários, High Table e a <b>visita dos consultores dentro da sua empresa</b>. E o <b>Master — R$698/mês</b>: comunidade, Sociedade dos 12 e todos os encontros. <b>Pra onde você quer ir: Premium, ou começamos no Master?</b>"</div>
+     <div class="script">"[nome], temos dois caminhos. O <b>Nível Referência — R$1.898/mês</b> é o mais completo: board mensal com até 12 empresários, High Table e a <b>visita dos consultores dentro da sua empresa</b>. E o <b>Master — R$698/mês</b>: comunidade, Sociedade dos 12 e todos os encontros. <b>Pra onde você quer ir: Premium, ou começamos no Master?</b>"</div>
      <p class="mut" style="font-size:12.5px;margin:6px 0 0">🔑 Sempre <b>Premium primeiro</b> (âncora). Fale <b>valor → preço</b>, nunca o contrário. Divida por dia se ajudar ("R$698 ≈ R$23/dia pra decidir cercado das pessoas certas").</p>
      <span class="go">↓ Surgiu objeção? Passo 6. Sem objeção? Feche (passo 7).</span></div>
 
@@ -3738,12 +3738,12 @@ function scCS(){return `
      <span class="go">↓ Nas revisões, construa a renovação (passo 4).</span></div>
 
    <div class="step" data-n="4"><h3>Revisão de valor & renovação (QBR)</h3>
-     <div class="script">"<b>[nome]</b>, faz [X] meses que você está com a gente. Bora revisar juntos: <b>[conexões feitas, negócios, ideias aplicadas]</b>. Olhando pra frente, quero te mostrar como o <b>Premium Board</b> acelera ainda mais o que você já começou aqui…"</div>
+     <div class="script">"<b>[nome]</b>, faz [X] meses que você está com a gente. Bora revisar juntos: <b>[conexões feitas, negócios, ideias aplicadas]</b>. Olhando pra frente, quero te mostrar como o <b>Nível Referência</b> acelera ainda mais o que você já começou aqui…"</div>
      <p class="mut" style="font-size:12.5px;margin:6px 0 0">Renovação não se pede — se <b>constrói</b> com valor entregue. Chegue com a lista de vitórias na mão.</p>
      <span class="go">↓ Membro engajado? Ofereça expansão (passo 5).</span></div>
 
    <div class="step" data-n="5"><h3>Expansão (Master → Premium)</h3>
-     <div class="script">"[nome], vendo seu engajamento, acho que você já passou do Master. No <b>Premium Board</b> você entra no board mensal com até 12 empresários, no High Table e recebe <b>nossos consultores dentro da sua empresa</b>. Faz sentido eu te mostrar como fica?"</div>
+     <div class="script">"[nome], vendo seu engajamento, acho que você já passou do Nível Evolução. No <b>Nível Referência</b> você entra no board mensal com até 12 empresários, no High Table e recebe <b>nossos consultores dentro da sua empresa</b>. Faz sentido eu te mostrar como fica?"</div>
      <span class="go">↓ Se atrasar o pagamento, entre na recuperação (passo 6).</span></div>
 
    <div class="step" data-n="6"><h3>Recuperação de inadimplência</h3>
