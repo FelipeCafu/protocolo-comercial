@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O Protocolo Comercial</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="apresentacoes/icbari/roteiro-icbari.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,6 +34,16 @@
   --radius:8px; --radius-sm:5px;
   --font:"Kanit","Segoe UI",Roboto,Arial,Helvetica,sans-serif;
 }
+[data-brand="icbari"]{
+  --brand-bg:#0d0d0e; --brand-panel:#191a1c; --brand-panel2:#141416;
+  --brand-line:rgba(255,255,255,.12);
+  --brand-primary:#c9ccd2; --brand-primary-2:#eef0f3; --brand-accent:#9aa0a8;
+  --brand-text:#f2f3f5; --brand-muted:#9a9ea6; --brand-ok:#37c98a; --brand-warn:#f0b429; --brand-bad:#ff6b81;
+  --radius:8px; --radius-sm:5px;
+  --font: Georgia, "Times New Roman", "Segoe UI", serif;
+}
+[data-brand="icbari"] .eyebrow{letter-spacing:3px;color:var(--brand-muted)}
+[data-brand="icbari"] h1,[data-brand="icbari"] h2,[data-brand="icbari"] h3,[data-brand="icbari"] .name{font-weight:600;letter-spacing:.2px}
 [data-brand="b2if"] .eyebrow{letter-spacing:3px}
 [data-brand="b2if"] h1,[data-brand="b2if"] h2,[data-brand="b2if"] h3,[data-brand="b2if"] .name{font-weight:600;letter-spacing:.3px}
 [data-brand="b2if"] .btn{font-weight:600;letter-spacing:.4px}
@@ -70,6 +81,10 @@ input,select,textarea{font-family:inherit;color:inherit}
 [data-brand="b2if"] .kcol{background:color-mix(in srgb,var(--brand-panel) 55%,transparent)}
 [data-brand="b2if"] .sidebar{background:color-mix(in srgb,var(--brand-panel2) 55%,transparent)}
 [data-brand="b2if"] .topbar{background:color-mix(in srgb,var(--brand-panel2) 72%,transparent)}
+[data-brand="icbari"] .card{background:linear-gradient(180deg,color-mix(in srgb,var(--brand-panel) 90%,transparent),color-mix(in srgb,var(--brand-panel2) 90%,transparent))}
+[data-brand="icbari"] .kcol{background:color-mix(in srgb,var(--brand-panel) 55%,transparent)}
+[data-brand="icbari"] .sidebar{background:color-mix(in srgb,var(--brand-panel2) 60%,transparent)}
+[data-brand="icbari"] .topbar{background:color-mix(in srgb,var(--brand-panel2) 76%,transparent)}
 #login{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
 #lgPhrase{position:absolute;z-index:3;pointer-events:none;max-width:300px;font-size:21px;font-weight:800;line-height:1.3;
   color:var(--brand-primary);opacity:0;transition:opacity .6s ease;text-shadow:0 2px 18px rgba(0,0,0,.9);letter-spacing:.2px}
@@ -574,15 +589,21 @@ function markB2(size=44,color="#eafcff"){return `<svg width="${size}" height="${
   <path d="M 452 288 L 228 512 L 228 560 L 312 706 L 452 578 Z" fill="${color}"/>
   <path d="M 576 288 L 800 512 L 800 560 L 716 706 L 576 578 Z" fill="${color}"/>
 </svg>`;}
+/* Marca NEUTRA/placeholder da ICBARI — só um monograma monocromático. Trocar quando chegar a identidade visual. */
+function markIcbari(size=44,color="#eef0f3"){return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" fill="none">
+ <rect x="14" y="14" width="72" height="72" rx="14" fill="none" stroke="${color}" stroke-width="4.5"/>
+ <path d="M50 33 V67 M33 50 H67" stroke="${color}" stroke-width="4.5" stroke-linecap="round"/></svg>`;}
 const BRANDS={
   protocolo:{brand:"protocolo",name:"O Protocolo Comercial",sub:"Mentoria Comercial B2B",mark:markProtocolo,color:"#FF6B2B"},
   lideres:{brand:"lideres",name:"Líderes do Brasil",sub:"Comunidade de Empresários",mark:markLideres,color:"#354B9C"},
-  b2if:{brand:"b2if",name:"B2 Inteligência Financeira",sub:"Wealth Planner · Planejamento Financeiro",mark:markB2,color:"#159a9c"}
+  b2if:{brand:"b2if",name:"B2 Inteligência Financeira",sub:"Wealth Planner · Planejamento Financeiro",mark:markB2,color:"#159a9c"},
+  icbari:{brand:"icbari",name:"ICBARI",sub:"Cirurgia Digestiva · Bariátrica e Metabólica",mark:markIcbari,color:"#c9ccd2"}
 };
 /* ===== Léxico por marca (mesmas funcionalidades, vocabulário diferente) ===== */
 const LEX={
   lideres:{cliente:"membro",clientes:"membros",Cliente:"Membro",Clientes:"Membros",venda:"adesão",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"},
-  b2if:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"contratação",planoUp:"plano",closerRole:"Planejador",closerRoleUp:"PLANEJADOR"}
+  b2if:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"contratação",planoUp:"plano",closerRole:"Planejador",closerRoleUp:"PLANEJADOR"},
+  icbari:{cliente:"paciente",clientes:"pacientes",Cliente:"Paciente",Clientes:"Pacientes",venda:"agendamento",planoUp:"procedimento",closerRole:"Closer",closerRoleUp:"CLOSER"}
 };
 function lx(k){const t=(typeof CURRENT_TENANT!=="undefined"&&CURRENT_TENANT)?CURRENT_TENANT:"lideres";return (LEX[t]||LEX.lideres)[k]||(LEX.lideres[k]||k);}
 function roleLabel(r){return r==="closer"?lx("closerRoleUp"):(r||"").toUpperCase();}
@@ -598,7 +619,16 @@ const USERS={
   planejador1:{pass:"1234", role:"closer",tenant:"b2if",name:"Rafael Nunes (Planejador)",initials:"RN",sellerId:"rafael"},
   planejadora:{pass:"1234", role:"closer",tenant:"b2if",name:"Beatriz Souza (Planejadora)",initials:"BS",sellerId:"bia"},
   sdrb2:      {pass:"1234", role:"sdr",   tenant:"b2if",name:"Marina Alves (SDR)",       initials:"MA",sellerId:"marina"},
-  csb2:       {pass:"1234", role:"cs",    tenant:"b2if",name:"Camila Duarte (CS)",       initials:"CD",sellerId:"camila"}
+  csb2:       {pass:"1234", role:"cs",    tenant:"b2if",name:"Camila Duarte (CS)",       initials:"CD",sellerId:"camila"},
+  /* ===== ICBARI — Clínica (cirurgia digestiva/bariátrica) ===== */
+  icbari:       {pass:"1234",           role:"gestor", tenant:"icbari",name:"ICBARI (Clínica)",         initials:"IC"},
+  "pedro.icb":  {pass:"pedroicbari",    role:"gestor", tenant:"icbari",name:"Dr. Pedro (Gestor)",       initials:"DP"},
+  "wander.icb": {pass:"wandericbari",   role:"gestor", tenant:"icbari",name:"Dr. Wander (Gestor)",      initials:"DW"},
+  "ritiele.icb":{pass:"ritieleicbari",  role:"gestor", tenant:"icbari",name:"Ritiele (Gestora)",        initials:"RI"},
+  "ingrid.icb": {pass:"ingridicbari",   role:"sdr",    tenant:"icbari",name:"Ingrid (SDR)",             initials:"IN",sellerId:"ingrid"},
+  "bruna.icb":  {pass:"brunaicbari",    role:"sdr",    tenant:"icbari",name:"Bruna (SDR)",              initials:"BR",sellerId:"bruna"},
+  "elaine.icb": {pass:"elaineicbari",   role:"closer", tenant:"icbari",name:"Elaine (Closer)",          initials:"EL",sellerId:"elaine"},
+  "cs.icb":     {pass:"velo2026",       role:"cs",     tenant:"icbari",name:"CS / Pós-venda (a definir)",initials:"CS",sellerId:"csicb"}
 };
 const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role);
 const myRoles=()=>(SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""];
@@ -616,7 +646,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase) — nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos","cirurgias","pacientes"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 /* BLINDAGEM: salva por REGISTRO (merge por id) — ninguem apaga o dado do outro. Fallback seguro. */
@@ -668,6 +698,389 @@ const FUNNELS=[
    {id:"onboarding",name:"Onboarding",sla:48},{id:"ativado",name:"Ativado",sla:0},
    {id:"recorrente",name:"Recorrente",sla:0},{id:"risco",name:"Em Risco",sla:24},{id:"churn",name:"Churn",sla:0}]}
 ];
+/* ============================================================
+   ICBARI — Clínica (cirurgia digestiva/bariátrica/metabólica)
+   Ambiente completo + Jornada do Paciente (pós-venda/CS)
+   ============================================================ */
+const FUNNELS_ICB=[
+ {id:"prospeccao",name:"Prospecção",papel:"SDR",stages:[
+   {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
+   {id:"contato",name:"Contato Realizado",sla:24},{id:"mql",name:"Qualificado (MQL)",sla:24}]},
+ {id:"sdr",name:"Qualificação (SDR)",papel:"SDR",stages:[
+   {id:"qualif",name:"Em Qualificação",sla:48},{id:"spin",name:"SPIN aplicado",sla:24},
+   {id:"agendou",name:"Consulta Agendada",sla:24},{id:"noshow",name:"No-show / Remarcar",sla:12}]},
+ {id:"closer",name:"Consulta & Fechamento (Closer)",papel:"Closer",stages:[
+   {id:"reuniao",name:"Consulta Realizada",sla:24},{id:"apresent",name:"Plano Cirúrgico Apresentado",sla:48},
+   {id:"proposta",name:"Orçamento Enviado",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
+   {id:"ganho",name:"Paciente (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
+ {id:"cs",name:"Jornada do Paciente (CS)",papel:"CS",stages:[
+   {id:"exames",name:"Em Exames",sla:0},{id:"resultados",name:"Aguardando Resultados",sla:0},
+   {id:"retorno",name:"Retorno ao Médico",sla:0},{id:"cirurgia",name:"Cirurgia Marcada",sla:0},
+   {id:"posop",name:"Pós-operatório",sla:0},{id:"concluido",name:"Concluído",sla:0}]}
+];
+
+/* Modelos de cirurgia + exames/avaliações padrão (base pesquisada — editável pelo gestor).
+   exames = exames de imagem/laboratório; aval = avaliações/consultas de especialistas;
+   docs = itens exigidos para marcar a cirurgia no hospital. */
+const ICB_LAB_BASICO=["Hemograma completo","Coagulograma (TAP/TTPA)","Glicemia de jejum","Ureia e Creatinina","Sódio e Potássio","TGO / TGP","Sorologias (HIV, Hepatite B e C, VDRL)","Tipagem sanguínea"];
+const ICB_CIRURGIAS_DEFAULT=[
+ {id:"bariatrica",nome:"Cirurgia Bariátrica e Metabólica",cat:"Obesidade e Metabólica",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Ultrassom de abdome total","Raio-X de tórax","Eletrocardiograma (ECG)","Perfil lipídico","TSH e T4 livre","Dosagem de vitaminas (B12, D) e ferro"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação Nutricional","Avaliação Psicológica / Psiquiátrica","Avaliação com Endocrinologista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"diastase",nome:"Correção de Diástase Abdominal (vídeo/robótica)",cat:"Parede Abdominal",
+  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com manobra de Valsalva","Ultrassonografia de parede abdominal","Raio-X de tórax","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"hernia",nome:"Correção de Hérnia (umbilical/inguinal/incisional/epigástrica)",cat:"Parede Abdominal",
+  exames:ICB_LAB_BASICO.concat(["Tomografia de parede abdominal (Valsalva)","Ultrassonografia da região herniária","Raio-X de tórax","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / tela (OPME) se houver","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"refluxo",nome:"Refluxo / Hérnia de Hiato (vídeo e robótica)",cat:"Esôfago/Estômago",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Esofagomanometria","pHmetria de 24h","Raio-X contrastado de esôfago/estômago (EED)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"acalasia",nome:"Cirurgia para Acalásia (“entalo” / Chagas)",cat:"Esôfago",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Esofagomanometria","Raio-X contrastado de esôfago (EED)","Sorologia para Chagas","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"colecistectomia",nome:"Retirada da Vesícula (Colecistectomia)",cat:"Vesícula Biliar",
+  exames:ICB_LAB_BASICO.concat(["Ultrassom de abdome total","Raio-X de tórax","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"gastrectomia",nome:"Gastrectomia (total/parcial) — tumor de estômago",cat:"Estômago",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta com biópsia","Tomografia de abdome e pelve","Tomografia de tórax","Marcadores tumorais (CEA, CA 19-9)","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação Nutricional"],
+  docs:["Pedido médico com código do procedimento","Laudo anatomopatológico da biópsia","Laudos dos exames de estadiamento","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"esofagectomia",nome:"Esofagectomia — câncer/doenças do esôfago",cat:"Esôfago",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta com biópsia","Tomografia de tórax e abdome","PET-CT (estadiamento)","Marcadores tumorais","Prova de função pulmonar (espirometria)","Ecocardiograma","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação com Pneumologista","Avaliação Nutricional"],
+  docs:["Pedido médico com código do procedimento","Laudo anatomopatológico da biópsia","Laudos de estadiamento (TC/PET)","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"hepatectomia",nome:"Hepatectomia — tumores/lesões do fígado",cat:"Fígado",
+  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com contraste","Ressonância de abdome","Marcadores tumorais (AFP, CEA, CA 19-9)","Provas de função hepática (bilirrubinas, albumina, INR)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Hepatologista/Oncologista"],
+  docs:["Pedido médico com código do procedimento","Laudos de imagem do fígado","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"pancreatectomia",nome:"Pancreatectomia / Duodenopancreatectomia",cat:"Pâncreas",
+  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com contraste","Ressonância / Colangiorressonância","Ecoendoscopia (se indicado)","Marcadores tumorais (CA 19-9, CEA)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação Nutricional"],
+  docs:["Pedido médico com código do procedimento","Laudos de imagem do pâncreas","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"colectomia",nome:"Colectomia / Retossigmoidectomia — cólon",cat:"Intestino Grosso (Cólon)",
+  exames:ICB_LAB_BASICO.concat(["Colonoscopia com biópsia","Tomografia de abdome e pelve","Marcadores tumorais (CEA)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista (se tumor)"],
+  docs:["Pedido médico com código do procedimento","Laudo da colonoscopia/biópsia","Laudos de imagem","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Preparo intestinal orientado","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"enterectomia",nome:"Enterectomia — intestino delgado",cat:"Intestino Delgado",
+  exames:ICB_LAB_BASICO.concat(["Tomografia / Enterotomografia de abdome","Trânsito intestinal (se indicado)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos de imagem","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"apendicectomia",nome:"Apendicectomia",cat:"Apêndice Cecal",
+  exames:ICB_LAB_BASICO.concat(["Ultrassom / Tomografia de abdome","Eletrocardiograma (ECG)"]),
+  aval:["Consulta com Cirurgião","Avaliação com Anestesista"],
+  docs:["Pedido médico com código do procedimento","Laudos de exames","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"gastrostomia",nome:"Gastrostomia (via alimentar)",cat:"Estômago",
+  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Eletrocardiograma (ECG)","Raio-X de tórax"]),
+  aval:["Consulta com Cirurgião","Avaliação com Anestesista","Avaliação Nutricional"],
+  docs:["Pedido médico com código do procedimento","Laudos de exames","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]}
+];
+
+function seedIcbari(){
+  const t="icbari";
+  if(localStorage.getItem("pc.icbari.seeded")==="v1")return;
+  const _cloudWas=CLOUD_ON;CLOUD_ON=false; /* seed LOCAL-only: nunca empurra exemplo pra nuvem; o syncTenant traz o real */
+  DB.set(t,"funnels",FUNNELS_ICB);
+  DB.set(t,"products",[
+   {id:"consulta",nome:"Consulta Especializada",preco:600,recorrencia:0,parcelas:1,cor:"#c9ccd2",
+    beneficios:["Avaliação com cirurgião do aparelho digestivo","Indicação do procedimento e plano cirúrgico","Encaminhamento dos exames pré-operatórios","Acompanhamento pela equipe de pós-venda"]},
+   {id:"cirurgia",nome:"Procedimento Cirúrgico",preco:0,recorrencia:0,parcelas:12,cor:"#9aa0a8",
+    beneficios:["Cirurgia por videolaparoscopia ou robótica","Equipe multidisciplinar","Marcação de exames e da cirurgia pela clínica","Acompanhamento pós-operatório (1, 2 e 3 meses)"]}
+  ]);
+  DB.set(t,"sellers",[
+   {id:"ingrid",nome:"Ingrid",papel:"SDR",meta:40,realizado:0,foto:"IN"},
+   {id:"bruna",nome:"Bruna",papel:"SDR",meta:40,realizado:0,foto:"BR"},
+   {id:"elaine",nome:"Elaine",papel:"Closer",meta:12,realizado:0,foto:"EL"},
+   {id:"csicb",nome:"CS / Pós-venda (a definir)",papel:"CS",meta:30,realizado:0,foto:"CS"}
+  ]);
+  DB.set(t,"leads",[]);DB.set(t,"members",[]);DB.set(t,"activities",[]);DB.set(t,"history",[]);
+  DB.set(t,"base",[]);DB.set(t,"pacientes",[]);
+  DB.set(t,"cirurgias",JSON.parse(JSON.stringify(ICB_CIRURGIAS_DEFAULT)));
+  DB.set(t,"cadences",cadencesIcb());
+  DB.set(t,"quizBank",quizBankIcb());
+  DB.set(t,"coupons",[]);
+  DB.set(t,"goals",{fatMeta:0,fatReal:0,projecao:0,metaMembros:0,comissaoSDR:150,comissaoCloserPct:12,comissaoCS:80});
+  DB.set(t,"alerts",[]);
+  localStorage.setItem("pc.icbari.seeded","v1");
+  CLOUD_ON=_cloudWas;
+}
+
+function cadencesIcb(){
+ const sdr=[
+  {dia:0,toques:[
+    {h:"09:00",canal:"call",cond:"1º toque — Ligação",texto:"Apresentação (30s) + gancho. Confirma o interesse e oferece a consulta de avaliação com o cirurgião. Tenta agendar."},
+    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp",texto:"Áudio curto e acolhedor. 'Posso te explicar como funciona a avaliação?' CTA: 'te ligo 15h ou 17h?'"},
+    {h:"16:00",canal:"call",cond:"Não atendeu → 2ª ligação",texto:"Ligar em horário diferente do 1º toque."}]},
+  {dia:1,toques:[
+    {h:"10:00",canal:"call",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente."},
+    {h:"14:00",canal:"wa",cond:"Sem resposta → WhatsApp com valor",texto:"Enviar conteúdo educativo sobre o procedimento (gera autoridade e segurança)."}]},
+  {dia:2,toques:[
+    {h:"11:00",canal:"call",cond:"Ligação",texto:"Quebra de padrão: 'vou ser rápido, só confirmar uma dúvida sobre o seu caso...'"},
+    {h:"15:00",canal:"email",cond:"E-mail com case",texto:"Depoimento de paciente + como funciona a consulta e a jornada até a cirurgia."}]},
+  {dia:4,toques:[{h:"10:00",canal:"call",cond:"Ligação",texto:"Retomar o conteúdo enviado."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um paciente operado."}]},
+  {dia:6,toques:[{h:"11:00",canal:"call",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes...' (última tentativa quente)."}]},
+  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite para a consulta de avaliação, sem compromisso."}]},
+  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Break-up amigável",texto:"'Vou encerrar seu contato por ora. Quando quiser cuidar da sua saúde, me chama.'"}]}
+ ];
+ const closer=[
+  {dia:0,toques:[
+    {h:"na consulta",canal:"visita",cond:"Consulta de avaliação",texto:"Escuta/rapport, exame, indicação do procedimento, explica a jornada (exames → cirurgia) e apresenta o plano/orçamento."},
+    {h:"+2h",canal:"wa",cond:"Pós-consulta",texto:"Resumo da conduta + orçamento + próximos passos (quais exames começar)."}]},
+  {dia:1,toques:[{h:"10:00",canal:"call",cond:"Follow-up do orçamento",texto:"Tirar dúvidas, tratar objeção de preço / medo da cirurgia / convênio."}]},
+  {dia:2,toques:[{h:"11:00",canal:"wa",cond:"Prova + segurança",texto:"Depoimento de paciente do mesmo procedimento + reforçar segurança da técnica (vídeo/robótica)."}]},
+  {dia:4,toques:[{h:"10:00",canal:"call",cond:"Fechamento assistido",texto:"'Bora começar seus exames essa semana?' Assumir a decisão, pedir os dados."}]},
+  {dia:7,toques:[{h:"11:00",canal:"call",cond:"Última chamada",texto:"Custo de adiar: cada mês parado é mais tempo com o problema. Encaminha para a jornada."}]},
+  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Nutrição/retorno",texto:"Se não fechou, devolve pro SDR nutrir e reabordar em 30 dias."}]}
+ ];
+ const cs=[
+  {dia:0,toques:[
+    {h:"imediato",canal:"wa",cond:"Boas-vindas",texto:"Mensagem de boas-vindas + explica que a clínica vai marcar TODOS os exames e a cirurgia. Envia a lista de exames do procedimento."},
+    {h:"+3h",canal:"call",cond:"Ligação de boas-vindas",texto:"Confirmar dados, e-mail e agenda. Explicar a jornada e o acompanhamento."}]},
+  {dia:2,toques:[{h:"10:00",canal:"visita",cond:"Marcação dos exames",texto:"Agendar cada exame/avaliação, gerar o evento na agenda do paciente e enviar por WhatsApp e e-mail."}]},
+  {dia:10,toques:[{h:"10:00",canal:"call",cond:"Coleta dos resultados",texto:"Confirmar realização dos exames e as datas dos resultados."}]},
+  {dia:20,toques:[{h:"10:00",canal:"visita",cond:"Retorno ao médico",texto:"Com todos os resultados em mãos, marcar o retorno ao cirurgião."}]},
+  {dia:25,toques:[{h:"10:00",canal:"visita",cond:"Marcação da cirurgia",texto:"Marcar a cirurgia no hospital e conferir o checklist de documentos/autorizações."}]},
+  {dia:55,toques:[{h:"11:00",canal:"call",cond:"Pós-op 1 mês",texto:"Acompanhamento: como o paciente está, sintomas, adesão às orientações."}]},
+  {dia:85,toques:[{h:"11:00",canal:"call",cond:"Pós-op 2 meses",texto:"Acompanhamento + NPS + agradecer/indicações."}]},
+  {dia:115,toques:[{h:"11:00",canal:"call",cond:"Pós-op 3 meses",texto:"Acompanhamento final do primeiro trimestre + reativação/indicações."}]}
+ ];
+ return {sdr,closer,cs};
+}
+
+function quizBankIcb(){return [
+ {tag:"empresa",q:"O que a ICBARI faz?",a:["Vende planos de saúde","É uma clínica de cirurgia do aparelho digestivo, bariátrica e metabólica (vídeo e robótica)","É um laboratório","É uma farmácia"],c:1},
+ {tag:"empresa",q:"O diferencial no atendimento ao paciente é:",a:["O paciente se vira sozinho","A clínica conduz TODA a jornada: marca exames, cirurgia e faz o acompanhamento pós-op","Só opera","Só passa a consulta"],c:1},
+ {tag:"empresa",q:"As cirurgias são feitas por:",a:["Cirurgia aberta apenas","Videolaparoscopia e cirurgia robótica","Sempre a céu aberto","Nenhuma técnica definida"],c:1},
+ {tag:"produto",q:"A primeira etapa comercial da ICBARI é:",a:["A cirurgia","A consulta de avaliação com o cirurgião","O exame de sangue","A alta"],c:1},
+ {tag:"produto",q:"Depois de indicada a cirurgia, quem marca os exames?",a:["O próprio paciente","A equipe de pós-venda/CS da clínica","Ninguém","O convênio"],c:1},
+ {tag:"produto",q:"A sequência da jornada do paciente é:",a:["Cirurgia → exames → consulta","Exames → resultados → retorno ao médico → marcar cirurgia → pós-op","Só cirurgia","Aleatória"],c:1},
+ {tag:"produto",q:"No pós-operatório, o acompanhamento acontece em:",a:["Nunca","1, 2 e 3 meses, independentemente de o paciente ter retornado","Só se o paciente ligar","Só no 1º ano"],c:1},
+ {tag:"produto",q:"Para marcar a cirurgia no hospital, entre outros, é preciso:",a:["Só a vontade do paciente","Pedido médico, laudos dos exames, termos de consentimento e autorização do convênio","Nada","Só o RG"],c:1},
+ {tag:"spin",q:"Na letra S do SPIN, o objetivo é:",a:["Falar preço","Entender a situação de saúde e o histórico do paciente","Fechar","Dar desconto"],c:1},
+ {tag:"spin",q:"Na letra P do SPIN, você explora:",a:["A proposta","O problema/dor (sintomas, limitações, riscos de não operar)","O pagamento","A papelada"],c:1},
+ {tag:"spin",q:"Na letra I (Implicação):",a:["Apresenta a clínica","Amplia a consequência de adiar (piora, riscos, qualidade de vida)","Fecha o contrato","Fala de preço"],c:1},
+ {tag:"spin",q:"Na letra N (Necessidade), você faz o paciente:",a:["Verbalizar o ganho de resolver (saúde, segurança, qualidade de vida)","Pagar","Desistir","Trocar de médico"],c:0},
+ {tag:"cadencia",q:"Se o lead NÃO atende a 1ª ligação (D0), o próximo passo é:",a:["Desistir","Esperar 30 dias","WhatsApp acolhedor no mesmo dia + ligar de novo à tarde","Mandar boleto"],c:2},
+ {tag:"posvenda",q:"Ao receber um paciente novo, o CS deve primeiro:",a:["Marcar a cirurgia direto","Dar boas-vindas, confirmar dados/e-mail e enviar a lista de exames do procedimento","Ligar depois de 1 mês","Não fazer nada"],c:1},
+ {tag:"posvenda",q:"Ao agendar um exame, o CS envia ao paciente:",a:["Nada","Evento na agenda (calendário) + WhatsApp + e-mail com data, médico e local","Só um SMS","Só avisa na próxima consulta"],c:1}
+];}
+
+/* ===== Helpers da Jornada ===== */
+function icbCirurgias(){var a=DB.get("icbari","cirurgias");return (a||[]).filter(function(c){return c&&!c.deleted;});}
+function icbPacientes(){var a=DB.get("icbari","pacientes");return (a||[]).filter(function(p){return p&&!p.deleted;});}
+function icbCir(id){return icbCirurgias().find(function(c){return c.id===id;});}
+function icbPac(id){return icbPacientes().find(function(p){return p.id===id;});}
+var ICB_ETAPAS=[{id:"exames",t:"Em Exames"},{id:"resultados",t:"Aguardando Resultados"},{id:"retorno",t:"Retorno ao Médico"},{id:"cirurgia",t:"Cirurgia Marcada"},{id:"posop",t:"Pós-operatório"},{id:"concluido",t:"Concluído"}];
+function icbEtapaT(id){var e=ICB_ETAPAS.find(function(x){return x.id===id;});return e?e.t:id;}
+function _icbEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function _fmtBR(d){if(!d)return"";try{var p=String(d).slice(0,10).split("-");return p[2]+"/"+p[1]+"/"+p[0];}catch(e){return d;}}
+function _telDig(t){return String(t||"").replace(/\D/g,"");}
+function icbWa(tel,msg){var d=_telDig(tel);if(d&&d.length<=11&&d[0]!=="5")d="55"+d;return "https://wa.me/"+d+"?text="+encodeURIComponent(msg||"");}
+function icbGcal(title,dateISO,details,guestEmail){var dt=String(dateISO||"").replace(/-/g,"");if(!dt)return"";var s=dt+"T090000",e=dt+"T100000";var u="https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(title||"")+"&dates="+s+"/"+e+"&details="+encodeURIComponent(details||"");if(guestEmail)u+="&add="+encodeURIComponent(guestEmail);return u;}
+function icbMailto(email,subject,body){return "mailto:"+encodeURIComponent(email||"")+"?subject="+encodeURIComponent(subject||"")+"&body="+encodeURIComponent(body||"");}
+function icbHist(p,txt){p.hist=p.hist||[];p.hist.unshift({ts:Date.now(),txt:txt,by:(SESSION&&SESSION.name)||""});}
+function icbSavePac(p){var all=DB.get("icbari","pacientes");var i=all.findIndex(function(x){return x.id===p.id;});if(i>=0)all[i]=p;else all.unshift(p);DB.set("icbari","pacientes",all);}
+
+/* ===== Jornada do Paciente (view) ===== */
+var JORN_SEL=null, JORN_SCHED=null, JORN_NEW=false;
+function vJornada(){
+  var pacs=icbPacientes();
+  if(JORN_SEL){var p=icbPac(JORN_SEL);if(!p){JORN_SEL=null;}else{return vJornadaDetail(p);}}
+  var byE={};ICB_ETAPAS.forEach(function(e){byE[e.id]=[];});
+  pacs.forEach(function(p){(byE[p.etapa]||byE.exames).push(p);});
+  var cards=pacs.length?ICB_ETAPAS.map(function(e){
+     var list=byE[e.id]||[];if(!list.length)return "";
+     return `<div class="card" style="margin:0 0 14px">
+       <div class="eyebrow" style="margin-bottom:8px">${e.t} · ${list.length}</div>
+       ${list.map(function(p){var pr=icbProg(p);return `<div onclick="JORN_SEL='${p.id}';go('jornada')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--brand-line);border-radius:var(--radius-sm);margin-bottom:8px">
+          <div><b>${_icbEsc(p.nome)}</b><div style="font-size:12px;color:var(--brand-muted)">${_icbEsc(p.cirurgiaNome||"")}</div></div>
+          <div style="text-align:right;min-width:120px"><div style="font-size:12px;color:var(--brand-muted)">${pr.done}/${pr.total} itens</div>
+            <div style="height:6px;background:rgba(255,255,255,.08);border-radius:6px;margin-top:4px"><div style="height:6px;border-radius:6px;width:${pr.pct}%;background:var(--brand-primary)"></div></div></div>
+        </div>`;}).join("")}
+     </div>`;
+  }).join("") : `<div class="card"><p style="color:var(--brand-muted);margin:0">Nenhum paciente na jornada ainda. Clique em <b>+ Nova jornada</b> para começar — escolha a cirurgia e os exames aparecem automaticamente.</p></div>`;
+  M().innerHTML=`<div class="view">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div><div class="eyebrow">Pós-venda · CS</div><h1 class="view-title">Jornada do Paciente</h1>
+      <p class="view-sub">Do agendamento dos exames até o pós-operatório. A clínica conduz cada passo — nada se perde.</p></div>
+      <button class="btn" onclick="jornNova()">+ Nova jornada</button>
+    </div>
+    ${JORN_NEW?jornNovaForm():""}
+    ${cards}
+  </div>`;
+}
+function icbProg(p){var it=(p.itens||[]);var total=it.length;var done=it.filter(function(x){return x.status==="feito";}).length;return {total:total,done:done,pct:total?Math.round(done/total*100):0};}
+function jornNova(){JORN_NEW=!JORN_NEW;go("jornada");}
+function jornNovaForm(){
+  var cirs=icbCirurgias();
+  var leads=DB.get("icbari","leads").filter(function(l){return l&&!l.deleted;});
+  return `<div class="card" style="margin:14px 0;border-color:var(--brand-primary)">
+    <div class="eyebrow" style="margin-bottom:10px">Nova jornada</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:12px;color:var(--brand-muted)">Paciente (nome)<input id="jnNome" class="in" placeholder="Nome do paciente"></label>
+      <label style="font-size:12px;color:var(--brand-muted)">Telefone (WhatsApp)<input id="jnTel" class="in" placeholder="(61) 9...."></label>
+      <label style="font-size:12px;color:var(--brand-muted)">E-mail<input id="jnEmail" class="in" placeholder="email@paciente.com"></label>
+      <label style="font-size:12px;color:var(--brand-muted)">Cirurgia<select id="jnCir" class="in">${cirs.map(function(c){return `<option value="${c.id}">${_icbEsc(c.nome)}</option>`;}).join("")}</select></label>
+    </div>
+    <p style="font-size:12px;color:var(--brand-muted);margin:10px 0 0">Ao criar, os exames, avaliações e documentos do procedimento entram automaticamente — você pode excluir ou adicionar depois.</p>
+    <div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="jornCriar()">Criar jornada</button><button class="btn ghost" onclick="JORN_NEW=false;go('jornada')">Cancelar</button></div>
+  </div>`;
+}
+function jornCriar(){
+  var nome=(document.getElementById("jnNome").value||"").trim();
+  if(!nome){alert("Informe o nome do paciente.");return;}
+  var tel=(document.getElementById("jnTel").value||"").trim();
+  var email=(document.getElementById("jnEmail").value||"").trim();
+  var cid=document.getElementById("jnCir").value;var c=icbCir(cid);
+  var itens=[];
+  (c?c.exames:[]).forEach(function(n){itens.push({id:DB.uid(),cat:"exame",nome:n,status:"pendente"});});
+  (c?c.aval:[]).forEach(function(n){itens.push({id:DB.uid(),cat:"avaliacao",nome:n,status:"pendente"});});
+  var p={id:DB.uid(),nome:nome,tel:tel,email:email,cirurgiaId:cid,cirurgiaNome:c?c.nome:"",etapa:"exames",
+    itens:itens,docs:(c?c.docs.slice():[]).map(function(n){return {id:DB.uid(),nome:n,ok:false};}),
+    dataCirurgia:"",hospital:"",followups:[{quando:"1 mês",data:"",feito:false,obs:""},{quando:"2 meses",data:"",feito:false,obs:""},{quando:"3 meses",data:"",feito:false,obs:""}],
+    hist:[],criadoEm:Date.now()};
+  icbHist(p,"Jornada criada — "+(c?c.nome:""));
+  icbSavePac(p);JORN_NEW=false;JORN_SEL=p.id;go("jornada");
+}
+function vJornadaDetail(p){
+  var pr=icbProg(p);
+  var etapaSel=ICB_ETAPAS.map(function(e){return `<option value="${e.id}" ${p.etapa===e.id?"selected":""}>${e.t}</option>`;}).join("");
+  var grupos=[["exame","Exames"],["avaliacao","Avaliações / Consultas"]];
+  var itensHtml=grupos.map(function(g){
+    var list=(p.itens||[]).filter(function(x){return x.cat===g[0];});
+    if(!list.length)return "";
+    return `<div class="card" style="margin:0 0 14px">
+      <div class="eyebrow" style="margin-bottom:10px">${g[1]} · ${list.length}</div>
+      ${list.map(function(it){return icbItemRow(p,it);}).join("")}
+      <div style="margin-top:8px"><button class="btn ghost sm" onclick="jornAddItem('${p.id}','${g[0]}')">+ Adicionar ${g[0]==="exame"?"exame":"avaliação"}</button></div>
+    </div>`;
+  }).join("");
+  var docsHtml=`<div class="card" style="margin:0 0 14px"><div class="eyebrow" style="margin-bottom:10px">Checklist para marcar a cirurgia no hospital</div>
+    ${(p.docs||[]).map(function(d){return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--brand-line)">
+      <input type="checkbox" ${d.ok?"checked":""} onchange="jornDoc('${p.id}','${d.id}',this.checked)"> <span style="flex:1">${_icbEsc(d.nome)}</span></label>`;}).join("")}
+    <div style="margin-top:8px"><button class="btn ghost sm" onclick="jornAddDoc('${p.id}')">+ Adicionar item</button></div></div>`;
+  var cirBox=`<div class="card" style="margin:0 0 14px"><div class="eyebrow" style="margin-bottom:10px">Cirurgia</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:12px;color:var(--brand-muted)">Hospital<input class="in" id="cxHosp_${p.id}" value="${_icbEsc(p.hospital||"")}"></label>
+      <label style="font-size:12px;color:var(--brand-muted)">Data da cirurgia<input type="date" class="in" id="cxData_${p.id}" value="${p.dataCirurgia||""}"></label>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" onclick="jornSaveCir('${p.id}')">Salvar cirurgia</button>
+      ${p.dataCirurgia?`<a class="btn ghost sm" target="_blank" href="${icbGcal("Cirurgia — "+(p.cirurgiaNome||""),p.dataCirurgia,"Hospital: "+(p.hospital||""),p.email)}">📅 Calendário</a>
+      <a class="btn ghost sm" target="_blank" href="${icbWa(p.tel,"Olá "+(p.nome||"")+"! Sua cirurgia ("+(p.cirurgiaNome||"")+") está marcada para "+_fmtBR(p.dataCirurgia)+(p.hospital?" no "+p.hospital:"")+". Qualquer dúvida, estamos à disposição.")}">💬 WhatsApp</a>`:""}</div></div>`;
+  var posop=`<div class="card" style="margin:0 0 14px"><div class="eyebrow" style="margin-bottom:10px">Acompanhamento pós-operatório</div>
+    ${(p.followups||[]).map(function(f,i){return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brand-line);flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:8px;min-width:150px"><input type="checkbox" ${f.feito?"checked":""} onchange="jornFup('${p.id}',${i},'feito',this.checked)"><b>${f.quando}</b></label>
+      <input type="date" class="in" value="${f.data||""}" onchange="jornFup('${p.id}',${i},'data',this.value)" style="width:150px">
+      <input class="in" placeholder="observação do contato" value="${_icbEsc(f.obs||"")}" onchange="jornFup('${p.id}',${i},'obs',this.value)" style="flex:1;min-width:160px">
+      ${p.tel?`<a class="btn ghost sm" target="_blank" href="${icbWa(p.tel,"Olá "+(p.nome||"")+"! Passando para saber como você está no pós-operatório ("+f.quando+"). Como tem se sentido?")}">💬</a>`:""}
+    </div>`;}).join("")}</div>`;
+  var histHtml=`<div class="card" style="margin:0 0 14px"><div class="eyebrow" style="margin-bottom:10px">Histórico (nada se perde)</div>
+    ${(p.hist||[]).slice(0,40).map(function(h){return `<div style="font-size:12.5px;color:var(--brand-muted);padding:4px 0;border-bottom:1px solid var(--brand-line)">${relTime(h.ts)} · ${_icbEsc(h.txt)}${h.by?" · "+_icbEsc(h.by):""}</div>`;}).join("")||'<span style="color:var(--brand-muted)">—</span>'}</div>`;
+  M().innerHTML=`<div class="view">
+    <button class="btn ghost sm" onclick="JORN_SEL=null;JORN_SCHED=null;go('jornada')">← Voltar</button>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-top:10px">
+      <div><div class="eyebrow">${_icbEsc(p.cirurgiaNome||"")}</div><h1 class="view-title" style="margin:2px 0">${_icbEsc(p.nome)}</h1>
+        <p class="view-sub">${p.tel?"📞 "+_icbEsc(p.tel)+"  ":""}${p.email?"· ✉️ "+_icbEsc(p.email):""}</p></div>
+      <div style="text-align:right"><div style="font-size:12px;color:var(--brand-muted)">Progresso ${pr.done}/${pr.total}</div>
+        <div style="height:8px;width:180px;background:rgba(255,255,255,.08);border-radius:8px;margin-top:6px"><div style="height:8px;border-radius:8px;width:${pr.pct}%;background:var(--brand-primary)"></div></div>
+        <label style="display:block;margin-top:10px;font-size:12px;color:var(--brand-muted)">Etapa <select class="in" onchange="jornEtapa('${p.id}',this.value)">${etapaSel}</select></label></div>
+    </div>
+    ${itensHtml}${docsHtml}${cirBox}${posop}${histHtml}
+  </div>`;
+}
+function icbItemRow(p,it){
+  var chip={pendente:["Pendente","var(--brand-muted)"],agendado:["Agendado","var(--brand-warn)"],feito:["Realizado","var(--brand-ok)"]}[it.status]||["Pendente","var(--brand-muted)"];
+  var sched=JORN_SCHED===it.id;
+  var msg="Olá "+(p.nome||"")+"! Agendamos seu "+(it.cat==="exame"?"exame":"atendimento")+": "+(it.nome||"")+" para "+_fmtBR(it.dataAgendada)+(it.local?" em "+it.local:"")+(it.medico?" com "+it.medico:"")+". Qualquer dúvida, estamos à disposição.";
+  var det="Paciente: "+(p.nome||"")+" | "+(it.nome||"")+(it.medico?" | Prof.: "+it.medico:"")+(it.local?" | Local: "+it.local:"")+(it.tel?" | Tel.: "+it.tel:"");
+  return `<div style="padding:10px 0;border-bottom:1px solid var(--brand-line)">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="flex:1;min-width:160px"><b>${_icbEsc(it.nome)}</b>
+        ${it.status!=="pendente"&&it.dataAgendada?`<div style="font-size:12px;color:var(--brand-muted)">${_fmtBR(it.dataAgendada)}${it.medico?" · "+_icbEsc(it.medico):""}${it.local?" · "+_icbEsc(it.local):""}${it.dataResultado?" · resultado "+_fmtBR(it.dataResultado):""}</div>`:""}</span>
+      <span style="font-size:11px;color:${chip[1]};border:1px solid ${chip[1]};border-radius:20px;padding:2px 10px">${chip[0]}</span>
+      <button class="btn ghost sm" onclick="JORN_SCHED='${it.id}';go('jornada')">${it.status==="pendente"?"Agendar":"Editar"}</button>
+      ${it.status!=="feito"?`<button class="btn ghost sm" onclick="jornFeito('${p.id}','${it.id}')">✓ Realizado</button>`:""}
+      <button class="btn ghost sm" onclick="jornDelItem('${p.id}','${it.id}')">✕</button>
+    </div>
+    ${it.status!=="pendente"&&!sched?`<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
+       ${it.dataAgendada?`<a class="btn ghost sm" target="_blank" href="${icbGcal((it.cat==="exame"?"Exame":"Atendimento")+" — "+it.nome,it.dataAgendada,det,p.email)}">📅 Calendário</a>`:""}
+       ${p.tel?`<a class="btn ghost sm" target="_blank" href="${icbWa(p.tel,msg)}">💬 WhatsApp</a>`:""}
+       ${p.email?`<a class="btn ghost sm" href="${icbMailto(p.email,"Agendamento — "+it.nome,msg)}">✉️ E-mail</a>`:""}
+     </div>`:""}
+    ${sched?`<div style="margin-top:8px;padding:10px;border:1px solid var(--brand-line);border-radius:var(--radius-sm);background:rgba(255,255,255,.03)">
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+         <label style="font-size:12px;color:var(--brand-muted)">Médico / profissional<input class="in" id="sMed_${it.id}" value="${_icbEsc(it.medico||"")}"></label>
+         <label style="font-size:12px;color:var(--brand-muted)">Local / endereço<input class="in" id="sLoc_${it.id}" value="${_icbEsc(it.local||"")}"></label>
+         <label style="font-size:12px;color:var(--brand-muted)">Telefone do local<input class="in" id="sTel_${it.id}" value="${_icbEsc(it.tel||"")}"></label>
+         <label style="font-size:12px;color:var(--brand-muted)">Data do agendamento<input type="date" class="in" id="sData_${it.id}" value="${it.dataAgendada||""}"></label>
+         <label style="font-size:12px;color:var(--brand-muted)">Data prevista do resultado<input type="date" class="in" id="sRes_${it.id}" value="${it.dataResultado||""}"></label>
+       </div>
+       <div style="margin-top:8px;display:flex;gap:8px"><button class="btn sm" onclick="jornSchedSave('${p.id}','${it.id}')">Salvar agendamento</button><button class="btn ghost sm" onclick="JORN_SCHED=null;go('jornada')">Fechar</button></div>
+     </div>`:""}
+  </div>`;
+}
+function jornSchedSave(pid,iid){
+  var p=icbPac(pid);if(!p)return;var it=(p.itens||[]).find(function(x){return x.id===iid;});if(!it)return;
+  it.medico=(document.getElementById("sMed_"+iid).value||"").trim();
+  it.local=(document.getElementById("sLoc_"+iid).value||"").trim();
+  it.tel=(document.getElementById("sTel_"+iid).value||"").trim();
+  it.dataAgendada=document.getElementById("sData_"+iid).value||"";
+  it.dataResultado=document.getElementById("sRes_"+iid).value||"";
+  if(it.status==="pendente"&&it.dataAgendada)it.status="agendado";
+  icbHist(p,"Agendado: "+it.nome+(it.dataAgendada?" ("+_fmtBR(it.dataAgendada)+")":""));
+  JORN_SCHED=null;icbSavePac(p);go("jornada");
+}
+function jornFeito(pid,iid){var p=icbPac(pid);if(!p)return;var it=(p.itens||[]).find(function(x){return x.id===iid;});if(!it)return;it.status="feito";icbHist(p,"Realizado: "+it.nome);icbSavePac(p);go("jornada");}
+function jornDelItem(pid,iid){var p=icbPac(pid);if(!p)return;var it=(p.itens||[]).find(function(x){return x.id===iid;});if(!it)return;if(!confirm("Remover \""+it.nome+"\" desta jornada?"))return;p.itens=p.itens.filter(function(x){return x.id!==iid;});icbHist(p,"Item removido: "+it.nome);icbSavePac(p);go("jornada");}
+function jornAddItem(pid,cat){var nome=prompt((cat==="exame"?"Nome do exame":"Nome da avaliação/consulta")+":");if(!nome)return;var p=icbPac(pid);if(!p)return;p.itens=p.itens||[];p.itens.push({id:DB.uid(),cat:cat,nome:nome.trim(),status:"pendente"});icbHist(p,"Item adicionado: "+nome.trim());icbSavePac(p);go("jornada");}
+function jornAddDoc(pid){var nome=prompt("Item do checklist do hospital:");if(!nome)return;var p=icbPac(pid);if(!p)return;p.docs=p.docs||[];p.docs.push({id:DB.uid(),nome:nome.trim(),ok:false});icbSavePac(p);go("jornada");}
+function jornDoc(pid,did,ok){var p=icbPac(pid);if(!p)return;var d=(p.docs||[]).find(function(x){return x.id===did;});if(!d)return;d.ok=ok;icbSavePac(p);}
+function jornEtapa(pid,et){var p=icbPac(pid);if(!p)return;p.etapa=et;icbHist(p,"Etapa: "+icbEtapaT(et));icbSavePac(p);go("jornada");}
+function jornSaveCir(pid){var p=icbPac(pid);if(!p)return;p.hospital=(document.getElementById("cxHosp_"+pid).value||"").trim();p.dataCirurgia=document.getElementById("cxData_"+pid).value||"";icbHist(p,"Cirurgia salva: "+(p.hospital||"")+(p.dataCirurgia?" ("+_fmtBR(p.dataCirurgia)+")":""));icbSavePac(p);go("jornada");}
+function jornFup(pid,i,k,v){var p=icbPac(pid);if(!p)return;p.followups=p.followups||[];if(!p.followups[i])return;p.followups[i][k]=v;if(k==="feito"&&v)icbHist(p,"Pós-op "+p.followups[i].quando+" realizado");icbSavePac(p);if(k==="feito")go("jornada");}
+
+/* ===== Modelos de Cirurgia & Exames (admin) ===== */
+var CIR_OPEN=null;
+function vCirModelos(){
+  var cirs=icbCirurgias();
+  M().innerHTML=`<div class="view">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div><div class="eyebrow">Administração</div><h1 class="view-title">Modelos de Cirurgia & Exames</h1>
+      <p class="view-sub">Edite os exames, avaliações e documentos padrão de cada cirurgia. Ao criar uma jornada, esses itens entram automaticamente.</p></div>
+      <button class="btn" onclick="cirNova()">+ Nova cirurgia</button>
+    </div>
+    ${cirs.map(function(c){return cirCard(c);}).join("")}
+  </div>`;
+}
+function cirCard(c){
+  var open=CIR_OPEN===c.id;
+  var block=function(title,arr,key){return `<div style="margin-top:10px"><div class="eyebrow" style="margin-bottom:6px">${title} · ${arr.length}</div>
+    ${arr.map(function(n,i){return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--brand-line)"><span style="flex:1">${_icbEsc(n)}</span><button class="btn ghost sm" onclick="cirDel('${c.id}','${key}',${i})">✕</button></div>`;}).join("")}
+    <div style="margin-top:6px"><button class="btn ghost sm" onclick="cirAdd('${c.id}','${key}')">+ Adicionar</button></div></div>`;};
+  return `<div class="card" style="margin:0 0 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="CIR_OPEN=CIR_OPEN==='${c.id}'?null:'${c.id}';go('cirmodelos')">
+      <div><b>${_icbEsc(c.nome)}</b><div style="font-size:12px;color:var(--brand-muted)">${_icbEsc(c.cat||"")} · ${(c.exames||[]).length} exames · ${(c.aval||[]).length} avaliações</div></div>
+      <span style="color:var(--brand-muted)">${open?"▲":"▼"}</span>
+    </div>
+    ${open?`${block("Exames",c.exames||[],"exames")}${block("Avaliações / Consultas",c.aval||[],"aval")}${block("Documentos p/ marcar no hospital",c.docs||[],"docs")}
+      <div style="margin-top:12px;display:flex;gap:8px"><button class="btn ghost sm" onclick="cirRename('${c.id}')">Renomear cirurgia</button><button class="btn ghost sm" onclick="cirRemove('${c.id}')">Remover cirurgia</button></div>`:""}
+  </div>`;
+}
+function _cirAll(){return DB.get("icbari","cirurgias");}
+function _cirGet(id){return _cirAll().find(function(c){return c.id===id;});}
+function _cirSave(c){var all=_cirAll();var i=all.findIndex(function(x){return x.id===c.id;});if(i>=0)all[i]=c;else all.unshift(c);DB.set("icbari","cirurgias",all);}
+function cirAdd(id,key){var n=prompt("Novo item:");if(!n)return;var c=_cirGet(id);if(!c)return;c[key]=c[key]||[];c[key].push(n.trim());_cirSave(c);go("cirmodelos");}
+function cirDel(id,key,i){var c=_cirGet(id);if(!c||!c[key])return;if(!confirm("Remover \""+c[key][i]+"\"?"))return;c[key].splice(i,1);_cirSave(c);go("cirmodelos");}
+function cirRename(id){var c=_cirGet(id);if(!c)return;var n=prompt("Nome da cirurgia:",c.nome);if(!n)return;c.nome=n.trim();var ct=prompt("Categoria:",c.cat||"");if(ct!=null)c.cat=ct.trim();_cirSave(c);go("cirmodelos");}
+function cirRemove(id){var c=_cirGet(id);if(!c)return;if(!confirm("Remover a cirurgia \""+c.nome+"\"? (fica no histórico, some da lista)"))return;c.deleted=true;_cirSave(c);CIR_OPEN=null;go("cirmodelos");}
+function cirNova(){var n=prompt("Nome da nova cirurgia:");if(!n)return;var c={id:DB.uid(),nome:n.trim(),cat:"",exames:ICB_LAB_BASICO.slice(),aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]};_cirSave(c);CIR_OPEN=c.id;go("cirmodelos");}
+
 function seed(){
   const t="lideres";
   if(localStorage.getItem("pc.lideres.seeded")==="v5")return;
@@ -973,7 +1386,7 @@ let CRM_FUNNEL="prospeccao", CRM_SELLER="all", SCRIPT_TAB="visao", CAD_ROLE="sdr
 function applyBrand(b){document.body.setAttribute("data-brand",BRANDS[b].brand);setWatermark(b);}
 function setWatermark(b){
   const wm=document.getElementById("watermark");if(!wm)return;
-  const svg={lideres:()=>markLideres(600,"#8aa0e8"),b2if:()=>typeof markB2==="function"?markB2(600,"#5fd0c8"):null}[b];
+  const svg={lideres:()=>markLideres(600,"#8aa0e8"),b2if:()=>typeof markB2==="function"?markB2(600,"#5fd0c8"):null,icbari:()=>markIcbari(600,"#6a6e76")}[b];
   let s=svg?svg():null;
   if(s){s=s.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');wm.style.backgroundImage="url('data:image/svg+xml;utf8,"+encodeURIComponent(s)+"')";wm.style.display="block";}
   else{wm.style.display="none";}
@@ -1074,6 +1487,7 @@ function openConsultoria(){
   document.getElementById("crumbs").innerHTML="";
   const members=DB.get("lideres","members").length,leads=DB.get("lideres","leads").length;
   const b2m=DB.get("b2if","members").length,b2l=DB.get("b2if","leads").length;
+  const icl=DB.get("icbari","leads").length,icp=(DB.get("icbari","pacientes")||[]).filter(function(p){return p&&!p.deleted;}).length;
   document.getElementById("main").innerHTML=`
    <div class="flex anim" style="gap:14px;align-items:center;margin-bottom:8px">
      <img src="${FELIPE_PHOTO}" alt="Felipe" style="width:54px;height:54px;border-radius:50%;border:2px solid var(--brand-primary);object-fit:cover">
@@ -1093,6 +1507,12 @@ function openConsultoria(){
        <small class="mut">Planejamento financeiro pessoal · Wealth Planner</small>
        <div class="st"><div><b>${b2l}</b>leads</div><div><b>${b2m}</b>clientes</div><div><b>4</b>funis</div></div>
        <div class="mt"><span class="pill ok">● Ativo · login: b2if</span></div></div>
+     <div class="card co-card brk card-hover" onclick="enterAs('icbari')">
+       <div class="logo" style="background:#191a1c;border:1px solid rgba(255,255,255,.18)">${markIcbari(30,"#eef0f3")}</div>
+       <div style="font-weight:800;font-size:16px">ICBARI</div>
+       <small class="mut">Cirurgia digestiva, bariátrica e metabólica · identidade neutra (a atualizar)</small>
+       <div class="st"><div><b>${icl}</b>leads</div><div><b>${icp}</b>pacientes</div><div><b>4</b>funis</div></div>
+       <div class="mt"><span class="pill ok">● Ativo · login: icbari</span></div></div>
      <div class="card co-card locked">
        <div class="logo" style="background:#2a2724">+</div>
        <div style="font-weight:800;font-size:16px">Próxima empresa</div>
@@ -1102,6 +1522,7 @@ function openConsultoria(){
    </div>`;
   if(!CLOUD_SYNCED["lideres"])syncTenant("lideres");
   if(!CLOUD_SYNCED["b2if"])syncTenant("b2if");
+  if(!CLOUD_SYNCED["icbari"])syncTenant("icbari");
 }
 const NAV=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade",roles:["consultor","gestor"]},
@@ -1132,7 +1553,26 @@ const NAV_CEO=[
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"}
 ];
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
-function activeNav(){if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;if(SESSION&&SESSION.role==="ceo")return NAV_CEO;return CURRENT_TENANT==="b2if"?NAV_B2:NAV;}
+/* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
+const NAV_ICB=[
+ {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade",roles:["consultor","gestor"]},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
+ {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
+ {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro & Apresentações"},
+ {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
+ {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
+ {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
+ {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
+];
+/* ICBARI — CS/pós-venda vê o Meu Dia + a Jornada do Paciente */
+const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
+function activeNav(){
+  if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
+  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;
+  if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
+  return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
+}
 function openTenant(tenant){
   CURRENT_TENANT=tenant;applyBrand(BRANDS[tenant].brand);
   document.getElementById("tbMark").innerHTML=BRANDS[tenant].mark(28);
@@ -1167,6 +1607,7 @@ function go(view){
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
   /* prova nao trava mais o trabalho (Pergunta 1) — vira habito, nao cadeado */
   ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,diagnostico:vDiagnostico,
+    jornada:vJornada,cirmodelos:vCirModelos,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
 }
@@ -1673,7 +2114,7 @@ let BASE_SEL=new Set();
 function vBase(){
   const base=DB.get(T(),"base");
   M().innerHTML=`
-   <div class="view-title"><h1>Base de Clientes</h1><span class="pill pri">${base.length}</span></div>
+   <div class="view-title"><h1>Base de ${lx("Clientes")}</h1><span class="pill pri">${base.length}</span></div>
    <p class="view-sub">Carteira completa do ${BRANDS[T()].name}. Filtre, selecione e envie para o CRM escolhendo o funil. Nada é apagado ao enviar — o contato continua aqui.</p>
    ${(function(){var perd=base.filter(function(b){return /perdido/i.test((b.oldStatus||"")+" "+(b.estagio||""));}).length;return perd?`<div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.35);margin-bottom:12px;padding:12px 16px"><div class="flex between" style="align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:13px">♻️ <b>${perd}</b> contato(s) marcados como <b>perdido</b> no histórico — muita gente volta a comprar. Vale reativar.</span><button class="btn sm" onclick="baseReativar()">Ver perdidos →</button></div></div>`:'';})()}
    <div class="card">
@@ -3305,12 +3746,14 @@ function openRoteiro(id){try{ROTEIRO_LEAD=DB.get(T(),"leads").find(function(x){r
 function rSub(t){if(!t)return t;var L=ROTEIRO_LEAD||{};var c=L.contato||{};var first=(SESSION.name||'').split(' ')[0];
  var map={'NOME':c.nome||L.nome||L.fantasia||'','SDR':first,'CLOSER':first,'EVENTO':L.origem||'','SÓCIO':L.socio||'','SOCIO':L.socio||'','DOR':L.dor||'','X':L.faturamento||(L.valor?money(L.valor):'')};
  return String(t).replace(/\{([^}]+)\}/g,function(m,k){var v=map[k.toUpperCase()];return (v!==undefined&&v!=='')?v:m;});}
-function roteiroCopy(n){var arr=ROTEIRO_LIDERES[ROTEIRO_TAB]||[];var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
+function roteiroData(){return (T()==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")?ROTEIRO_ICBARI:ROTEIRO_LIDERES;}
+function roteiroCopy(n){var arr=roteiroData()[ROTEIRO_TAB]||[];var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
 function vRoteiro(){
  var allowed=isAdmin()?['sdr','closer']:myRoles().filter(function(r){return r==='sdr'||r==='closer';});
  if(!allowed.length)allowed=['sdr','closer'];
  if(allowed.indexOf(ROTEIRO_TAB)<0)ROTEIRO_TAB=allowed[0];
- var data=ROTEIRO_LIDERES,tab=ROTEIRO_TAB,arr=data[tab]||[];
+ var data=roteiroData(),tab=ROTEIRO_TAB,arr=data[tab]||[];
+ var apDir=T()==="icbari"?"apresentacoes/icbari/":"apresentacoes/";
  function fmtR(t){return rSub(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1<\/b>').replace(/\n/g,'<br>');}
  var cards=arr.map(function(x){
   return '<div class="card" style="margin-bottom:12px">'
@@ -3328,8 +3771,8 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>':'')
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
-  +'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR.html\',\'_blank\')">▶ Abrir apresentação SDR</button>'
-  +'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
+  +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ Abrir apresentação SDR</button>'
+  +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
   +'</div>'+cards;
 }
 function objMatrix(){return DB.getObj(T(),"objMatrix",OBJ_SEED);}
@@ -3510,7 +3953,7 @@ function vAcessos(){
   const admin=SESSION.role==="consultor";const myT=CURRENT_TENANT;
   const list=admin?accList():accList().filter(a=>a.tenant===myT);
   const roleOpts=admin?'<option value="gestor">Gestor</option><option value="sdr">SDR</option><option value="closer">Closer</option><option value="cs">CS</option>':'<option value="sdr">SDR</option><option value="closer">Closer</option><option value="cs">CS</option>';
-  const tField=admin?`<div><label class="mut" style="font-size:12px">Empresa</label><select id="acTenant" style="width:100%"><option value="lideres">Líderes do Brasil</option><option value="b2if">B2 Inteligência Financeira</option></select></div>`:`<input type="hidden" id="acTenant" value="${myT}">`;
+  const tField=admin?`<div><label class="mut" style="font-size:12px">Empresa</label><select id="acTenant" style="width:100%"><option value="lideres">Líderes do Brasil</option><option value="b2if">B2 Inteligência Financeira</option><option value="icbari">ICBARI</option></select></div>`:`<input type="hidden" id="acTenant" value="${myT}">`;
   M().innerHTML=`
    <div class="view-title"><h1>Gestão de Acessos</h1><span class="pill pri">${admin?'Admin do Protocolo':'Gestor'}</span></div>
    <p class="view-sub">${admin?'Você cria o gestor de cada empresa. Depois cada gestor cria o time dele (SDR, Closer, CS).':'Crie os acessos do seu time — cada um entra com a própria senha.'} Senha guardada <b>criptografada</b>.</p>
@@ -4185,7 +4628,7 @@ function closeModal(){document.getElementById("modalRoot").innerHTML="";}
 let toastT;
 function toast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.style.borderLeftColor=type==="bad"?"var(--brand-bad)":type==="warn"?"var(--brand-warn)":"var(--brand-ok)";t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);}
 
-initCloud();seed();seedB2();document.getElementById("loginFelipe").src=FELIPE_BIG;setLoginBrand("protocolo");startBgFx();rotatePhrases();
+initCloud();seed();seedB2();seedIcbari();document.getElementById("loginFelipe").src=FELIPE_BIG;setLoginBrand("protocolo");startBgFx();rotatePhrases();
 document.getElementById("lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:"protocolo";setLoginBrand(BRANDS[b]?b:"protocolo");});
 /* SEGURANÇA — bloqueio automático por inatividade (30 min): protege dados numa tela deixada aberta */

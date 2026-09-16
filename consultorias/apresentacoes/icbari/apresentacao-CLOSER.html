@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apresentação Closer · ICBARI</title>
+<script src="roteiro-icbari.js"></script>
+<style>
+ :root{--bg:#0d0d0e;--panel:#161719;--line:rgba(255,255,255,.14);--txt:#f2f3f5;--mut:#9a9ea6;--accent:#eef0f3;--ok:#37c98a;--bad:#ff6b81;--serif:Georgia,"Times New Roman",serif}
+ *{box-sizing:border-box}
+ html,body{margin:0;height:100%}
+ body{background:var(--bg);color:var(--txt);font-family:var(--serif);overflow:hidden}
+ #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:5vh 6vw}
+ .slide{display:none;width:min(1000px,92vw);max-height:88vh;overflow:auto;animation:fade .5s ease}
+ .slide.on{display:block}
+ @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+ .eyebrow{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);margin-bottom:14px}
+ h1{font-size:clamp(30px,5vw,58px);line-height:1.08;margin:0 0 14px;font-weight:600;letter-spacing:.2px}
+ h2{font-size:clamp(22px,3.4vw,36px);line-height:1.15;margin:0 0 10px;font-weight:600}
+ .sub{color:var(--mut);font-size:clamp(15px,1.8vw,20px);line-height:1.5}
+ .tag{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:5px 14px;font-family:ui-monospace,monospace;font-size:12px;letter-spacing:1px;color:var(--mut);margin-bottom:18px}
+ .script{font-size:clamp(15px,1.7vw,19px);line-height:1.62;margin-top:8px;white-space:normal}
+ .script b{color:var(--accent)}
+ .fa,.ev{font-size:14.5px;line-height:1.5;margin-top:12px;color:var(--mut);border-left:2px solid var(--line);padding-left:12px}
+ .fa b{color:var(--ok)} .ev b{color:var(--bad)}
+ .pilares{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+ .pil{border:1px solid var(--line);border-radius:10px;padding:18px}
+ .pil h3{margin:0 0 8px;font-size:19px}
+ .pil p{margin:0;color:var(--mut);font-size:14.5px;line-height:1.5}
+ @media(max-width:760px){.pilares{grid-template-columns:1fr}}
+ #bar{position:fixed;left:0;top:0;height:3px;background:var(--accent);width:0;transition:width .3s;z-index:5}
+ .nav{position:fixed;bottom:18px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:14px;z-index:6}
+ .nav button{font-family:var(--serif);background:transparent;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 16px;font-size:15px;cursor:pointer}
+ .nav button:hover{border-color:var(--accent)}
+ .count{position:fixed;top:16px;right:20px;font-family:ui-monospace,monospace;font-size:12px;color:var(--mut);letter-spacing:1px;z-index:6}
+ .brandtop{position:fixed;top:14px;left:20px;font-family:ui-monospace,monospace;font-size:12px;letter-spacing:3px;color:var(--mut);z-index:6}
+ .kbd{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+ .note{margin-top:20px;font-size:12.5px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div class="brandtop" id="brandtop">ICBARI</div>
+<div class="count" id="count"></div>
+<div id="stage"></div>
+<div class="nav"><button onclick="prev()">← Anterior</button><button onclick="next()">Próximo →</button></div>
+<script>
+var TRACK="closer";
+var APPEND_JORNADA=true;
+var INFO=window.ICBARI_INFO||{nome:"ICBARI",sub:"",frase:"",pilares:[]};
+var R=window.ROTEIRO_ICBARI||{};
+function fmt(t){return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\*\*(.+?)\*\*/g,"<b>$1<\/b>").replace(/\n/g,"<br>");}
+var slides=[];
+// cover
+slides.push('<div class="tag">'+("Apresentação Comercial · Closer")+'</div>'
+ +'<h1>'+INFO.nome+'</h1>'
+ +'<p class="sub">'+INFO.sub+'<br><br><b style="color:var(--accent)">'+INFO.frase+'</b></p>'
+ +'<p class="note">Use as setas <span class="kbd">←</span> <span class="kbd">→</span> ou clique em Próximo. Identidade visual neutra — será atualizada quando a marca chegar.</p>');
+// pilares
+slides.push('<div class="eyebrow">O que muda com a ICBARI</div><h2>A clínica conduz a jornada inteira</h2>'
+ +'<div class="pilares">'+(INFO.pilares||[]).map(function(p){return '<div class="pil"><h3>'+p.t+'</h3><p>'+p.d+'</p></div>';}).join("")+'</div>');
+// track slides
+function pushRoteiro(arr,groupLabel){
+ (arr||[]).forEach(function(x){
+   slides.push((groupLabel?'<div class="eyebrow">'+groupLabel+'</div>':'')
+     +'<div class="tag">'+(x.t||"")+(x.tec?' · '+x.tec:'')+'</div>'
+     +'<h2>'+ (x.title||x.t) +'</h2>'
+     +'<div class="script">'+fmt(x.s)+'</div>'
+     +(x.do?'<div class="fa"><b>Faça:</b> '+fmt(x.do)+'</div>':'')
+     +(x.av?'<div class="ev"><b>Evite:</b> '+fmt(x.av)+'</div>':''));
+ });
+}
+pushRoteiro(R[TRACK], TRACK==="sdr"?"Trilha SDR":"Trilha Closer");
+if(APPEND_JORNADA) pushRoteiro(R.jornada, "A Jornada do Paciente · pós-venda");
+// closing
+slides.push('<div class="eyebrow">Encerramento</div><h1>Cuidar é conduzir.</h1>'
+ +'<p class="sub">Do primeiro contato ao pós-operatório, ninguém caminha sozinho.<br><br><b style="color:var(--accent)">'+INFO.nome+'</b></p>');
+var i=0;
+function render(){
+ var st=document.getElementById("stage");
+ st.innerHTML='<div class="slide on">'+slides[i]+'</div>';
+ document.getElementById("count").textContent=(i+1)+" / "+slides.length;
+ document.getElementById("bar").style.width=((i)/(slides.length-1)*100)+"%";
+}
+function next(){if(i<slides.length-1){i++;render();}}
+function prev(){if(i>0){i--;render();}}
+document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){next();e.preventDefault();}else if(e.key==="ArrowLeft"||e.key==="PageUp"){prev();e.preventDefault();}else if(e.key==="Home"){i=0;render();}else if(e.key==="End"){i=slides.length-1;render();}});
+document.getElementById("stage").addEventListener("click",function(e){if(e.target.closest("a"))return;next();});
+render();
+</script>
+</body>
+</html>
