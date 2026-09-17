@@ -1081,6 +1081,251 @@ function cirRename(id){var c=_cirGet(id);if(!c)return;var n=prompt("Nome da ciru
 function cirRemove(id){var c=_cirGet(id);if(!c)return;if(!confirm("Remover a cirurgia \""+c.nome+"\"? (fica no histórico, some da lista)"))return;c.deleted=true;_cirSave(c);CIR_OPEN=null;go("cirmodelos");}
 function cirNova(){var n=prompt("Nome da nova cirurgia:");if(!n)return;var c={id:DB.uid(),nome:n.trim(),cat:"",exames:ICB_LAB_BASICO.slice(),aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]};_cirSave(c);CIR_OPEN=c.id;go("cirmodelos");}
 
+/* ============================================================
+   ICBARI — Scripts, Objeções e Academia (clínica cirúrgica)
+   Conversão para consulta -> exames -> cirurgia/procedimento.
+   NADA de nomenclatura de Líderes ou B2 aqui.
+   ============================================================ */
+const ICB_OBJ=[
+ {id:"io1",obj:"Me manda tudo por WhatsApp",tras:"Dúvida — quer se livrar sem dizer não",resp:"Mando sim! Mas em 30s no telefone eu já entendo seu caso e te oriento certo, sem você ficar lendo texto. Posso te fazer só duas perguntas?",cat:"duvida",by:"playbook"},
+ {id:"io2",obj:"Quanto custa a cirurgia?",tras:"Dúvida — quer preço antes da avaliação",resp:"O valor a gente fecha na consulta, porque depende da avaliação do médico e do seu caso. Antes disso qualquer número seria chute, e eu não quero te enganar. O primeiro passo é a consulta de avaliação.",cat:"duvida",by:"playbook"},
+ {id:"io3",obj:"Tenho medo de cirurgia",tras:"Medo — insegurança sobre o procedimento",resp:"É super normal sentir isso. A consulta serve justamente pra tirar esse medo com informação — e aqui as cirurgias são por vídeo e robótica, minimamente invasivas: menos dor e recuperação mais rápida. O que mais te preocupa?",cat:"medo",by:"playbook"},
+ {id:"io4",obj:"Meu convênio cobre?",tras:"Dúvida — cobertura/autorização",resp:"A gente prepara toda a documentação certinha pra solicitar a autorização; quem autoriza é o convênio. Na consulta o médico indica o procedimento e a nossa equipe cuida da papelada com você. Vamos marcar sua avaliação?",cat:"duvida",by:"playbook"},
+ {id:"io5",obj:"Vou pensar / depois eu vejo",tras:"Momento — dor ainda não virou prioridade",resp:"Claro. Só pra eu te ajudar: sua dúvida é mais sobre o procedimento, o valor ou o momento? Esse desconforto que você me contou costuma melhorar sozinho esperando? Deixo um horário reservado, sem compromisso.",cat:"confusao",by:"playbook"},
+ {id:"io6",obj:"Preciso ver com a família",tras:"Autoridade — decisor de apoio fora da conversa",resp:"Perfeito, decisão de saúde a gente toma com quem ama. Traga quem você quiser na consulta — o médico esclarece tudo pra vocês juntos. Qual o melhor dia?",cat:"medo",by:"playbook"},
+ {id:"io7",obj:"Já fui em outro médico",tras:"Dúvida — não vê diferença",resp:"Ótimo, sinal de que você se cuida. Aqui o diferencial é que a clínica conduz a jornada inteira: marca todos os exames, a cirurgia e ainda te acompanha no pós. Vale uma avaliação pra comparar, sem compromisso.",cat:"duvida",by:"playbook"},
+ {id:"io8",obj:"É muito longe / não sei se dá tempo",tras:"Momento — logística",resp:"A gente organiza a agenda pra encaixar no seu dia e marca cada exame pra você. Consulta é rápida. Prefere de manhã ou à tarde?",cat:"confusao",by:"playbook"}
+];
+
+function scICP_ICB(){
+ var prods=DB.get(T(),"products");
+ function benef(p){return (p&&p.beneficios?p.beneficios:[]).map(function(b){return "<li>"+b+"</li>";}).join("");}
+ return `
+ <div class="card"><h2 style="margin:0 0 6px;font-size:15px">O que a ICBARI oferece</h2>
+   <p style="font-size:13.5px;line-height:1.7;margin:0">A ICBARI é uma clínica de <b>cirurgia do aparelho digestivo, bariátrica e metabólica</b> (vídeo e robótica). O diferencial não é só operar: a clínica <b>conduz a jornada inteira do paciente</b> — avalia, indica o procedimento, <b>marca todos os exames e a cirurgia</b> e acompanha o pós-operatório. Nossa venda é uma <b>conversão em etapas</b>: do primeiro contato para a <b>consulta</b>, da consulta para os <b>exames</b>, e dos exames para a <b>cirurgia/procedimento</b>.</p></div>
+ <div class="grid mt" style="grid-template-columns:1fr 1fr">
+   <div class="card" style="border-top:3px solid var(--brand-primary-2)"><h2 style="margin:0 0 4px;font-size:15px">${prods[0]?prods[0].nome:"Consulta Especializada"}</h2><small class="mut">O primeiro passo da conversão</small>
+     <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${benef(prods[0])}</ul></div>
+   <div class="card" style="border-top:3px solid var(--brand-accent)"><h2 style="margin:0 0 4px;font-size:15px">${prods[1]?prods[1].nome:"Procedimento Cirúrgico"}</h2><small class="mut">O destino da jornada</small>
+     <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${benef(prods[1])}</ul></div></div>
+ <div class="section-h"><h2>Perfil de paciente ideal</h2><div class="line"></div></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+   ${[["✅ Quem é","Pessoa com queixa digestiva, obesidade/sobrepeso com indicação, hérnia, cálculo/vesícula, refluxo, diástase — que busca resolver com segurança, particular ou por convênio, em Brasília-DF e entorno."],
+      ["🎯 Momento","Convive com o problema há um tempo e quer resolver · já ouviu que precisa operar e está pesquisando · tem exames antigos e quer uma avaliação."],
+      ["🚫 Não encaixa agora","Quem quer só o preço da cirurgia por telefone sem avaliação, quem não tem indicação clínica, ou quem busca resultado sem passar pela consulta."]].map(function(x){return `<div class="card persona"><b style="color:var(--brand-accent)">${x[0]}</b><p style="font-size:13px;margin:8px 0 0">${x[1]}</p></div>`;}).join("")}</div>
+ <div class="section-h"><h2>Personas & dores</h2><div class="line"></div></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+   ${[["🩺 O que tem sintoma","Dor, refluxo, cálculo, hérnia que incomoda. Dor: medo do que é e de piorar.","Consulta que esclarece"],
+      ["⚖️ Obesidade/metabólica","Já tentou de tudo, tem comorbidade. Dor: frustração e saúde em risco.","Bariátrica + jornada guiada"],
+      ["🕒 O que adia","Sabe que precisa operar mas tem medo/burocracia. Dor: insegurança e falta de tempo.","A clínica marca tudo por ele"],
+      ["🛡️ O do convênio","Quer usar o plano e não sabe como. Dor: medo de não cobrir/autorização.","Documentação preparada pela clínica"]].map(function(x){return `<div class="card"><b>${x[0]}</b><p class="mut" style="font-size:12.5px;margin:6px 0">${x[1]}</p><span class="pill pri">${x[2]}</span></div>`;}).join("")}</div>`;
+}
+
+function scBOT_ICB(){return `
+ <div class="card"><h2 style="margin:0 0 6px;font-size:15px">🤖 Bot de Qualificação (WhatsApp) — fluxo</h2>
+   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica o paciente antes de passar pro SDR humano. Cada resposta ajuda a priorizar (lead scoring), sem dar diagnóstico.</p></div>
+ <div class="card mt"><div class="script"><b>Bot:</b> Olá! Aqui é a ICBARI 👋 Cirurgia do aparelho digestivo, bariátrica e metabólica. Posso te fazer 4 perguntinhas rápidas pra te direcionar? (1) Qual assunto você procura: <b>bariátrica · hérnia · vesícula · refluxo · diástase · outro</b>? <i>[marca o procedimento de interesse]</i></div>
+   <div class="script"><b>Bot:</b> (2) Você já tem <b>indicação de cirurgia</b> ou quer uma <b>avaliação</b>? <i>[indicação=+30 / avaliação=+15]</i></div>
+   <div class="script"><b>Bot:</b> (3) Vai ser por <b>convênio</b> ou <b>particular</b>? <i>[convênio → marca o plano / particular=+10]</i></div>
+   <div class="script"><b>Bot:</b> (4) Você é de <b>Brasília e entorno</b>? <i>[sim=+10]</i></div>
+   <div class="script"><b>Bot:</b> Perfeito! O próximo passo é uma <b>consulta de avaliação</b> com o cirurgião. Prefere <b>hoje 15h ou amanhã 10h</b>? <i>[agenda → cria lead no CRM no funil SDR]</i></div></div>
+ <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
+   <p class="mut" style="font-size:13px">Já tem indicação de cirurgia → agenda direto (lead quente). Só quer avaliação → SDR qualifica e agenda a consulta. Sem cidade/sem indicação → nutrição + conteúdo. Tudo cai no CRM com temperatura e score.</p></div>`;
+}
+
+function scSDR_ICB(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Converter para a CONSULTA — não vender a cirurgia</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>acolhe e conduz com perguntas</b> (fale 30%, ouça 70%), vende o <b>próximo passo: a consulta de avaliação</b> (nunca o preço da cirurgia) e <b>anota tudo no CRM</b>. É um fluxo só, cada passo emenda no próximo.</p>
+   <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conversas/dia</div></div><div><div style="font-size:19px;font-weight:800">3-5</div><div class="eyebrow mut">consultas agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
+
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="1"><h3>Abertura (acolhedora, pela origem)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Escolha pela origem. Tom sereno passa segurança em tema de saúde. Prometa que é rápido e já emende na pergunta.</p>
+     <div class="script"><b>📩 Veio de anúncio/Instagram:</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Vi que você buscou informação sobre <b>[procedimento]</b>. Posso te fazer duas perguntas rápidas pra te orientar do jeito certo?"</div>
+     <div class="script"><b>🤝 Indicação:</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Quem me passou seu contato falou que você está querendo resolver <b>[queixa]</b>. Deixa eu te entender melhor pra já te direcionar…"</div>
+     <div class="script"><b>📞 Retorno:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] da ICBARI, você tinha pedido informação com a gente. Consigo te ajudar agora rapidinho?"</div>
+     <span class="go">↓ EMENDE DIRETO NO PASSO 2</span></div>
+
+   <div class="step" data-n="2"><h3>Acolher e entender (perguntas encadeadas, sem diagnosticar)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Você mapeia o caso pro médico — não dá opinião clínica.</p>
+     <div class="script">"Me conta com suas palavras: <b>o que você está sentindo</b> / o que quer resolver?" → "Há <b>quanto tempo</b>? Está atrapalhando seu dia a dia?" → "Você já tem <b>algum exame ou laudo</b> recente, já passou por outro médico?" → "Vai ser por <b>convênio</b> ou particular?"</div>
+     <span class="go">↓ Valide o sentimento e vá pro passo 3.</span></div>
+
+   <div class="step" data-n="3"><h3>Gerar clareza e urgência saudável (SPIN clínico)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Reaja ao que ele disse, com empatia:</p>
+     <div class="script"><b>Situação:</b> "Entendi. E no dia a dia, isso te limita em quê — trabalho, sono, alimentação?"</div>
+     <div class="script"><b>Problema:</b> "O que mais te incomoda nisso hoje?"</div>
+     <div class="script"><b>Implicação:</b> "E deixar como está, sem avaliar, o que pode acontecer? Costuma melhorar sozinho esperando?"</div>
+     <div class="script"><b>Necessidade:</b> "Se você tivesse uma avaliação com um cirurgião que já opera isso todo dia, e a clínica cuidasse de todos os exames pra você, isso te ajudaria?"</div>
+     <span class="go">↓ Ele quer resolver? Converta para a consulta (passo 4).</span></div>
+
+   <div class="step" data-n="4"><h3>Converter para a CONSULTA (o objetivo do SDR)</h3>
+     <div class="script">"<b>[nome]</b>, pelo que você me contou, o passo certo agora é uma <b>consulta de avaliação com o nosso cirurgião</b>. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento e explica a jornada. E aqui a clínica marca todos os exames e a cirurgia pra você. <b>Prefere amanhã 10h ou 16h?</b>"</div>
+     <p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Consulta Agendada"</b> no CRM, o sistema cria sozinho as tarefas anti-no-show.</p>
+     <span class="go">↓ Feche o loop no WhatsApp (passo 5).</span></div>
+
+   <div class="step" data-n="5"><h3>Confirmar e blindar o no-show (WhatsApp)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Mande na hora: (1) confirmação com dia/hora + endereço/mapa; (2) o que levar (exames antigos, carteirinha, documento).</p>
+     <div class="script">"Fechado, <b>[nome]</b>! Sua consulta está marcada pra <b>[data] às [hora]</b> 🙌. Te mando aqui o endereço. Se você tiver exames antigos, leve com você. Qualquer coisa, é só me chamar por aqui!"</div>
+     <span class="go">↓ Surgiu objeção? Use o passo 6.</span></div>
+
+   <div class="step" data-n="6"><h3>Quebra de objeções (acolhe → reformula → devolve pergunta)</h3>
+     ${ICB_OBJ.map(function(o){return `<div class="script"><b>${o.obj}</b><br>${o.resp}</div>`;}).join("")}</div>
+
+   <div class="step" data-n="7"><h3>Se NÃO atendeu → cadência</h3>
+     <p class="mut" style="font-size:13px;margin:0">Siga a <b>cadência do SDR</b> (aba Prospecção & Cadências): no mesmo D0 — ligou/não atendeu → WhatsApp acolhedor + conteúdo → liga de novo à tarde. Até o break-up no D12. Nunca desista antes de 7-12 toques.</p>
+     <span class="go">Abra: Prospecção & Cadências →</span></div>
+ </div></div>
+
+ <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:15px">✅ Checklist de handoff pro Closer/consulta</h2>
+   <p class="mut" style="font-size:13px;margin:0">[ ] queixa/procedimento de interesse anotado · [ ] tempo do sintoma · [ ] exames prévios · [ ] convênio ou particular · [ ] data/hora da consulta confirmada + WhatsApp enviado · [ ] anti-no-show criado · [ ] temperatura e score preenchidos.</p></div>`;
+}
+
+function scCLO_ICB(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — siga de cima para baixo</h2><span class="pill pri">Conduzir a consulta & converter para a cirurgia</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">O SDR te entrega o paciente aquecido. Na consulta o <b>médico avalia e indica</b>; você <b>traduz o plano cirúrgico, mostra a jornada, trata o medo, apresenta o investimento e inicia a jornada</b> — com empatia, sem pressão, mas conduzindo a decisão.</p></div>
+
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="0"><h3>Preparação (antes da consulta)</h3>
+     <ul class="mut" style="font-size:13px;line-height:1.8;padding-left:18px;margin:0"><li>Leia as <b>notas do SDR</b> no CRM: queixa, tempo, exames prévios, convênio, medo.</li><li>Deixe a <b>Jornada do Paciente</b> pronta pra abrir na tela.</li><li>Tenha claro o benefício: qual dor da pessoa o procedimento resolve.</li></ul>
+     <span class="go">↓ Retome antes de indicar (passo 1).</span></div>
+
+   <div class="step" data-n="1"><h3>Retomada + rapport (2 min)</h3>
+     <div class="script">"<b>[nome]</b>, o [SDR] me passou seu caso. Deixa eu confirmar rapidinho pra você não repetir tudo: você sente <b>[queixa]</b> há <b>[tempo]</b>, já fez <b>[exames]</b> e vai ser por <b>[convênio/particular]</b>. É isso?"</div>
+     <span class="go">↓ Momento clínico (passo 2).</span></div>
+
+   <div class="step" data-n="2"><h3>Avaliação (o médico conduz)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Escuta, exame e leitura dos exames trazidos. Seu papel é preparar o terreno e a papelada. O médico dá a <b>indicação</b>: procedimento e técnica (vídeo/robótica).</p>
+     <span class="go">↓ Traduza o plano (passo 3).</span></div>
+
+   <div class="step" data-n="3"><h3>Plano cirúrgico em palavras simples + a jornada</h3>
+     <div class="script">"<b>[nome]</b>, o doutor indicou o <b>[procedimento]</b>, feito por <b>[vídeo/robótica]</b>. Na prática significa <b>[benefício: resolver o refluxo / corrigir a hérnia / tratar a obesidade]</b>."</div>
+     <div class="script">"O caminho é este: a gente marca seus <b>exames pré-operatórios</b> e as <b>avaliações</b> (cardiologista, anestesista, o que seu caso pedir), depois o <b>retorno ao médico</b> com os resultados, aí <b>marcamos a cirurgia</b> no hospital e cuidamos do <b>pós-operatório</b> em 1, 2 e 3 meses."</div>
+     <span class="go">↓ Projete o depois (passo 4).</span></div>
+
+   <div class="step" data-n="4"><h3>Benefício do benefício</h3>
+     <div class="script">"Imagina daqui a alguns meses: <b>sem [dor]</b>, voltando a <b>[atividade que ele citou]</b>, com a saúde em dia. A cirurgia não é sobre o procedimento — é sobre a <b>vida depois dele</b>." → deixe ele completar o cenário.</div>
+     <span class="go">↓ Segurança e condução (passo 5).</span></div>
+
+   <div class="step" data-n="5"><h3>Segurança + a clínica cuida de tudo</h3>
+     <div class="script">"Você não vai ficar perdido em nada: a nossa equipe marca cada exame, te manda os horários no WhatsApp e no e-mail, e acompanha tudo. E a técnica é minimamente invasiva — menos dor e recuperação mais rápida."</div>
+     <span class="go">↓ Investimento (passo 6).</span></div>
+
+   <div class="step" data-n="6"><h3>Investimento com transparência</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Antes do número, ancore o cuidado completo (condução + exames + técnica + pós-op). Diga o valor com firmeza e <b>faça silêncio</b>.</p>
+     <div class="script"><b>Convênio:</b> "A gente prepara toda a documentação pra solicitar a autorização; quem autoriza é o plano. Enquanto isso já começamos os exames."</div>
+     <div class="script"><b>Particular:</b> "Nesse valor está tudo: a condução da jornada, a marcação dos exames e da cirurgia, a técnica e o acompanhamento. Se couber no seu planejamento, é isso que você quer resolver, certo?"</div>
+     <span class="go">↓ Objeções + encaminhamento (passo 7).</span></div>
+
+   <div class="step" data-n="7"><h3>Objeções e encaminhamento (empatia + próximo passo)</h3>
+     ${ICB_OBJ.map(function(o){return `<div class="script"><b>${o.obj}</b><br>${o.resp}</div>`;}).join("")}
+     <div class="script" style="border-left:3px solid var(--brand-ok)"><b>Encaminhar:</b> "O primeiro passo concreto é <b>começar os exames</b>. Posso já abrir sua jornada aqui no sistema e a equipe marca o primeiro exame ainda essa semana?"</div>
+     <span class="go">↓ Inicie a jornada (passo 8).</span></div>
+
+   <div class="step" data-n="8"><h3>Iniciar a jornada + handoff pro CS</h3>
+     <div class="script">"<b>[nome]</b>, então vamos começar! Vou abrir sua jornada e a nossa equipe de acompanhamento já entra em contato pra marcar seus exames. Você recebe tudo no WhatsApp e no e-mail."</div>
+     <p class="mut" style="font-size:12.5px;margin:6px 0 0">Crie a <b>Jornada do Paciente</b> (escolhendo o procedimento — os exames entram sozinhos) e passe o caso para o CS/pós-venda.</p>
+     <span class="go">Abra: Jornada do Paciente →</span></div>
+ </div></div>`;
+}
+
+function scCS_ICB(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">💙 ROTEIRO DO CS / PÓS-VENDA</h2><span class="pill pri">Conduzir a jornada até o pós-operatório</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você é quem faz a promessa da ICBARI acontecer: <b>marca todos os exames e a cirurgia</b> e <b>acompanha o paciente</b>. Cada passo na tela <b>Jornada do Paciente</b>.</p></div>
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="1"><h3>Boas-vindas (Dia 0)</h3>
+     <div class="script">"Olá <b>[nome]</b>! Aqui é o/a [CS] da ICBARI, vou te acompanhar daqui pra frente. A partir de agora a clínica marca todos os seus exames e a cirurgia — você não precisa se preocupar com isso. Já te mando a lista de exames do seu procedimento."</div>
+     <span class="go">Confirme WhatsApp e e-mail. Abra a jornada e envie a lista de exames.</span></div>
+   <div class="step" data-n="2"><h3>Marcação dos exames</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Na Jornada, para cada exame/avaliação: <b>Agendar</b> (médico/local, telefone, data) → gera <b>WhatsApp + e-mail + evento no calendário</b> do paciente. Registre a data prevista do resultado.</p>
+     <div class="script">"<b>[nome]</b>, agendei seu <b>[exame]</b> para <b>[data]</b> em <b>[local]</b>. Já te mandei no calendário e por e-mail. Qualquer coisa, me chama!"</div>
+     <span class="go">Um item de cada vez, sempre avisando o paciente.</span></div>
+   <div class="step" data-n="3"><h3>Resultados → retorno ao médico</h3>
+     <p class="mut" style="font-size:13px;margin:0">Confirme por telefone que os exames foram feitos e as datas dos resultados. Com <b>tudo em mãos</b>, marque o <b>retorno ao cirurgião</b> para a decisão da cirurgia.</p></div>
+   <div class="step" data-n="4"><h3>Marcar a cirurgia (checklist do hospital)</h3>
+     <p class="mut" style="font-size:13px;margin:0">Marque a cirurgia no hospital e confira o checklist da jornada: pedido médico com código, laudos, termos de consentimento, autorização do convênio/OPME e documentos do paciente. Confirme a autorização <b>antes</b> da data.</p></div>
+   <div class="step" data-n="5"><h3>Pós-operatório (1, 2 e 3 meses)</h3>
+     <div class="script">"Oi <b>[nome]</b>! Passando pra saber como você está no pós-operatório. Como tem se sentido?"</div>
+     <p class="mut" style="font-size:12.5px;margin:6px 0 0">Contate nos 3 marcos, <b>mesmo que o paciente não tenha retornado</b>. Registre tudo — é daqui que nasce a indicação.</p></div>
+ </div></div>`;
+}
+
+/* ===== Academia de Vendas — versão ICBARI (clínica) ===== */
+const ICB_ACAD_AGENDA=[
+ ["00:10","25 min","🧭 Módulo 1 — A jornada da ICBARI","Processo vence talento · a clínica conduz do contato ao pós-op · a conversão em etapas (consulta → exames → cirurgia)"],
+ ["00:35","30 min","📞 Módulo 2 — SDR: converter para a consulta","Abertura acolhedora · acolher sem diagnosticar · SPIN clínico · agendar a avaliação"],
+ ["01:05","20 min","☕ Intervalo",""],
+ ["01:25","35 min","🤝 Módulo 3 — Closer: da consulta à cirurgia","Traduzir o plano · mostrar a jornada · tratar o medo · investimento e convênio · iniciar a jornada"],
+ ["02:00","30 min","🛡️ Módulo 4 — Objeções da clínica","Medo de cirurgia · preço · convênio · 'vou pensar' · família · devolver a pergunta"],
+ ["02:30","30 min","💙 Módulo 5 — CS: marcar exames e acompanhar","Marcação com WhatsApp/e-mail/calendário · checklist do hospital · pós-op 1/2/3 meses"]
+];
+const ICB_ACAD_PERSONAS=[
+ ["🩺 Quem tem sintoma","Dor, refluxo, cálculo, hérnia que incomoda. Medo do que é e de piorar.","Consulta que esclarece e acolhe"],
+ ["⚖️ Obesidade/metabólica","Já tentou de tudo, tem comorbidade. Frustração e saúde em risco.","Bariátrica com jornada guiada"],
+ ["🕒 Quem adia","Sabe que precisa operar mas trava no medo e na burocracia.","A clínica marca tudo por ele"],
+ ["🛡️ Quem quer usar o convênio","Não sabe como funciona a autorização.","Documentação preparada pela clínica"]
+];
+const ICB_ACAD_DINAMICAS=[
+ ["🎭 Roleplay 1 — Converter para a consulta","Em duplas. A pessoa A é o paciente com medo de cirurgia; a B é o SDR. Objetivo: acolher, gerar clareza e agendar a consulta sem falar preço.","10 min + feedback"],
+ ["🎭 Roleplay 2 — Da consulta à cirurgia","A é o paciente que 'vai pensar'; a B é o Closer. Objetivo: tratar o medo, mostrar a jornada e encaminhar para começar os exames.","10 min + feedback"],
+ ["🎭 Roleplay 3 — Objeção do convênio","A pergunta 'meu convênio cobre?'; a B responde sem prometer cobertura e mantém o próximo passo.","8 min + feedback"]
+];
+function vAcademyIcb(){
+ var chips=[["aula","🎬 Apresentação"],["agenda","📋 Roteiro"],["conteudo","📚 Método"],["personas","🧑‍⚕️ Personas"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]];
+ if(!chips.find(function(c){return c[0]===ACAD_TAB;}))ACAD_TAB="aula";
+ var body="";
+ if(ACAD_TAB==="aula"){
+   body=`<div class="card"><h2 style="margin:0 0 6px;font-size:16px">🎬 Treinamento comercial da ICBARI</h2>
+     <p class="mut" style="font-size:13px;margin:0 0 12px">Uma clínica que conduz o paciente do primeiro contato ao pós-operatório. Aqui o time aprende a <b>converter em etapas</b>: contato → consulta → exames → cirurgia. Abra as apresentações e o roteiro completo.</p>
+     <div class="flex wrap" style="gap:8px"><button class="btn gold sm" onclick="window.open('apresentacoes/icbari/apresentacao-SDR.html','_blank')">▶ Apresentação SDR</button>
+       <button class="btn gold sm" onclick="window.open('apresentacoes/icbari/apresentacao-CLOSER.html','_blank')">▶ Apresentação Closer</button>
+       <button class="btn ghost sm" onclick="go('roteiro')">🎤 Roteiro completo</button></div></div>`;
+ }else if(ACAD_TAB==="agenda"){
+   body=`<div class="card"><h2 style="margin:0 0 10px;font-size:15px">Roteiro do treinamento (3h)</h2>
+     ${ICB_ACAD_AGENDA.map(function(a,i){return `<div style="display:flex;gap:14px;padding:12px 0;border-bottom:${i<ICB_ACAD_AGENDA.length-1?'1px solid var(--brand-line)':'none'}">
+       <div style="min-width:52px"><b style="font-size:13px">${a[0]}</b><div class="mut" style="font-size:11px">${a[1]}</div></div>
+       <div><b style="font-size:13.5px">${a[2]}</b>${a[3]?`<p class="mut" style="font-size:12.5px;margin:3px 0 0">${a[3]}</p>`:''}</div></div>`;}).join("")}</div>`;
+ }else if(ACAD_TAB==="conteudo"){
+   body=`<div class="card"><h2 style="margin:0 0 6px;font-size:15px">O método ICBARI</h2>
+     <p style="font-size:13.5px;line-height:1.7;margin:0 0 10px">A venda da clínica é uma <b>conversão em etapas</b>. O time não empurra cirurgia: conduz o paciente com segurança de uma etapa para a próxima.</p>
+     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">
+       ${[["1 · Contato → Consulta","Acolher, entender a queixa e agendar a avaliação com o cirurgião. Nunca falar preço de cirurgia por telefone."],
+          ["2 · Consulta → Exames","O médico indica; o Closer traduz o plano, trata o medo e inicia a jornada. A clínica marca os exames."],
+          ["3 · Exames → Cirurgia","Resultados, retorno ao médico e marcação da cirurgia com o checklist do hospital."],
+          ["4 · Cirurgia → Pós-op","Acompanhamento em 1, 2 e 3 meses. É onde nasce a indicação."]].map(function(x){return `<div class="card" style="margin:0"><b style="font-size:13px">${x[0]}</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">${x[1]}</p></div>`;}).join("")}</div></div>`;
+ }else if(ACAD_TAB==="personas"){
+   body=`<div class="card"><h2 style="margin:0 0 10px;font-size:15px">Personas de paciente & dores</h2>
+     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+     ${ICB_ACAD_PERSONAS.map(function(p){return `<div class="card" style="margin:0"><b>${p[0]}</b><p class="mut" style="font-size:12.5px;margin:6px 0">${p[1]}</p><span class="pill pri">${p[2]}</span></div>`;}).join("")}</div></div>`;
+ }else if(ACAD_TAB==="dinamicas"){
+   body=ICB_ACAD_DINAMICAS.map(function(d){return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">${d[0]}</h2><p style="font-size:13px;margin:0 0 6px">${d[1]}</p><span class="pill">${d[2]}</span></div>`;}).join("");
+ }else if(ACAD_TAB==="bolso"){
+   body=`<div class="card"><h2 style="margin:0 0 8px;font-size:15px">📞 Script de bolso (ICBARI)</h2>
+     <div class="script"><b>Abertura:</b> "Oi [nome]! Aqui é o/a [você] da ICBARI. Vi que você buscou sobre [procedimento]. Posso te fazer duas perguntinhas pra te orientar?"</div>
+     <div class="script"><b>Converter p/ consulta:</b> "O passo certo agora é uma consulta de avaliação com o cirurgião — é ali que tudo fica claro e a clínica cuida dos exames pra você. Prefere amanhã 10h ou 16h?"</div>
+     <div class="script"><b>Preço da cirurgia:</b> "O valor a gente vê na consulta, porque depende da avaliação. O primeiro passo é a avaliação, tá bom?"</div>
+     <div class="script"><b>Medo:</b> "É normal ter medo. A consulta serve pra tirar isso com informação, e a técnica é minimamente invasiva."</div></div>`;
+ }else if(ACAD_TAB==="objecoes"){
+   return acadObjecoes ? (function(){ // reuse the objection matrix renderer (uses tenant default = ICB_OBJ)
+     M().innerHTML=`<div class="view-title"><h1>Academia de Vendas</h1></div>
+       <div class="flex wrap" style="margin-bottom:14px">${chips.map(function(c){return `<span class="chip ${ACAD_TAB===c[0]?'on':''}" onclick="ACAD_TAB='${c[0]}';vAcademy()">${c[1]}</span>`;}).join("")}</div>
+       <div>${acadObjecoes()}</div>`; })() : null;
+ }else if(ACAD_TAB==="compromisso"){
+   body=`<div class="card"><h2 style="margin:0 0 8px;font-size:15px">✅ Compromissos do time</h2>
+     <ul class="mut" style="font-size:13px;line-height:1.9;padding-left:18px;margin:0">
+       <li>Nunca falar preço de cirurgia por telefone — o objetivo do SDR é a <b>consulta</b>.</li>
+       <li>Acolher o medo do paciente antes de qualquer argumento.</li>
+       <li>Nunca prometer cobertura de convênio — a clínica prepara a documentação.</li>
+       <li>Todo lead no CRM com próximo passo; toda jornada aberta com o procedimento certo.</li>
+       <li>Acompanhar o pós-operatório em 1, 2 e 3 meses, sempre.</li></ul></div>`;
+ }
+ if(ACAD_TAB==="objecoes")return; // já renderizou
+ M().innerHTML=`<div class="view-title"><h1>Academia de Vendas</h1></div>
+   <p class="view-sub">Treinamento comercial da ICBARI — conversão para consultas, exames e cirurgias.</p>
+   <div class="flex wrap" style="margin-bottom:14px">${chips.map(function(c){return `<span class="chip ${ACAD_TAB===c[0]?'on':''}" onclick="ACAD_TAB='${c[0]}';vAcademy()">${c[1]}</span>`;}).join("")}</div>
+   <div>${body}</div>`;
+}
+
 function seed(){
   const t="lideres";
   if(localStorage.getItem("pc.lideres.seeded")==="v5")return;
@@ -3775,7 +4020,7 @@ function vRoteiro(){
   +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
   +'</div>'+cards;
 }
-function objMatrix(){return DB.getObj(T(),"objMatrix",OBJ_SEED);}
+function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
 function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
 function acadAddObj(){
  const o=(document.getElementById("mxObj").value||"").trim();
@@ -3867,6 +4112,7 @@ function acadCompromisso(){
  </div></div>`;
 }
 function vAcademy(){
+ if(T()==="icbari")return vAcademyIcb();
  M().innerHTML=acadHeader()+({aula:acadSumario,agenda:acadAgenda,conteudo:acadConteudo,dinamicas:acadDinamicas,
    bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
 }
@@ -3994,7 +4240,7 @@ function vScripts(){
   const tabs=scriptTabsFor();
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=(isAdmin()?"visao":SESSION.role);
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=tabs[0][0];
-  const SC=T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS};
+  const SC=T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:(T()==="icbari"?{visao:scICP_ICB,sdr:scSDR_ICB,bot:scBOT_ICB,closer:scCLO_ICB,cs:scCS_ICB}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS});
   M().innerHTML=`
    <div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(SESSION.role)}</span>`}</div>
    <p class="view-sub">${isAdmin()?`Playbook completo da ${BRANDS[T()].name}: ICP, produtos e como conduzir cada etapa.`:"Você acessa o conhecimento da empresa e o playbook do seu papel."}</p>
@@ -4423,8 +4669,8 @@ function vTreino(){
      <div>
        <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📚 Base de estudo</h2>
          <ul class="mut" style="font-size:13px;line-height:1.9;padding-left:18px;margin:0">
-           <li><b>Empresa/ICP:</b> missão, personas, público</li><li><b>Produtos:</b> ${prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
-           <li><b>Diferenciais:</b> ${T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, fee-based":"Sociedade dos 12, O MAPA, networking, High Table"}</li>
+           <li><b>Empresa/ICP:</b> missão, personas, público</li><li><b>Produtos:</b> ${T()==="icbari"?"Consulta de avaliação e Procedimento cirúrgico (vídeo/robótica)":prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
+           <li><b>Diferenciais:</b> ${T()==="icbari"?"jornada conduzida (consulta → exames → cirurgia), marcação dos exames, vídeo/robótica, pós-op 1/2/3 meses":(T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, fee-based":"Sociedade dos 12, O MAPA, networking, High Table")}</li>
            <li><b>SPIN</b> + Bot de qualificação</li><li><b>Cadência</b> por papel · <b>Objeções</b> e fechamento</li></ul>
          <button class="btn gold sm mt" onclick="go('scripts')">Abrir o playbook →</button></div>
        <div class="card mt"><h2 style="margin:0 0 8px;font-size:15px">📈 Seu histórico</h2>
