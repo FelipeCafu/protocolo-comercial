@@ -3,12 +3,12 @@
    entre o sistema (Roteiro) e as apresentações comerciais. */
 window.ICBARI_INFO={
   nome:"ICBARI",
-  sub:"Cirurgia Digestiva · Bariátrica e Metabólica",
-  frase:"A clínica que conduz o paciente do primeiro contato até o pós-operatório.",
+  sub:"Instituto de Cirurgia Bariátrica, Digestiva e Especialidades",
+  frase:"Transformamos vidas além da balança: cirurgia com acompanhamento multidisciplinar do primeiro contato ao pós-operatório.",
   pilares:[
-   {t:"Consulta que orienta",d:"Avaliação com o cirurgião do aparelho digestivo, indicação do procedimento e plano cirúrgico claro."},
-   {t:"Jornada conduzida",d:"A clínica marca todos os exames, avaliações e a própria cirurgia — o paciente não fica perdido."},
-   {t:"Cuidado que continua",d:"Acompanhamento no pós-operatório em 1, 2 e 3 meses, independentemente de o paciente ter retornado."}
+   {t:"Consulta que orienta",d:"Avaliação com o cirurgião, indicação do procedimento e plano claro. A gente explica como amigo, sem jargão."},
+   {t:"Jornada conduzida",d:"A clínica marca todos os exames e a cirurgia, e o paciente é acompanhado por nutricionista, psicóloga e endocrinologista."},
+   {t:"Cuidado que continua",d:"Acompanhamento no pós com nutri por 6 meses e suporte psicológico. Aqui ninguém opera e abandona."}
   ]
 };
 window.ROTEIRO_ICBARI={
