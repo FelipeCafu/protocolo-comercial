@@ -184,90 +184,67 @@ var JOURNEY=[
 ];
 
 var SDR_SLIDES=[
- {layout:'cover',kicker:'Guia de Condução · SDR',title:'A ligação que abre<br>uma <span class="grad">nova vida</span>.',sub:'Este é o seu guia durante a ligação ou o vídeo com o paciente. Siga os passos, use o que está escrito e conduza a pessoa até o próximo passo: a consulta de avaliação.',foot:'Setas ‹ › para navegar'},
- {layout:'flow',tag:'Condução · SDR',n:'1',title:'Abertura acolhedora',obj:'Criar conexão em segundos e ganhar permissão para conduzir. Tom sereno, sem pedir "2 minutinhos".',
-   diga:['<b>Anúncio/Instagram:</b> "Oi [nome]! Aqui é o/a [você] da ICBARI. Vi que você buscou sobre [procedimento]. Posso te fazer duas perguntas rápidas pra te orientar do jeito certo?"','<b>Indicação:</b> "Quem me passou seu contato disse que você quer resolver [queixa]. Deixa eu te entender melhor pra já te direcionar."'],
-   pergunte:['Você é aqui de Brasília mesmo?','Como prefere que eu te chame?'],
-   prox:'Emende direto na próxima etapa, sem esperar "pode falar?".'},
- {layout:'photo',kicker:'O que mostrar no vídeo',title:'A clínica que caminha ao seu lado.',body:'Se estiver em vídeo, mostre isto ao paciente: a ICBARI transforma vidas com acompanhamento multidisciplinar (nutricionista, psicóloga e endocrinologista), além da balança. Aqui ninguém opera e abandona.',img:'img/consulta.webp',cap:'Dr. Wander Carvalho · avaliação na ICBARI'},
- {layout:'spin',tag:'Condução · SDR',title:'Diagnóstico com SPIN',sub:'Pergunte com empatia, sem diagnosticar. Reaja ao que a pessoa disser, usando as palavras dela.',items:[
-   {k:'S',t:'Situação',q:'"Me conta com suas palavras: o que você está sentindo ou quer resolver?"'},
-   {k:'P',t:'Problema',q:'"Há quanto tempo? O que mais te incomoda nisso hoje?"'},
-   {k:'I',t:'Implicação',q:'"E deixar como está te custa o quê? Costuma melhorar sozinho esperando?"'},
-   {k:'N',t:'Necessidade',q:'"Se um cirurgião avaliasse e a clínica cuidasse de tudo pra você, isso ajudaria?"'}]},
- {layout:'bant',tag:'Condução · SDR',title:'Alinhamento antes de agendar',sub:'Confirme na conversa (sem interrogatório) e anote no CRM. É o que o Closer vai receber.',items:[
-   {k:'P',t:'Perfil',q:'Tem sobrepeso/obesidade ou queixa digestiva que atrapalha a rotina?'},
-   {k:'D',t:'Dor / Momento',q:'Reconhece o problema e quer resolver agora, não daqui a um ano?'},
-   {k:'A',t:'Autoridade',q:'É quem decide? Quer trazer alguém da família na consulta?'},
-   {k:'$',t:'Convênio',q:'Vai ser por convênio ou particular? (sem prometer cobertura)'}]},
- {layout:'journey',kicker:'A jornada que você apresenta',title:'Do primeiro oi ao acompanhamento.',steps:JOURNEY},
- {layout:'authority',kicker:'Autoridade que gera confiança',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Emagrecimento com acompanhamento multidisciplinar e ganho de massa magra, com seguimento a longo prazo. Use isso pra dar segurança à pessoa.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Vídeo e robótica',t:'técnicas modernas'}]},
- {layout:'flow',tag:'Condução · SDR',n:'2',title:'Conversão para a consulta',obj:'Este é o objetivo do SDR. Não vender a cirurgia, e sim marcar a avaliação com o cirurgião.',
-   diga:['"Pelo que você me contou, o passo certo é uma consulta de avaliação com o nosso cirurgião. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento. E a clínica marca todos os exames pra você."','<b>Preço:</b> "O valor da cirurgia o médico define na consulta, depende do seu caso. Muitos parcelam em até 12x."'],
-   pergunte:['"Prefere amanhã 10h ou 16h?"'],
-   checar:['2 opções de horário','confirmar e-mail e WhatsApp'],
-   prox:'Ao mover para "Consulta Agendada" no CRM, as tarefas anti-no-show entram sozinhas.'},
- {layout:'objections',kicker:'Quebras rápidas',title:'As que mais aparecem.',items:[
-   {o:'"Quanto custa a consulta e a cirurgia?"',r:'A consulta custa X. A cirurgia depende do seu caso, por isso preciso entender antes de citar um número. Muitos parcelam em até 12x e alguns têm subsídio do plano.'},
-   {o:'"Tenho medo de operar."',r:'É super normal. A consulta serve pra tirar esse medo com informação, e a técnica é minimamente invasiva (vídeo e robótica).'},
-   {o:'"Depois eu faço."',r:'A maioria pensa assim e o problema cresce calado. A avaliação é rápida e já te dá clareza. Deixo um horário reservado?'}]},
- {layout:'flow',tag:'Condução · SDR',n:'3',title:'Confirmação e anti no-show',obj:'Blindar a presença. 30 a 40% de faltas some quando o fechamento é bem feito.',
-   diga:['"Fechado, [nome]! Sua consulta está marcada pra [data] às [hora]. Te mando o endereço aqui. Se tiver exames antigos, leve com você. Qualquer coisa, é só me chamar."'],
-   checar:['endereço enviado','lembrete 1 dia antes e no dia','contexto passado ao Closer'],
-   prox:'Passe dor, tempo, exames prévios e convênio pro Closer. Nada se perde no sistema.'},
- {layout:'close',title:'Cada consulta agendada<br>é uma vida <span class="grad">além da balança</span>.',sub:'Acolhe, conduz, agenda. O resto do caminho a clínica faz.'}
+ {layout:'cover',kicker:'ICBARI · Cirurgia Bariátrica e Digestiva',title:'Sua nova vida<br>começa com uma <span class="grad">conversa</span>.',sub:'Aqui a gente não cuida só da balança. A gente cuida de você por inteiro, do primeiro contato ao acompanhamento depois da cirurgia.',foot:'ICBARI · além da balança'},
+ {layout:'big',kicker:'A verdade',title:'Você já tentou<br>de tudo.',sub:'Talvez a resposta não seja mais uma dieta, e sim um tratamento de verdade, com uma equipe inteira do seu lado.'},
+ {layout:'pain',kicker:'O que a obesidade cobra',title:'Não é sobre estética. É sobre viver.',points:[
+   {ic:'clock',h:'Cansaço no dia a dia',p:'Subir uma escada, brincar com quem você ama, trabalhar sem dor. A rotina vai ficando pesada.'},
+   {ic:'shield',h:'A saúde em risco',p:'Pressão alta, diabetes, apneia. Cada mês que passa cobra um pouco mais do seu corpo.'},
+   {ic:'heart',h:'A sua autoestima',p:'Você merece se olhar no espelho e gostar do que vê. Isso também é saúde.'}]},
+ {layout:'question',kicker:'Uma pergunta sincera',title:'Há quanto tempo<br>você <span class="grad">adia</span> isso?',sub:'Porque o problema raramente melhora sozinho. E a decisão de cuidar de você pode começar hoje.'},
+ {layout:'cards',kicker:'O que muda com a ICBARI',title:'Você nunca vai estar sozinho.',cards:[
+   {ic:'team',h:'Equipe multidisciplinar',p:'Cirurgião, nutricionista, psicóloga e endocrinologista cuidando de você juntos.'},
+   {ic:'robot',h:'Cirurgia moderna',p:'Vídeo e robótica: menos dor, recuperação mais rápida e mais segurança.'},
+   {ic:'cal',h:'A clínica cuida de tudo',p:'A gente marca seus exames e a cirurgia, e te avisa em cada passo pelo WhatsApp.'},
+   {ic:'heart',h:'Acompanhamento de verdade',p:'Nutricionista por 6 meses e suporte psicológico. Um resultado que se mantém.'}]},
+ {layout:'journey',kicker:'Como funciona',title:'Um caminho simples e conduzido.',steps:JOURNEY},
+ {layout:'authority',kicker:'Quem cuida de você',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Emagrecimento com ganho de massa magra e acompanhamento a longo prazo. Pacientes que saem do sedentarismo e voltam a viver.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Vídeo e robótica',t:'técnicas modernas'}]},
+ {layout:'stats',kicker:'Não é promessa, é histórico',title:'Gente de verdade que mudou de vida.',stats:[{n:'200+',t:'vidas transformadas pela ICBARI'},{n:'120+',t:'avaliações 5 estrelas de pacientes'},{n:'6 meses',t:'de acompanhamento nutricional'}]},
+ {layout:'proof',kicker:'Quem já passou por aqui',title:'Histórias que falam por si.',note:'Espaço para o depoimento de um paciente real (foto e frase). A ICBARI tem mais de 120 avaliações 5 estrelas.'},
+ {layout:'offer',kicker:'O primeiro passo',title:'Comece com uma<br><span class="grad">consulta de avaliação</span>.',sub:'Na consulta, o cirurgião entende o seu caso, tira todas as suas dúvidas e monta o plano certo pra você. Com calma e todo o cuidado.',triggers:[
+   {b:'Avaliação completa',t:'O médico avalia e explica o melhor caminho pra você.'},
+   {b:'Sem correria',t:'A partir daí, a clínica organiza cada exame por você.'},
+   {b:'Perto de você',t:'Atendimento em Brasília, no seu horário.'}]},
+ {layout:'close',title:'Você merece uma<br>vida <span class="grad">mais leve</span>.',sub:'Vamos dar o primeiro passo juntos?'}
 ];
-
 var CLOSER_SLIDES=[
- {layout:'cover',kicker:'Guia de Condução · Closer',title:'Da consulta<br>à <span class="grad">decisão</span>.',sub:'Este é o seu guia para conduzir o paciente depois do agendamento: apresentar os diferenciais, aprofundar a qualificação e levar até a decisão do procedimento, com segurança e sem pressão.',foot:'Setas ‹ › para navegar'},
- {layout:'flow',tag:'Condução · Closer',n:'1',title:'Preparação e reabertura',obj:'Chegar sabendo o caso e fazer o paciente se sentir ouvido. Ritmo calmo, o silêncio é sua ferramenta.',
-   diga:['"[nome], o [SDR] me passou seu caso. Deixa eu confirmar rapidinho pra você não repetir tudo."'],
-   checar:['leu as notas do SDR','Jornada do Paciente aberta na tela'],
-   prox:'Antes de apresentar qualquer coisa, faça a dupla checagem da qualificação.'},
- {layout:'bant',tag:'Dupla checagem · Closer',title:'Reconfirme a qualificação (BANT)',sub:'O SDR já qualificou. Aqui você confirma cada ponto em voz alta antes de conduzir. Se algo não fecha, requalifique.',items:[
-   {k:'B',t:'Budget / Investimento',q:'"O investimento é por convênio ou particular? Já pensou em parcelar?"'},
-   {k:'A',t:'Autoridade',q:'"A decisão é sua? Tem alguém que você queira envolver?"'},
-   {k:'N',t:'Necessidade',q:'"O que mais te incomoda hoje e o que você quer resolver com a cirurgia?"'},
-   {k:'T',t:'Tempo',q:'"Isso é pra resolver agora, ou você ainda está só pesquisando?"'}]},
- {layout:'photo',kicker:'O que apresentar',title:'Aqui ninguém opera e abandona.',body:'Diferente de quem foca só na operação, a ICBARI entrega acompanhamento multidisciplinar de verdade: nutricionista, psicóloga e endocrinologista, com ganho de massa magra e seguimento a longo prazo.',img:'img/or-robotica.webp',cap:'Centro cirúrgico · vídeo e robótica'},
- {layout:'spin',tag:'Condução · Closer',title:'Aprofunde ao vivo (SPIN)',sub:'Aprofunde a dor e o custo dela até o paciente mesmo dizer o que quer mudar.',items:[
-   {k:'S',t:'Situação',q:'"Como está sua rotina hoje, o que você já tentou?"'},
-   {k:'P',t:'Problema',q:'"O que isso te impede de fazer no dia a dia?"'},
-   {k:'I',t:'Implicação',q:'"Se seguir assim mais um ano, o que acontece com sua saúde?"'},
-   {k:'N',t:'Necessidade',q:'"Se resolvesse, o que mudaria pra você e pra sua família?"'}]},
- {layout:'journey',kicker:'O plano que você mostra',title:'Cada passo cuidado, do plano ao pós.',steps:JOURNEY},
- {layout:'authority',kicker:'Quem vai te operar',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Segurança com protocolos rigorosos e acompanhamento a longo prazo. Pacientes que saem do sedentarismo e voltam à academia 4 a 5 vezes por semana.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Massa magra',t:'não é só perder peso'}]},
- {layout:'hospitals',kicker:'Onde a cirurgia acontece',title:'Hospital acreditado, equipe completa.',body:'A cirurgia é realizada em hospital de referência, com anestesista dedicado e monitoramento contínuo. Segurança que o paciente enxerga.',logos:[{src:'img/hosp-dfstar.webp',alt:'DF Star · Rede D\'Or'},{src:'img/hosp-santahelena.webp',alt:'Hospital Santa Helena'}]},
- {layout:'vstack',kicker:'O que está incluído',title:'Não é só a cirurgia. É o cuidado completo.',items:[
-   {b:'Avaliação pré-cirúrgica completa',s:'exames, psicóloga e nutricionista. O paciente entra seguro na sala.'},
-   {b:'Cirurgia com hospital acreditado',s:'cirurgião experiente, anestesista dedicado e monitoramento contínuo.'},
-   {b:'Vídeo e robótica',s:'menos dor, cicatrizes menores e volta às atividades leves em cerca de 2 semanas.'},
-   {b:'Acompanhamento nutricional por 6 meses',s:'perda consistente e sem efeito rebote, com ganho de massa magra.'},
-   {b:'Suporte psicológico incluso',s:'muda a relação com a comida e sustenta o resultado a longo prazo.'}]},
- {layout:'system',kicker:'O diferencial que você mostra',title:'A clínica marca cada exame por ele.',body:'Abra a Jornada do Paciente e mostre: os exames entram automaticamente e cada um é agendado, com aviso no WhatsApp e no e-mail. Isso tira o maior medo do paciente, o de se perder no processo e desistir no meio.',checklist:[
+ {layout:'cover',kicker:'ICBARI · Cirurgia Bariátrica e Digestiva',title:'A decisão que<br><span class="grad">reconstrói</span> uma vida.',sub:'Você já deu o primeiro passo. Agora deixa a gente te mostrar como vai ser, do preparo até a sua nova rotina.',foot:'ICBARI · além da balança'},
+ {layout:'big',kicker:'O que importa',title:'A cirurgia é o meio.<br>A <span class="grad">vida de volta</span> é o destino.',sub:'Voltar a comer sem culpa, dormir bem, largar remédios, brincar com quem você ama. É isso que a gente devolve.'},
+ {layout:'contrast',kicker:'O que muda com a ICBARI',title:'Operar e ser abandonado, ou ser acompanhado.',left:{h:'O comum por aí',items:['Opera e some depois da cirurgia','Você corre atrás de cada exame','Sem preparo psicológico e nutricional','Resultado que volta com o tempo']},right:{h:'Com a ICBARI',items:['Acompanhamento multidisciplinar de verdade','A clínica marca todos os exames','Nutricionista, psicóloga e endocrinologista','Massa magra e resultado que se mantém']}},
+ {layout:'cards',kicker:'O nosso método',title:'Um time inteiro cuidando de você.',cards:[
+   {ic:'team',h:'Multidisciplinar',p:'Nutricionista, psicóloga e endocrinologista junto do cirurgião.'},
+   {ic:'robot',h:'Precisão',p:'Vídeo e robótica: menos dor, cicatrizes menores e recuperação mais rápida.'},
+   {ic:'shield',h:'Segurança',p:'Protocolos rigorosos e monitoramento contínuo, do começo ao fim.'},
+   {ic:'heart',h:'Massa magra',p:'Não é só perder peso: é ganhar saúde e manter o resultado.'}]},
+ {layout:'journey',kicker:'Como vai ser',title:'Cada passo cuidado, do preparo ao pós.',steps:JOURNEY},
+ {layout:'authority',kicker:'Quem vai te operar',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Segurança com protocolos rigorosos e seguimento a longo prazo. Pacientes que voltam à academia 4 a 5 vezes por semana.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Massa magra',t:'não é só perder peso'}]},
+ {layout:'hospitals',kicker:'Onde a cirurgia acontece',title:'Hospital acreditado, equipe completa.',body:'A cirurgia é feita em hospital de referência, com anestesista dedicado e monitoramento contínuo. Segurança que você enxerga.',logos:[{src:'img/hosp-dfstar.webp',alt:'DF Star'},{src:'img/hosp-santahelena.webp',alt:'Hospital Santa Helena'}]},
+ {layout:'system',kicker:'Você não vai se perder',title:'A clínica marca cada exame por você.',body:'Os exames entram no seu plano e cada um é agendado, com aviso no WhatsApp e no e-mail. Você só precisa comparecer. A gente cuida do resto.',checklist:[
    {t:'Consulta com o cirurgião',on:true,tag:'feito'},
    {t:'Avaliação nutricional e psicológica',on:true,tag:'agendado'},
    {t:'Exames + risco cirúrgico',on:true,tag:'agendado'},
    {t:'Avaliação com anestesista',on:false,tag:'próximo'},
-   {t:'Marcar a cirurgia no hospital',on:false,tag:'a seguir'}]},
- {layout:'flow',tag:'Condução · Closer',n:'2',title:'Condução ao valor do procedimento',obj:'Ancorar o cuidado completo, apresentar o investimento com firmeza e isolar o preço. Aqui você conduz à decisão.',
-   diga:['<b>Ancore:</b> "Nesse valor está tudo: a equipe multidisciplinar, os exames, a técnica e o acompanhamento de 6 meses. Não é só a cirurgia."','<b>Apresente e cale-se:</b> diga o investimento e espere a reação.','<b>Facilite:</b> "Muitos parcelam em até 12x, e alguns têm subsídio do plano."','<b>Isole o preço:</b> "Se o investimento couber no seu planejamento, é isso que você quer resolver, certo?"'],
-   pergunte:['"O que pesa mais na sua decisão: a viabilidade ou a segurança?"'],
-   prox:'Fechou o valor? Encaminhe para começar os exames.'},
- {layout:'objections',kicker:'Fechamento com empatia',title:'Acolhe, esclarece, encaminha.',items:[
-   {o:'"Vou pensar."',r:'Faz sentido. Sua dúvida é o procedimento, o valor ou o momento? A maioria acha que depois resolve, e o problema só cresce. Vamos dar o primeiro passo com os exames?'},
-   {o:'"Medo de flacidez e de vitamina pra sempre."',r:'Ninguém quer trocar remédio por suplemento. Aqui é polivitamínico e whey, com nutri por 6 meses e ganho de massa magra, que cuida da flacidez.'},
-   {o:'"Preciso ver o convênio / o valor."',r:'Perfeito. Muitos parcelam em até 12x e alguns têm subsídio. Já deixo a documentação pronta. Enquanto isso, começamos os exames?'}]},
- {layout:'flow',tag:'Condução · Closer',n:'3',title:'Começar os exames e handoff',obj:'Transformar o sim em ação concreta e passar o paciente para o acompanhamento.',
-   diga:['"[nome], então vamos começar! Vou abrir sua jornada aqui e a equipe já entra em contato pra marcar seus exames. Você recebe tudo no WhatsApp e no e-mail."'],
-   checar:['Jornada criada com o procedimento','handoff para o CS/pós-venda','primeiro passo enviado no WhatsApp'],
-   prox:'Comemore a decisão com o paciente. Ele reconstruiu a própria vida.'},
- {layout:'close',title:'Bem-vindo à jornada.',sub:'Quando o paciente diz sim, ele não comprou uma cirurgia. Ele decidiu reconstruir a própria vida.'}
+   {t:'Cirurgia no hospital',on:false,tag:'a seguir'}]},
+ {layout:'vstack',kicker:'O que está incluído',title:'Não é só a cirurgia. É o cuidado completo.',items:[
+   {b:'Avaliação pré-cirúrgica completa',s:'exames, psicóloga e nutricionista. Você entra seguro na sala.'},
+   {b:'Cirurgia em hospital acreditado',s:'cirurgião experiente, anestesista dedicado e monitoramento contínuo.'},
+   {b:'Vídeo e robótica',s:'menos dor, cicatrizes menores e volta às atividades leves em cerca de 2 semanas.'},
+   {b:'Nutricionista por 6 meses',s:'perda consistente, sem efeito rebote, com ganho de massa magra.'},
+   {b:'Suporte psicológico incluso',s:'muda a relação com a comida e sustenta o resultado.'}]},
+ {layout:'stats',kicker:'A confiança já existe',title:'Você não está começando do zero.',stats:[{n:'200+',t:'vidas transformadas'},{n:'120+',t:'avaliações 5 estrelas'},{n:'6 meses',t:'de acompanhamento incluso'}]},
+ {layout:'proof',kicker:'Quem já viveu isso',title:'O resultado na voz de quem passou.',note:'Espaço para depoimento em vídeo ou foto de um paciente do mesmo procedimento.'},
+ {layout:'question',kicker:'Pra você pensar',title:'O que muda na sua vida<br>quando isso estiver <span class="grad">resolvido</span>?',sub:'Feche os olhos por um segundo e imagine. É esse futuro que a gente vai construir juntos.'},
+ {layout:'offer',kicker:'O próximo passo',title:'Vamos <span class="grad">começar</span>?',sub:'O primeiro passo é iniciar os exames. A partir daí, a nossa equipe cuida de cada etapa com você, até o dia da sua cirurgia.',triggers:[
+   {b:'Comece hoje',t:'A gente já abre o seu plano e marca o primeiro exame.'},
+   {b:'Facilidade no pagamento',t:'Parcelamento em até 12x e apoio com o convênio.'},
+   {b:'Sempre com você',t:'Acompanhamento no pós em 1, 2 e 3 meses.'}]},
+ {layout:'close',title:'Bem-vindo à sua<br><span class="grad">nova vida</span>.',sub:'A gente transforma vidas com você, não para você.'}
 ];
+
 var SLIDES=TRACK==='sdr'?SDR_SLIDES:CLOSER_SLIDES;
 
 function R(s){var L=s.layout;
  if(L==='cover')return `<div class="center"><img src="icb-lockup.png" class="anim d1" style="height:72px;margin-bottom:6px" alt="ICBARI"><div class="anim d2 kick">${s.kicker}</div><h1 class="big anim d3">${s.title}</h1><p class="lead anim d4 mt24">${s.sub}</p><div class="anim d5 mt30 pill">${arrow()} ${s.foot}</div></div>`;
+ if(L==='question')return `<div class="center"><div class="anim d1 kick">${s.kicker}</div><h1 class="big anim d2" style="max-width:18ch;margin-left:auto;margin-right:auto">${s.title}</h1><p class="lead anim d3 mt24">${s.sub}</p></div>`;
  if(L==='big')return `<div><div class="anim d1 kick">${s.kicker}</div><h1 class="big anim d2">${s.title}</h1><p class="lead anim d3 mt24">${s.sub}</p></div>`;
  if(L==='flow')return `<div><div class="anim d1"><span class="gtag">${s.tag}</span></div>
    <div class="flowhead anim d2"><div class="fnum">${s.n}</div><h2 class="t" style="margin:0">${s.title}</h2></div>

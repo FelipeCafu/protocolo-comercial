@@ -817,19 +817,22 @@ function seedIcbari(){
 function cadencesIcb(){
  const sdr=[
   {dia:0,toques:[
-    {h:"09:00",canal:"call",cond:"1º toque — Ligação",texto:"Apresentação (30s) + gancho. Confirma o interesse e oferece a consulta de avaliação com o cirurgião. Tenta agendar."},
-    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp",texto:"Áudio curto e acolhedor. 'Posso te explicar como funciona a avaliação?' CTA: 'te ligo 15h ou 17h?'"},
-    {h:"16:00",canal:"call",cond:"Não atendeu → 2ª ligação",texto:"Ligar em horário diferente do 1º toque."}]},
+    {h:"na hora (até 5 min)",canal:"wa",cond:"Responda IMEDIATAMENTE no WhatsApp",texto:"A maioria dos pacientes chega pelo anúncio/tráfego no WhatsApp. Responda enquanto o interesse está quente, cada minuto conta. APRESENTAÇÃO = quem é você + a clínica, em 1 linha: 'Oi [nome]! Aqui é a [você], da ICBARI 💚'. GANCHO = uma frase que prende e mostra que você entendeu a dor: 'vi que você quer saber sobre a [bariátrica/procedimento], posso te explicar rapidinho como funciona?'"},
+    {h:"+10 min",canal:"call",cond:"Ligue enquanto está quente",texto:"Se a pessoa respondeu, tente já ligar. No telefone você agenda MUITO mais do que por texto. Objetivo único deste contato: marcar a consulta de avaliação com o cirurgião."},
+    {h:"+1h",canal:"wa",cond:"Não respondeu → áudio acolhedor",texto:"Áudio curto (20s), tom acolhedor: 'sei que dá insegurança pensar em cirurgia, e é justamente por isso que a consulta existe, pra tirar suas dúvidas'. Feche com 2 opções: 'consigo te encaixar amanhã 10h ou 16h, qual fica melhor?'"},
+    {h:"+3h",canal:"call",cond:"2ª ligação — bombardeio do 1º dia",texto:"Ligue de novo, em outro horário. Nos 2 primeiros dias a gente insiste bastante (sem ser chato): quem responde rápido é quem agenda. Não desista no 1º não-atendeu."},
+    {h:"fim do dia",canal:"wa",cond:"Última mensagem do dia",texto:"'Não consegui falar com você hoje, amanhã te chamo de novo. Qualquer dúvida, é só responder aqui 💚'. Mantém o canal aberto sem pressionar."}]},
   {dia:1,toques:[
-    {h:"10:00",canal:"call",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente."},
-    {h:"14:00",canal:"wa",cond:"Sem resposta → WhatsApp com valor",texto:"Enviar conteúdo educativo sobre o procedimento (gera autoridade e segurança)."}]},
+    {h:"09:00",canal:"call",cond:"Ligação cedo (bombardeio continua)",texto:"Novo horário, tom leve. No D1 ainda insistimos forte, é onde a maioria das agendas acontece."},
+    {h:"12:00",canal:"wa",cond:"WhatsApp com prova social",texto:"Envie 1 prova real: print de avaliação 5 estrelas ou depoimento, e explique a jornada: 'aqui a clínica marca todos os seus exames pra você, é só vir'."},
+    {h:"17:00",canal:"call",cond:"2ª ligação do dia",texto:"Última tentativa forte do D1. A partir do D2 a gente espaça os contatos."}]},
   {dia:2,toques:[
-    {h:"11:00",canal:"call",cond:"Ligação",texto:"Quebra de padrão: 'vou ser rápido, só confirmar uma dúvida sobre o seu caso...'"},
-    {h:"15:00",canal:"email",cond:"E-mail com case",texto:"Depoimento de paciente + como funciona a consulta e a jornada até a cirurgia."}]},
-  {dia:4,toques:[{h:"10:00",canal:"call",cond:"Ligação",texto:"Retomar o conteúdo enviado."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um paciente operado."}]},
-  {dia:6,toques:[{h:"11:00",canal:"call",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes...' (última tentativa quente)."}]},
-  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite para a consulta de avaliação, sem compromisso."}]},
-  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Break-up amigável",texto:"'Vou encerrar seu contato por ora. Quando quiser cuidar da sua saúde, me chama.'"}]}
+    {h:"11:00",canal:"call",cond:"Ligação — quebra de padrão",texto:"'Vou ser bem rápido, só 1 pergunta sobre o seu caso...'. Curiosidade abre conversa."},
+    {h:"15:00",canal:"wa",cond:"Conteúdo de valor",texto:"Vídeo curto do Dr. Wander ou conteúdo sobre o procedimento. Gera autoridade e segurança, e lembra a pessoa de você."}]},
+  {dia:4,toques:[{h:"10:00",canal:"call",cond:"Ligação",texto:"Retomar o conteúdo: 'viu o vídeo que te mandei? O que achou?'"},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um paciente já operado (história de transformação)."}]},
+  {dia:6,toques:[{h:"11:00",canal:"call",cond:"Tentativa forte",texto:"'Não quero te incomodar, mas queria muito te ajudar a resolver isso. Bora marcar sua avaliação?' (última quente)."}]},
+  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite leve para a consulta de avaliação, sem compromisso."}]},
+  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Break-up amigável",texto:"'Vou encerrar seu contato por ora. Quando quiser cuidar da sua saúde, é só me chamar aqui 💚'. Reativa muita gente."}]}
  ];
  const closer=[
   {dia:0,toques:[
@@ -1182,6 +1185,20 @@ function scBOT_ICB(){return `
 }
 
 function scSDR_ICB(){return `
+ <div class="card" style="border-left:3px solid var(--brand-accent)"><h2 style="margin:0 0 8px;font-size:15px">🧭 SPIN — as 4 perguntas que conduzem</h2>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+     <div><b style="color:var(--brand-primary-2)">S · Situação</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">"O que você está sentindo / quer resolver? Há quanto tempo convive com isso?"</p></div>
+     <div><b style="color:var(--brand-primary-2)">P · Problema</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">"O que mais te incomoda nisso? Como isso limita o seu dia a dia?"</p></div>
+     <div><b style="color:var(--brand-primary-2)">I · Implicação</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">"E se seguir assim mais um ano? Isso costuma melhorar sozinho esperando?"</p></div>
+     <div><b style="color:var(--brand-primary-2)">N · Necessidade</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">"Se um cirurgião avaliasse e a clínica cuidasse de tudo pra você, isso ajudaria?"</p></div>
+   </div></div>
+ <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 8px;font-size:15px">✅ Alinhamento (BANT) — confirme antes de agendar</h2>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+     <div><b>B · Investimento</b><p class="mut" style="font-size:12px;margin:3px 0 0">convênio ou particular (sem prometer cobertura)</p></div>
+     <div><b>A · Autoridade</b><p class="mut" style="font-size:12px;margin:3px 0 0">é quem decide, ou vai trazer a família</p></div>
+     <div><b>N · Necessidade</b><p class="mut" style="font-size:12px;margin:3px 0 0">tem queixa/sobrepeso que atrapalha e reconhece</p></div>
+     <div><b>T · Tempo</b><p class="mut" style="font-size:12px;margin:3px 0 0">quer resolver agora, não daqui a um ano</p></div>
+   </div><p class="mut" style="font-size:12px;margin:8px 0 0">Anote tudo no CRM. É o que o Closer recebe.</p></div>
  <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Converter para a CONSULTA — não vender a cirurgia</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>acolhe e conduz com perguntas</b> (fale 30%, ouça 70%), vende o <b>próximo passo: a consulta de avaliação</b> (nunca o preço da cirurgia) e <b>anota tudo no CRM</b>. É um fluxo só, cada passo emenda no próximo.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conversas/dia</div></div><div><div style="font-size:19px;font-weight:800">3-5</div><div class="eyebrow mut">consultas agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
@@ -1230,6 +1247,21 @@ function scSDR_ICB(){return `
 }
 
 function scCLO_ICB(){return `
+ <div class="card" style="border-left:3px solid var(--brand-warn)"><h2 style="margin:0 0 8px;font-size:15px">🔁 Dupla checagem (BANT) — reconfirme a qualificação do SDR</h2>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+     <div><b>B · Investimento</b><p class="mut" style="font-size:12px;margin:3px 0 0">"É por convênio ou particular? Já pensou em parcelar?"</p></div>
+     <div><b>A · Autoridade</b><p class="mut" style="font-size:12px;margin:3px 0 0">"A decisão é sua? Quer envolver alguém?"</p></div>
+     <div><b>N · Necessidade</b><p class="mut" style="font-size:12px;margin:3px 0 0">"O que mais te incomoda e o que quer resolver?"</p></div>
+     <div><b>T · Tempo</b><p class="mut" style="font-size:12px;margin:3px 0 0">"É pra resolver agora ou está só pesquisando?"</p></div>
+   </div><p class="mut" style="font-size:12px;margin:8px 0 0">Se algum ponto não fechar, requalifique antes de apresentar.</p></div>
+ <div class="card mt" style="border-left:3px solid var(--brand-accent)"><h2 style="margin:0 0 8px;font-size:15px">💰 Condução ao valor do procedimento</h2>
+   <ol class="mut" style="font-size:13px;line-height:1.7;margin:0;padding-left:18px">
+     <li><b>Ancore o cuidado completo:</b> "Nesse valor está tudo, a equipe multidisciplinar, os exames, a técnica e o acompanhamento de 6 meses. Não é só a cirurgia."</li>
+     <li><b>Apresente o investimento e cale-se</b> — deixe a pessoa reagir.</li>
+     <li><b>Facilite:</b> "Muitos parcelam em até 12x, e alguns têm subsídio do plano."</li>
+     <li><b>Isole o preço:</b> "Se o investimento couber no seu planejamento, é isso que você quer resolver, certo?"</li>
+     <li><b>Encaminhe:</b> "Posso já abrir sua jornada e a equipe marca o primeiro exame essa semana?"</li>
+   </ol></div>
  <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — siga de cima para baixo</h2><span class="pill pri">Conduzir a consulta & converter para a cirurgia</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">O SDR te entrega o paciente aquecido. Na consulta o <b>médico avalia e indica</b>; você <b>traduz o plano cirúrgico, mostra a jornada, trata o medo, apresenta o investimento e inicia a jornada</b> — com empatia, sem pressão, mas conduzindo a decisão.</p></div>
 
@@ -2194,6 +2226,22 @@ function autoScheduleNoShow(id){
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"⚙ Rotina anti-no-show criada (confirmar hoje + lembrar amanhã)",ts:Date.now()});
   toast("Rotina anti-no-show agendada ✅");
 }
+function iniciarCadencia(id){
+  var lead=DB.get(T(),"leads").find(function(x){return x.id===id;});if(!lead)return;
+  var cad=DB.getObj(T(),"cadences",{});var sdr=cad.sdr||[];
+  if(!sdr.length){toast("Sem cadência configurada","warn");return;}
+  var now=Date.now();var made=0;var acts=DB.get(T(),"activities");
+  sdr.slice(0,2).forEach(function(day){ // D0 e D1 (a fase de bombardeio)
+    var dstr=new Date(now+(day.dia||0)*864e5).toISOString().slice(0,10);
+    (day.toques||[]).forEach(function(t){
+      var tipo=t.canal==="call"?"call":t.canal==="wa"?"wa":t.canal==="email"?"email":t.canal==="visita"?"visita":"msg";
+      acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:"D"+day.dia+" ["+t.h+"] "+t.cond,data:dstr,done:false,owner:lead.owner,cad:true});made++;
+    });
+  });
+  DB.set(T(),"activities",acts);
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência SDR iniciada — "+made+" toques agendados (D0 e D1)",ts:Date.now()});
+  toast(made+" toques da cadência agendados ✅");leadDetail(id);
+}
 function leadDetail(id){
   const l=DB.get(T(),"leads").find(x=>x.id===id);if(!l)return;
   const funnel=funnelOf(l.estagio)||DB.getObj(T(),"funnels",FUNNELS).find(f=>f.id===l.funnelId)||DB.getObj(T(),"funnels",FUNNELS)[0];
@@ -2250,8 +2298,8 @@ function leadDetail(id){
          ${LD_TAB==='atividade'?ldActivityForm(l):LD_TAB==='anotacao'?ldNoteForm(l):ldFileForm(l)}
        </div>
        ${T()==="icbari"?"":`<div class="card mt" style="text-align:center;cursor:pointer" onclick="checkin('${l.id}')">📍 <b>Check-in da visita (captura GPS)</b></div>`}
-       <div class="card mt"><div class="flex between"><h2 style="margin:0;font-size:14px">📋 Atividades em foco</h2>
-         <small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div>
+       <div class="card mt"><div class="flex between" style="align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:14px">📋 Atividades em foco</h2>
+         <div class="flex" style="gap:8px;align-items:center"><button class="btn ghost xs" onclick="iniciarCadencia('${l.id}')" title="Dispara os toques do 1º e 2º dia na agenda">▶ Iniciar cadência</button><small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div></div>
          <div class="flex wrap mt8" style="gap:12px;font-size:11px"><span><span class="fdot today" style="display:inline-block"></span> hoje</span><span><span class="fdot future" style="display:inline-block"></span> futura</span><span><span class="fdot late" style="display:inline-block"></span> atrasada</span><span><span class="fdot none" style="display:inline-block"></span> sem atividade</span></div>
          ${ldFocus(l)}</div>
        <div class="card mt"><h2 style="margin:0 0 10px;font-size:14px">🕓 Histórico</h2><div id="ldHistBox">${ldHistory(l)}</div></div>
@@ -2638,6 +2686,14 @@ function vProspec(){
   M().innerHTML=`
    <div class="view-title"><h1>Prospecção & Cadências</h1>${isAdmin()?'':`<span class="pill pri">Sua cadência: ${roleLabel(SESSION.role)}</span>`}</div>
    <p class="view-sub">Régua de relacionamento por papel — com <b>vários toques no mesmo dia</b> (atendeu / não atendeu), do D0 ao D12.</p>
+   ${T()==="icbari"&&CAD_ROLE==="sdr"?`<div class="card" style="border:1px solid var(--brand-line);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-primary) 10%,transparent),transparent);margin-bottom:12px">
+     <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
+     <ol class="mut" style="font-size:13px;line-height:1.7;margin:8px 0 0;padding-left:18px">
+       <li>Entrou lead <b>novo</b> no CRM (a maioria vem pelo WhatsApp do tráfego)? Abra o lead e clique em <b>▶ Iniciar cadência</b> — os toques do 1º e 2º dia já entram na sua Agenda.</li>
+       <li><b>Bombardeio nos 2 primeiros dias:</b> responda na hora, ligue, mande áudio. Quem responde rápido é quem agenda. Não desista no 1º "não atendeu".</li>
+       <li><b>Atendeu e marcou a consulta?</b> Mova o lead para <b>Consulta Agendada</b> — a cadência para e entra a régua anti-falta.</li>
+       <li><b>Não atendeu?</b> Cada toque é uma atividade: ao concluir, registre o que aconteceu e a próxima já é criada. Siga a régua até o D12.</li>
+     </ol></div>`:''}
    <div class="flex between wrap" style="margin-bottom:12px">
      <div class="flex wrap">${roles.map(([id,t])=>`<span class="chip ${CAD_ROLE===id?'on':''}" onclick="CAD_ROLE='${id}';vProspec()">${t}</span>`).join("")}</div>
      ${isAdmin()?`<div class="flex"><button class="btn ghost sm" onclick="resetCad()">restaurar padrão</button><button class="btn sm" onclick="addCadDay()">+ Dia</button></div>`:""}</div>
