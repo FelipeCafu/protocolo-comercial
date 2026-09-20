@@ -898,6 +898,19 @@ function icbGcal(title,dateISO,details,guestEmail){var dt=String(dateISO||"").re
 function icbMailto(email,subject,body){return "mailto:"+encodeURIComponent(email||"")+"?subject="+encodeURIComponent(subject||"")+"&body="+encodeURIComponent(body||"");}
 function icbHist(p,txt){p.hist=p.hist||[];p.hist.unshift({ts:Date.now(),txt:txt,by:(SESSION&&SESSION.name)||""});}
 function icbSavePac(p){var all=DB.get("icbari","pacientes");var i=all.findIndex(function(x){return x.id===p.id;});if(i>=0)all[i]=p;else all.unshift(p);DB.set("icbari","pacientes",all);}
+/* Liga a jornada ao CRM: cria/vincula um lead (funil CS) com o nome do paciente. Assim o agendamento "sobe" pro CRM. */
+function icbEnsureLead(p){
+  var leads=DB.get("icbari","leads");
+  if(p.leadId){var ex=leads.find(function(x){return x.id===p.leadId;});if(ex)return ex;}
+  var byName=leads.find(function(x){return !x.deleted&&(x.nome||"").trim().toLowerCase()===(p.nome||"").trim().toLowerCase();});
+  if(byName){p.leadId=byName.id;return byName;}
+  var lid=DB.uid();
+  var lead={id:lid,nome:p.nome,fantasia:"",razaoSocial:"",setor:p.cirurgiaNome||"",contato:{nome:p.nome,tel:p.tel||"",email:p.email||""},
+    origem:"Jornada do Paciente",funnelId:"cs",estagio:"exames",temp:"quente",valor:0,score:100,owner:"csicb",criadoEm:Date.now(),movedAt:Date.now(),notas:"Paciente em jornada · "+(p.cirurgiaNome||"")};
+  leads.unshift(lead);DB.set("icbari","leads",leads);
+  DB.push("icbari","history",{id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead criado pela Jornada do Paciente ("+(p.cirurgiaNome||"")+")",ts:Date.now()});
+  p.leadId=lid;return lead;
+}
 
 /* ===== Jornada do Paciente (view) ===== */
 var JORN_SEL=null, JORN_SCHED=null, JORN_NEW=false;
@@ -958,6 +971,7 @@ function jornCriar(){
     dataCirurgia:"",hospital:"",followups:[{quando:"1 mês",data:"",feito:false,obs:""},{quando:"2 meses",data:"",feito:false,obs:""},{quando:"3 meses",data:"",feito:false,obs:""}],
     hist:[],criadoEm:Date.now()};
   icbHist(p,"Jornada criada — "+(c?c.nome:""));
+  icbEnsureLead(p);
   icbSavePac(p);JORN_NEW=false;JORN_SEL=p.id;go("jornada");
 }
 function vJornadaDetail(p){
@@ -1046,9 +1060,28 @@ function jornSchedSave(pid,iid){
   it.dataResultado=document.getElementById("sRes_"+iid).value||"";
   if(it.status==="pendente"&&it.dataAgendada)it.status="agendado";
   icbHist(p,"Agendado: "+it.nome+(it.dataAgendada?" ("+_fmtBR(it.dataAgendada)+")":""));
+  /* sobe pro CRM: cria/atualiza atividade na agenda do lead do paciente */
+  var lead=icbEnsureLead(p);
+  if(lead&&it.dataAgendada){
+    var acts=DB.get("icbari","activities");
+    var tit=(it.cat==="exame"?"Exame: ":"Avaliação: ")+it.nome+(it.local?" · "+it.local:"");
+    var ex=acts.find(function(a){return a.jornItem===it.id;});
+    if(ex){ex.titulo=tit;ex.data=it.dataAgendada;ex.done=false;}
+    else acts.unshift({id:DB.uid(),leadId:lead.id,tipo:(it.cat==="exame"?"alarme":"reuniao"),titulo:tit,data:it.dataAgendada,done:false,owner:"csicb",jornItem:it.id});
+    DB.set("icbari","activities",acts);
+    DB.push("icbari","history",{id:DB.uid(),leadId:lead.id,tipo:"atividade",txt:"Jornada → agendado: "+tit+" ("+_fmtBR(it.dataAgendada)+")",ts:Date.now()});
+  }
   JORN_SCHED=null;icbSavePac(p);go("jornada");
 }
 function jornFeito(pid,iid){var p=icbPac(pid);if(!p)return;var it=(p.itens||[]).find(function(x){return x.id===iid;});if(!it)return;it.status="feito";icbHist(p,"Realizado: "+it.nome);icbSavePac(p);go("jornada");}
+/* CRM -> Jornada: abre a jornada do paciente ligada a este lead (cria se não existir) */
+function crmToJornada(leadId){
+  var lead=DB.get("icbari","leads").find(function(x){return x.id===leadId;});if(!lead)return;
+  var pac=icbPacientes().find(function(p){return p.leadId===leadId||(p.nome||"").trim().toLowerCase()===(lead.nome||"").trim().toLowerCase();});
+  if(pac){if(!pac.leadId){pac.leadId=leadId;icbSavePac(pac);}JORN_SEL=pac.id;go("jornada");return;}
+  JORN_SEL=null;JORN_NEW=true;go("jornada");
+  setTimeout(function(){var n=document.getElementById("jnNome");if(n)n.value=lead.nome||"";var t=document.getElementById("jnTel");if(t)t.value=(lead.contato||{}).tel||"";var e=document.getElementById("jnEmail");if(e)e.value=(lead.contato||{}).email||"";var box=document.getElementById("jnNome");if(box)box.scrollIntoView({behavior:"smooth",block:"center"});},60);
+}
 function jornDelItem(pid,iid){var p=icbPac(pid);if(!p)return;var it=(p.itens||[]).find(function(x){return x.id===iid;});if(!it)return;if(!confirm("Remover \""+it.nome+"\" desta jornada?"))return;p.itens=p.itens.filter(function(x){return x.id!==iid;});icbHist(p,"Item removido: "+it.nome);icbSavePac(p);go("jornada");}
 function jornAddItem(pid,cat){var nome=prompt((cat==="exame"?"Nome do exame":"Nome da avaliação/consulta")+":");if(!nome)return;var p=icbPac(pid);if(!p)return;p.itens=p.itens||[];p.itens.push({id:DB.uid(),cat:cat,nome:nome.trim(),status:"pendente"});icbHist(p,"Item adicionado: "+nome.trim());icbSavePac(p);go("jornada");}
 function jornAddDoc(pid){var nome=prompt("Item do checklist do hospital:");if(!nome)return;var p=icbPac(pid);if(!p)return;p.docs=p.docs||[];p.docs.push({id:DB.uid(),nome:nome.trim(),ok:false});icbSavePac(p);go("jornada");}
@@ -2175,7 +2208,7 @@ function leadDetail(id){
      <span class="pill">${funnel.name}</span>
      <div class="spacer" style="flex:1"></div>
      ${(function(){var d=((l.contato||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';var tl=(d.length>=12&&d.slice(0,2)==='55')?d:('55'+d);var w=waLink(l);return '<a class="btn ghost sm" href="tel:+'+tl+'">📞 Ligar</a>'+(w?'<a class="btn ghost sm" href="'+w+'" target="_blank">💬 WhatsApp</a>':'');})()}
-     <button class="btn ghost sm" onclick="battlecard('${l.id}')">🛡️ Battlecard</button>
+     ${T()==="icbari"?`<button class="btn ghost sm" onclick="crmToJornada('${l.id}')">🧭 Jornada</button>`:`<button class="btn ghost sm" onclick="battlecard('${l.id}')">🛡️ Battlecard</button>`}
      <button class="btn ghost sm" onclick="transferLead('${l.id}')">⇄ Transferir</button>
      <button class="btn ok sm" onclick="winLead('${l.id}')">✓ Ganho</button>
      <button class="btn bad sm" onclick="loseLead('${l.id}')">✕ Perdido</button>
@@ -4815,7 +4848,15 @@ function vMetas(){
        else{const rev=x.realizado*_ticket;com=Math.round(rev*(g.comissaoCloserPct||0)/100);base=x.realizado+" fechados";}
        return `<tr><td><b>${x.nome}</b></td><td>${x.papel}</td><td class="mut">${base}</td><td><b style="color:var(--brand-ok)">${money(com)}</b></td></tr>`;}).join("")}
      </tbody></table></div>
-   <div class="card mt"><h2 style="font-size:15px;margin:0 0 8px">Editar metas & comissões</h2>
+   <div class="card mt"><h2 style="font-size:15px;margin:0 0 4px">🎖️ Meta de cada pessoa</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">Defina a meta e o realizado de cada vendedor. É isto que alimenta a Performance e o Placar de cada um.</p>
+     <table><thead><tr><th>Pessoa</th><th>Papel</th><th>Meta</th><th>Realizado</th></tr></thead><tbody>
+     ${s.map(function(x){return `<tr><td><b>${esc(x.nome)}</b></td><td class="mut">${x.papel}</td>
+       <td><input class="in" type="number" style="width:90px" id="sm_${x.id}" value="${x.meta||0}"></td>
+       <td><input class="in" type="number" style="width:90px" id="sr_${x.id}" value="${x.realizado||0}"></td></tr>`;}).join("")}
+     </tbody></table>
+     <button class="btn sm mt" onclick="saveSellerMetas()">Salvar metas do time</button></div>
+   <div class="card mt"><h2 style="font-size:15px;margin:0 0 8px">Editar metas & comissões (geral)</h2>
      <div class="row"><div><label class="fl">Meta faturamento</label><input class="in" type="number" id="g_fat" value="${g.fatMeta||''}"></div>
        <div><label class="fl">Realizado</label><input class="in" type="number" id="g_real" value="${g.fatReal||''}"></div>
        <div><label class="fl">Projeção</label><input class="in" type="number" id="g_proj" value="${g.projecao||''}"></div></div>
@@ -4826,6 +4867,7 @@ function vMetas(){
      <button class="btn sm mt" onclick="saveGoals()">Salvar</button></div>`;
 }
 function saveGoals(){DB.set(T(),"goals",{fatMeta:+g_fat.value,fatReal:+g_real.value,projecao:+g_proj.value,metaMembros:+g_mem.value,comissaoSDR:+g_sdr.value,comissaoCloserPct:+g_clo.value,comissaoCS:+g_cs.value});toast("Metas salvas");vMetas();}
+function saveSellerMetas(){var s=DB.get(T(),"sellers");s.forEach(function(x){var m=document.getElementById("sm_"+x.id),r=document.getElementById("sr_"+x.id);if(m)x.meta=+m.value||0;if(r)x.realizado=+r.value||0;});DB.set(T(),"sellers",s);toast("Metas do time salvas");vMetas();}
 function vFidelidade(){
   const members=DB.get(T(),"members").filter(m=>!m.deleted),coupons=DB.get(T(),"coupons");
   const ativos=members.filter(m=>m.status==="ativo"),inad=members.filter(m=>m.status==="inadimplente"),churn=members.filter(m=>m.status==="churn");
