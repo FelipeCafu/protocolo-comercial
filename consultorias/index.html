@@ -725,64 +725,60 @@ const FUNNELS_ICB=[
 /* Modelos de cirurgia + exames/avaliações padrão (base pesquisada — editável pelo gestor).
    exames = exames de imagem/laboratório; aval = avaliações/consultas de especialistas;
    docs = itens exigidos para marcar a cirurgia no hospital. */
-const ICB_LAB_BASICO=["Hemograma completo","Coagulograma (TAP/TTPA)","Glicemia de jejum","Ureia e Creatinina","Sódio e Potássio","TGO / TGP","Sorologias (HIV, Hepatite B e C, VDRL)","Tipagem sanguínea"];
+const ICB_LAB_BASICO=["Hemograma completo","Glicemia de jejum","Sódio, Potássio, Ureia e Creatinina","Lipidograma completo","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase, LDH"];
+const ICB_LAB_BARIATRICA=["Hemograma completo","Glicemia de jejum, Insulina basal, HbA1c, Ácido úrico","Sódio, Potássio, Ureia, Creatinina","Lipidograma completo","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase, LDH","T3, T4 livre, TSH, Anti-TPO e Anti-TG","Vitamina B12, Vitamina D, Vitamina C, Cálcio, Ácido fólico, PTH","Ferro sérico, Ferritina, Transferrina","Sorologia para Hepatites B e C","Sorologia para Chagas e HIV","Prolactina, FSH, LH e Estradiol","DHEA e Sulfato de DHEA","Testosterona livre (homens)","ACTH","IGF-1","Androstenediona","Cortisol salivar noturno","EAS","Dosagem de cortisol após 1 mg de Dexametasona"];
+const ICB_DOCS_HOSP=["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"];
+/* Modelos de cirurgia + exames (fonte: documento oficial "Exames essenciais para solicitação de cirurgia" da ICBARI).
+   exames = imagem/laboratório; aval = laudos/avaliações de especialistas; docs = itens p/ marcar no hospital. Editável pelo gestor. */
 const ICB_CIRURGIAS_DEFAULT=[
  {id:"bariatrica",nome:"Cirurgia Bariátrica e Metabólica",cat:"Obesidade e Metabólica",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Ultrassom de abdome total","Raio-X de tórax","Eletrocardiograma (ECG)","Perfil lipídico","TSH e T4 livre","Dosagem de vitaminas (B12, D) e ferro"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação Nutricional","Avaliação Psicológica / Psiquiátrica","Avaliação com Endocrinologista"],
-  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"diastase",nome:"Correção de Diástase Abdominal (vídeo/robótica)",cat:"Parede Abdominal",
-  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com manobra de Valsalva","Ultrassonografia de parede abdominal","Raio-X de tórax","Eletrocardiograma (ECG)"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"hernia",nome:"Correção de Hérnia (umbilical/inguinal/incisional/epigástrica)",cat:"Parede Abdominal",
-  exames:ICB_LAB_BASICO.concat(["Tomografia de parede abdominal (Valsalva)","Ultrassonografia da região herniária","Raio-X de tórax","Eletrocardiograma (ECG)"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
+  exames:["USG / Ecografia de abdome total","Endoscopia Digestiva Alta (EDA)","Polissonografia","Bioimpedância","RX de tórax","Exames cardiológicos (a pedido do cardiologista)","USG / Ecografia de tireoide (opcional)","USG / Ecografia transvaginal (opcional)","Espirometria (opcional)"].concat(ICB_LAB_BARIATRICA),
+  aval:["Consulta com Cirurgião","Laudo de Endocrinologia","Laudo de Nutrição","Laudo de Psicólogo","Laudo de Cardiologia","Laudo de Pneumologia (opcional)"],
+  docs:["Pedido médico com código do procedimento","Laudos (endócrino, nutrição, psicólogo, cardiologia)","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"diastase",nome:"Diástase Abdominal (vídeo/robótica)",cat:"Parede Abdominal",
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:ICB_DOCS_HOSP.slice(),notas:"Perfil ideal: IMC abaixo de 30 e diástase documentada (quanto mais magra a paciente, mais visível o resultado)."},
+ {id:"hernia_umbilical",nome:"Herniorrafia Umbilical",cat:"Parede Abdominal",
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:ICB_DOCS_HOSP.slice()},
+ {id:"hernia_epigastrica",nome:"Herniorrafia Epigástrica",cat:"Parede Abdominal",
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:ICB_DOCS_HOSP.slice()},
+ {id:"hernia_inguinal_uni",nome:"Herniorrafia Inguinal Unilateral",cat:"Parede Abdominal",
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
   docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / tela (OPME) se houver","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"refluxo",nome:"Refluxo / Hérnia de Hiato (vídeo e robótica)",cat:"Esôfago/Estômago",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Esofagomanometria","pHmetria de 24h","Raio-X contrastado de esôfago/estômago (EED)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"hernia_inguinal_bi",nome:"Herniorrafia Inguinal Bilateral",cat:"Parede Abdominal",
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal bilateral OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / tela (OPME) se houver","Carteirinha do convênio + documento com foto + CPF"]},
+ {id:"colecistectomia",nome:"Colecistectomia (retirada da vesícula)",cat:"Vesícula Biliar",
+  exames:["USG / Ecografia de abdome total OU Tomografia (TC) de abdome total"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:ICB_DOCS_HOSP.slice(),notas:"Perfil ideal: exame de imagem prévio mostrando cálculo."},
+ {id:"refluxo",nome:"Cirurgia de Refluxo (DRGE) / Hérnia de Hiato",cat:"Esôfago/Estômago",
+  exames:["Endoscopia Digestiva Alta (EDA)","pHmetria esofágica","Manometria esofágica","Cintilografia de esvaziamento esofágico (opcional)","SEED — seriografia esôfago/estômago/duodeno (opcional)","Tomografia de tórax e abdome (opcional)"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  docs:ICB_DOCS_HOSP.slice()},
  {id:"acalasia",nome:"Cirurgia para Acalásia (“entalo” / Chagas)",cat:"Esôfago",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Esofagomanometria","Raio-X contrastado de esôfago (EED)","Sorologia para Chagas","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"colecistectomia",nome:"Retirada da Vesícula (Colecistectomia)",cat:"Vesícula Biliar",
-  exames:ICB_LAB_BASICO.concat(["Ultrassom de abdome total","Raio-X de tórax","Eletrocardiograma (ECG)"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
+  exames:["Endoscopia Digestiva Alta","Manometria esofágica","SEED — seriografia de esôfago","Sorologia para Chagas"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)","Avaliação com Anestesista"],
+  docs:ICB_DOCS_HOSP.slice()},
  {id:"gastrectomia",nome:"Gastrectomia (total/parcial) — tumor de estômago",cat:"Estômago",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta com biópsia","Tomografia de abdome e pelve","Tomografia de tórax","Marcadores tumorais (CEA, CA 19-9)","Eletrocardiograma (ECG)"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação Nutricional"],
-  docs:["Pedido médico com código do procedimento","Laudo anatomopatológico da biópsia","Laudos dos exames de estadiamento","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"esofagectomia",nome:"Esofagectomia — câncer/doenças do esôfago",cat:"Esôfago",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta com biópsia","Tomografia de tórax e abdome","PET-CT (estadiamento)","Marcadores tumorais","Prova de função pulmonar (espirometria)","Ecocardiograma","Eletrocardiograma (ECG)"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação com Pneumologista","Avaliação Nutricional"],
-  docs:["Pedido médico com código do procedimento","Laudo anatomopatológico da biópsia","Laudos de estadiamento (TC/PET)","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"hepatectomia",nome:"Hepatectomia — tumores/lesões do fígado",cat:"Fígado",
-  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com contraste","Ressonância de abdome","Marcadores tumorais (AFP, CEA, CA 19-9)","Provas de função hepática (bilirrubinas, albumina, INR)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Hepatologista/Oncologista"],
-  docs:["Pedido médico com código do procedimento","Laudos de imagem do fígado","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"pancreatectomia",nome:"Pancreatectomia / Duodenopancreatectomia",cat:"Pâncreas",
-  exames:ICB_LAB_BASICO.concat(["Tomografia de abdome com contraste","Ressonância / Colangiorressonância","Ecoendoscopia (se indicado)","Marcadores tumorais (CA 19-9, CEA)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação Nutricional"],
-  docs:["Pedido médico com código do procedimento","Laudos de imagem do pâncreas","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de UTI e hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+  exames:["Endoscopia Digestiva Alta com biópsia","Tomografia de abdome e pelve","Tomografia de tórax","Marcadores tumorais (CEA, CA 19-9)"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista","Avaliação Nutricional"],
+  docs:["Pedido médico com código do procedimento","Laudo anatomopatológico da biópsia","Laudos de estadiamento","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Reserva de hemocomponentes","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
  {id:"colectomia",nome:"Colectomia / Retossigmoidectomia — cólon",cat:"Intestino Grosso (Cólon)",
-  exames:ICB_LAB_BASICO.concat(["Colonoscopia com biópsia","Tomografia de abdome e pelve","Marcadores tumorais (CEA)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista (se tumor)"],
-  docs:["Pedido médico com código do procedimento","Laudo da colonoscopia/biópsia","Laudos de imagem","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Preparo intestinal orientado","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"enterectomia",nome:"Enterectomia — intestino delgado",cat:"Intestino Delgado",
-  exames:ICB_LAB_BASICO.concat(["Tomografia / Enterotomografia de abdome","Trânsito intestinal (se indicado)","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Risco cirúrgico (Cardiologista)","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos de imagem","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
+  exames:["Colonoscopia com biópsia","Tomografia de abdome e pelve","Marcadores tumorais (CEA)"].concat(ICB_LAB_BASICO),
+  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)","Avaliação com Anestesista","Avaliação com Oncologista (se tumor)"],
+  docs:["Pedido médico com código do procedimento","Laudo da colonoscopia/biópsia","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Preparo intestinal orientado","Autorização do convênio / OPME","Carteirinha do convênio + documento com foto + CPF"]},
  {id:"apendicectomia",nome:"Apendicectomia",cat:"Apêndice Cecal",
-  exames:ICB_LAB_BASICO.concat(["Ultrassom / Tomografia de abdome","Eletrocardiograma (ECG)"]),
+  exames:["USG / Tomografia de abdome"].concat(ICB_LAB_BASICO),
   aval:["Consulta com Cirurgião","Avaliação com Anestesista"],
-  docs:["Pedido médico com código do procedimento","Laudos de exames","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
- {id:"gastrostomia",nome:"Gastrostomia (via alimentar)",cat:"Estômago",
-  exames:ICB_LAB_BASICO.concat(["Endoscopia Digestiva Alta","Eletrocardiograma (ECG)","Raio-X de tórax"]),
-  aval:["Consulta com Cirurgião","Avaliação com Anestesista","Avaliação Nutricional"],
-  docs:["Pedido médico com código do procedimento","Laudos de exames","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"]}
+  docs:ICB_DOCS_HOSP.slice()}
 ];
 
 function seedIcbari(){
@@ -1189,6 +1185,28 @@ function scBOT_ICB(){return `
    <p class="mut" style="font-size:13px">Já tem indicação de cirurgia → agenda direto (lead quente). Só quer avaliação → SDR qualifica e agenda a consulta. Sem cidade/sem indicação → nutrição + conteúdo. Tudo cai no CRM com temperatura e score. <b>Regra de ouro:</b> lead que chega pelo tráfego responde em minutos, não em horas.</p></div>`;
 }
 
+
+/* Perfil do Lead (A-F) — regra oficial ICBARI (plano decide antes do IMC) */
+function icbPerfil(o){o=o||{};var conv=(o.convenio||"").toLowerCase();var mod=o.modalidade||"";var linha=o.linha||"";var imc=parseFloat(o.imc)||0;var exame=o.exame;
+ var baixo=["amil","quality","unity","medsênior","medsenior"];var naoAtend=["hapvida","hap vida"];
+ if(o.fora||o.semInd||o.invalido||naoAtend.some(function(x){return conv.indexOf(x)>=0;}))return {p:"E",t:"Fora de perfil",c:"var(--brand-bad)",d:"Plano não atendido (Hapvida), fora do raio, sem indicação ou número inválido. Encerrar com orientação e NÃO agendar."};
+ if(mod==="particular")return {p:"C",t:"Particular",c:"var(--brand-warn)",d:"Categoria própria: tem potencial, mas converte baixo. Nunca classifique como 'bom' por antecipação."};
+ if(baixo.some(function(x){return conv.indexOf(x)>=0;}))return {p:"B",t:"Baixo retorno",c:"var(--brand-warn)",d:"O convênio não paga o honorário. Consulta cortesia + honorário particular (~R$7-8k, 10-12x). O plano decide antes do IMC."};
+ var crit=false,faltou=false;
+ if(!conv)faltou=true;
+ if(linha==="bariatrica"){if(!imc)faltou=true;else crit=imc>=35;}
+ else if(linha==="diastase"){if(!imc||exame===undefined||exame==="")faltou=true;else crit=(imc<30&&exame==="sim");}
+ else if(linha==="vesicula"||linha==="hernia"||linha==="refluxo"){if(exame===undefined||exame==="")faltou=true;else crit=(exame==="sim");}
+ else faltou=true;
+ if(faltou)return {p:"F",t:"Sem dados",c:"var(--brand-muted)",d:"Faltam dados (convênio, IMC ou exame). Não é perfil, é falha de registro. Preencha para classificar."};
+ if(crit)return {p:"A",t:"ICP (ideal)",c:"var(--brand-ok)",d:"Cobertura integral + critério clínico atendido. É o paciente que a clínica quer: prioridade máxima de contato e agenda."};
+ return {p:"D",t:"Em maturação",c:"var(--brand-primary-2)",d:"Plano bom, mas critério clínico ainda não atendido (ex.: IMC 30-34,9 na bariátrica, ou exame pendente). Relacionamento mais longo, não é descarte."};
+}
+function icbPerfilCalc(){var g=function(id){var e=document.getElementById(id);return e?e.value:"";};
+ var r=icbPerfil({modalidade:g("pf_mod"),convenio:g("pf_conv"),linha:g("pf_linha"),imc:g("pf_imc"),exame:g("pf_exame")});
+ var el=document.getElementById("pf_result");if(!el)return;
+ el.innerHTML='<div style="display:flex;gap:12px;align-items:center"><div style="width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:26px;font-weight:800;color:#04201c;background:'+r.c+'">'+r.p+'</div><div><b style="font-size:15px">Perfil '+r.p+' — '+r.t+'</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+r.d+'</p></div></div>';
+}
 function scSDR_ICB(){return `
  <div class="card" style="border-left:3px solid var(--brand-accent)"><h2 style="margin:0 0 8px;font-size:15px">🧭 SPIN — as 4 perguntas que conduzem</h2>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
@@ -1204,6 +1222,17 @@ function scSDR_ICB(){return `
      <div><b>N · Necessidade</b><p class="mut" style="font-size:12px;margin:3px 0 0">tem queixa/sobrepeso que atrapalha e reconhece</p></div>
      <div><b>T · Tempo</b><p class="mut" style="font-size:12px;margin:3px 0 0">quer resolver agora, não daqui a um ano</p></div>
    </div><p class="mut" style="font-size:12px;margin:8px 0 0">Anote tudo no CRM. É o que o Closer recebe.</p></div>
+ <div class="card mt" style="border-left:3px solid var(--brand-primary)"><h2 style="margin:0 0 6px;font-size:15px">🎯 Perfil do Lead (A–F) — classifique na qualificação</h2>
+   <p class="mut" style="font-size:12.5px;margin:0 0 10px">Regra oficial, lida de cima para baixo: <b>o plano decide antes do IMC</b>. A equipe registra o fato (plano, IMC, exame); o sistema deriva o perfil.</p>
+   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+     <label class="fl">Modalidade<select class="in" id="pf_mod" onchange="icbPerfilCalc()"><option value="convenio">Convênio</option><option value="particular">Particular</option></select></label>
+     <label class="fl">Convênio<select class="in" id="pf_conv" onchange="icbPerfilCalc()"><option>Bradesco</option><option>Unimed</option><option>SulAmérica</option><option>Porto Seguro</option><option>INAS</option><option>Postal Saúde</option><option>CBMDF</option><option>PMDF</option><option>Outro (cobertura ampla)</option><option>Amil</option><option>Quality</option><option>Unity</option><option>MedSênior</option><option>Hapvida</option></select></label>
+     <label class="fl">Linha<select class="in" id="pf_linha" onchange="icbPerfilCalc()"><option value="bariatrica">Bariátrica</option><option value="diastase">Diástase</option><option value="vesicula">Vesícula</option><option value="hernia">Hérnia</option><option value="refluxo">Refluxo (DRGE)</option></select></label>
+     <label class="fl">IMC<input class="in" id="pf_imc" type="number" placeholder="ex.: 37" oninput="icbPerfilCalc()"></label>
+     <label class="fl">Exame prévio<select class="in" id="pf_exame" onchange="icbPerfilCalc()"><option value="">—</option><option value="sim">Sim (documentado)</option><option value="nao">Não</option></select></label>
+   </div>
+   <div id="pf_result" style="margin-top:12px"></div>
+   <p class="mut" style="font-size:11.5px;margin:10px 0 0"><b>A</b> cobertura integral + critério clínico · <b>B</b> Amil/Quality/Unity/MedSênior (cortesia + particular) · <b>C</b> particular · <b>D</b> plano bom sem critério (maturação) · <b>E</b> Hapvida/fora do raio/sem indicação · <b>F</b> faltam dados.</p></div>
  <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Converter para a CONSULTA — não vender a cirurgia</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>acolhe e conduz com perguntas</b> (fale 30%, ouça 70%), vende o <b>próximo passo: a consulta de avaliação</b> (nunca o preço da cirurgia) e <b>anota tudo no CRM</b>. É um fluxo só, cada passo emenda no próximo.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conversas/dia</div></div><div><div style="font-size:19px;font-weight:800">3-5</div><div class="eyebrow mut">consultas agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>

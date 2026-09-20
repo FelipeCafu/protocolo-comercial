@@ -97,6 +97,12 @@ svg.i{width:22px;height:22px;stroke:var(--gold2);fill:none;stroke-width:1.7;stro
 .photo .cap{position:absolute;left:16px;bottom:14px;font-size:12px;color:#f5f1e9;background:rgba(10,23,28,.55);border:1px solid var(--line2);padding:5px 11px;border-radius:20px;backdrop-filter:blur(4px)}
 .pcard{border-radius:20px;overflow:hidden;border:1px solid var(--line2);background:#0b2026}
 .pcard img{width:100%;display:block}
+.docgrid{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;align-items:flex-start}
+.docp{flex:1;min-width:150px;max-width:220px}
+.docp .ph{aspect-ratio:3/4;border-radius:16px;overflow:hidden;border:1px solid var(--line2);background:#0f272d;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.docp .ph img{width:100%;height:100%;object-fit:cover;object-position:center 12%;display:block}
+.docp b{display:block;margin-top:10px;font-size:14px}
+.docp span{font-size:12px;color:var(--mut)}
 .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .badge{border:1px solid var(--line2);border-radius:12px;padding:9px 14px;font-size:13px;color:var(--mut)}
 .badge b{color:var(--gold2)}
@@ -197,7 +203,7 @@ var SDR_SLIDES=[
    {ic:'cal',h:'A clínica cuida de tudo',p:'A gente marca seus exames e a cirurgia, e te avisa em cada passo pelo WhatsApp.'},
    {ic:'heart',h:'Acompanhamento de verdade',p:'Nutricionista por 6 meses e suporte psicológico. Um resultado que se mantém.'}]},
  {layout:'journey',kicker:'Como funciona',title:'Um caminho simples e conduzido.',steps:JOURNEY},
- {layout:'authority',kicker:'Quem cuida de você',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Emagrecimento com ganho de massa magra e acompanhamento a longo prazo. Pacientes que saem do sedentarismo e voltam a viver.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Vídeo e robótica',t:'técnicas modernas'}]},
+ {layout:'doctors',kicker:'Quem cuida de você',title:'Dois cirurgiões, um só cuidado.',body:'Você é acompanhado por dois cirurgiões do aparelho digestivo, com técnica de vídeo e robótica, ganho de massa magra e seguimento a longo prazo. Aqui ninguém opera e abandona.',docs:[{img:'img/dr-wander.webp',name:'Dr. Wander Carvalho',role:'Cirurgião bariátrico e digestivo'},{img:'img/dr-pedro.webp',name:'Dr. Pedro Pinheiro',role:'Cirurgião bariátrico e digestivo'}],badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'}]},
  {layout:'stats',kicker:'Não é promessa, é histórico',title:'Gente de verdade que mudou de vida.',stats:[{n:'200+',t:'vidas transformadas pela ICBARI'},{n:'120+',t:'avaliações 5 estrelas de pacientes'},{n:'6 meses',t:'de acompanhamento nutricional'}]},
  {layout:'proof',kicker:'Quem já passou por aqui',title:'Histórias que falam por si.',note:'Espaço para o depoimento de um paciente real (foto e frase). A ICBARI tem mais de 120 avaliações 5 estrelas.'},
  {layout:'offer',kicker:'O primeiro passo',title:'Comece com uma<br><span class="grad">consulta de avaliação</span>.',sub:'Na consulta, o cirurgião entende o seu caso, tira todas as suas dúvidas e monta o plano certo pra você. Com calma e todo o cuidado.',triggers:[
@@ -216,7 +222,7 @@ var CLOSER_SLIDES=[
    {ic:'shield',h:'Segurança',p:'Protocolos rigorosos e monitoramento contínuo, do começo ao fim.'},
    {ic:'heart',h:'Massa magra',p:'Não é só perder peso: é ganhar saúde e manter o resultado.'}]},
  {layout:'journey',kicker:'Como vai ser',title:'Cada passo cuidado, do preparo ao pós.',steps:JOURNEY},
- {layout:'authority',kicker:'Quem vai te operar',title:'Dr. Wander Carvalho',body:'Cirurgião bariátrico e do aparelho digestivo. Segurança com protocolos rigorosos e seguimento a longo prazo. Pacientes que voltam à academia 4 a 5 vezes por semana.',img:'img/dr-wander.webp',badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Massa magra',t:'não é só perder peso'}]},
+ {layout:'doctors',kicker:'Quem vai te operar',title:'Dois cirurgiões cuidando de você.',body:'Segurança com protocolos rigorosos, técnica de vídeo e robótica e seguimento a longo prazo. Pacientes que voltam à academia 4 a 5 vezes por semana.',docs:[{img:'img/dr-wander.webp',name:'Dr. Wander Carvalho',role:'Cirurgião bariátrico e digestivo'},{img:'img/dr-pedro.webp',name:'Dr. Pedro Pinheiro',role:'Cirurgião bariátrico e digestivo'}],badges:[{b:'200+',t:'vidas transformadas'},{b:'120+',t:'avaliações 5 estrelas'},{b:'Massa magra',t:'não é só perder peso'}]},
  {layout:'hospitals',kicker:'Onde a cirurgia acontece',title:'Hospital acreditado, equipe completa.',body:'A cirurgia é feita em hospital de referência, com anestesista dedicado e monitoramento contínuo. Segurança que você enxerga.',logos:[{src:'img/hosp-dfstar.webp',alt:'DF Star'},{src:'img/hosp-santahelena.webp',alt:'Hospital Santa Helena'}]},
  {layout:'system',kicker:'Você não vai se perder',title:'A clínica marca cada exame por você.',body:'Os exames entram no seu plano e cada um é agendado, com aviso no WhatsApp e no e-mail. Você só precisa comparecer. A gente cuida do resto.',checklist:[
    {t:'Consulta com o cirurgião',on:true,tag:'feito'},
@@ -258,6 +264,9 @@ function R(s){var L=s.layout;
    <div class="quad">${s.items.map(function(q,i){return `<div class="qbox anim d${Math.min(i+3,6)}"><div class="k">${q.k}</div><h4>${q.t}</h4><p class="qq">${q.q}</p></div>`;}).join('')}</div></div>`;
  if(L==='photo')return `<div class="row"><div class="col anim d1"><div class="kick">${s.kicker}</div><h2 class="t">${s.title}</h2><p class="lead mt16">${s.body}</p></div>
    <div class="col anim d3"><div class="photo">${s.img?`<img src="${s.img}" alt="">`:''}<div class="ov"></div>${s.cap?`<div class="cap">${s.cap}</div>`:''}</div></div></div>`;
+ if(L==='doctors')return `<div><div class="anim d1 kick">${s.kicker}</div><h2 class="t anim d2">${s.title}</h2><p class="lead anim d3 mt16">${s.body}</p>
+   <div class="docgrid">${s.docs.map(function(dc,i){return `<div class="docp anim d${i+4}"><div class="ph"><img src="${dc.img}" alt="${dc.name}"></div><b>${dc.name}</b><span>${dc.role}</span></div>`;}).join('')}
+   ${s.badges?`<div style="flex:1;min-width:200px;align-self:center"><div class="badges" style="margin-top:0">${s.badges.map(function(b){return '<div class="badge"><b>'+b.b+'</b> '+b.t+'</div>';}).join('')}</div></div>`:''}</div></div>`;
  if(L==='authority')return `<div class="row"><div class="col anim d2" style="max-width:320px;flex:0 0 300px"><div class="pcard"><img src="${s.img}" alt="Dr. Wander Carvalho"></div></div>
    <div class="col anim d1"><div class="kick">${s.kicker}</div><h2 class="t">${s.title}</h2><p class="lead mt16">${s.body}</p>
    <div class="badges">${s.badges.map(function(b){return `<div class="badge"><b>${b.b}</b> ${b.t}</div>`;}).join('')}</div></div></div>`;
