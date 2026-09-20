@@ -1820,14 +1820,13 @@ const NAV_CEO=[
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
 const NAV_ICB=[
- {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade",roles:["consultor","gestor"]},
+ {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro & Apresentações"},
  {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
- {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 /* ICBARI — CS/pós-venda vê o Meu Dia + a Jornada do Paciente */
@@ -1900,6 +1899,7 @@ function kpi(ic,lab,val,delta,dir){return `<div class="card kpi"><div class="lab
 
 /* ===== PAINEL COMERCIAL ===== */
 function firstSteps(){
+  return"";
   if(!["consultor","gestor"].includes(SESSION.role))return"";
   const t=CURRENT_TENANT;if(!t)return"";
   const team=(typeof accList==='function'?accList():[]).filter(a=>a.tenant===t&&["sdr","closer","cs"].includes(a.role));
@@ -2117,7 +2117,7 @@ function renderKanban(){
     const ls=leads.filter(l=>l.estagio===s.id);const val=ls.reduce((a,l)=>a+(l.valor||0),0);
     return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
-      ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>s.sla*36e5;const as=actStatus(l.id);
+      ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>slaMs(s);const as=actStatus(l.id);
         const cls=as==="late"?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
         const sc=leadScore(l).score;const scc=sc>=70?'var(--brand-ok)':sc>=45?'var(--brand-primary-2)':'var(--brand-muted)';
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
@@ -2137,6 +2137,8 @@ function bindDrag(){
     d.addEventListener("drop",e=>{e.preventDefault();d.parentElement.classList.remove("over");
       if(dragId){moveLeadStage(dragId,d.dataset.stage);renderKanban();}});});
 }
+function slaMs(s){if(!s||!s.sla)return 0;return s.sla*((s.slaUnit==="d")?24:1)*36e5;}
+function slaLabel(s){if(!s||!s.sla)return "sem prazo";return s.sla+(s.slaUnit==="d"?(s.sla>1?" dias":" dia"):"h");}
 function moveLeadStage(id,stage){
   DB.update(T(),"leads",id,{estagio:stage,movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"etapa",txt:"Movido para "+stageName(stage),ts:Date.now()});
@@ -2165,7 +2167,7 @@ function leadDetail(id){
   const stages=funnel.stages;const curIdx=stages.findIndex(s=>s.id===l.estagio);
   const sellers=DB.get(T(),"sellers");
   const tempoEtapa=relTime(l.movedAt||l.criadoEm),tempoFunil=relTime(l.criadoEm);
-  const sla=stages[curIdx];const late=sla&&sla.sla&&(Date.now()-(l.movedAt||l.criadoEm))>sla.sla*36e5;
+  const sla=stages[curIdx];const late=sla&&sla.sla&&(Date.now()-(l.movedAt||l.criadoEm))>slaMs(sla);
   M().innerHTML=`
    <div class="ld-top">
      <button class="btn ghost sm" onclick="go('crm')">← Voltar ao funil</button>
@@ -2181,6 +2183,7 @@ function leadDetail(id){
    ${l.estagio!=='perdido'?leadBriefing(l):''}
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(' — <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
+   ${(function(){var open=DB.get(T(),"activities").some(function(a){return a.leadId===l.id&&!a.done;});return (!["perdido","ganho","churn"].includes(l.estagio)&&!open)?'<div class="card" style="border-color:rgba(240,180,42,.55);background:rgba(240,180,42,.08);margin:0 0 10px"><b style="color:var(--brand-warn)">⚠ Este lead está sem próxima atividade.</b> <span class="mut" style="font-size:13px">Nenhum lead pode ficar sem próximo passo — agende uma atividade abaixo (📋 Atividade).</span></div>':'';})()}
    <div class="ld-grid">
      <div>
        <div class="card">
@@ -2213,7 +2216,7 @@ function leadDetail(id){
            <div class="tab ${LD_TAB==='arquivo'?'on':''}" onclick="LD_TAB='arquivo';leadDetail('${l.id}')">📎 Arquivo/Doc</div></div>
          ${LD_TAB==='atividade'?ldActivityForm(l):LD_TAB==='anotacao'?ldNoteForm(l):ldFileForm(l)}
        </div>
-       <div class="card mt" style="text-align:center;cursor:pointer" onclick="checkin('${l.id}')">📍 <b>Check-in da visita (captura GPS)</b></div>
+       ${T()==="icbari"?"":`<div class="card mt" style="text-align:center;cursor:pointer" onclick="checkin('${l.id}')">📍 <b>Check-in da visita (captura GPS)</b></div>`}
        <div class="card mt"><div class="flex between"><h2 style="margin:0;font-size:14px">📋 Atividades em foco</h2>
          <small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div>
          <div class="flex wrap mt8" style="gap:12px;font-size:11px"><span><span class="fdot today" style="display:inline-block"></span> hoje</span><span><span class="fdot future" style="display:inline-block"></span> futura</span><span><span class="fdot late" style="display:inline-block"></span> atrasada</span><span><span class="fdot none" style="display:inline-block"></span> sem atividade</span></div>
@@ -2260,12 +2263,48 @@ function l_owner(id){return (DB.get(T(),"leads").find(x=>x.id===id)||{}).owner;}
 function addActivity(id){
   const tit=document.getElementById("ac_titulo").value.trim()||("Atividade · "+LD_ATYPE);
   const data=document.getElementById("ac_data").value||new Date().toISOString().slice(0,10);
-  DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,done:false,owner:l_owner(id)});
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+")",ts:Date.now()});
+  const obs=((document.getElementById("ac_obs")||{}).value||"").trim();
+  DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,done:false,owner:l_owner(id),obsAg:obs});
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+")"+(obs?" — "+obs:""),ts:Date.now()});
   toast("Atividade agendada");leadDetail(id);
 }
-function doneActivity(aid,lid){DB.update(T(),"activities",aid,{done:true});
-  DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Atividade concluída",ts:Date.now()});toast("Atividade concluída");leadDetail(lid);}
+var _NEXT_TYPES=[["call","📞 Ligação"],["wa","🟢 WhatsApp"],["visita","📍 Visita / Consulta"],["reuniao","🤝 Reunião"],["email","✉️ E-mail"],["msg","💬 Mensagem"],["alarme","⏰ Lembrete"]];
+/* Fluxo único de conclusão: observação obrigatória + próxima atividade obrigatória (nada fica sem próximo passo). Vale p/ todas as empresas. */
+function concludeAct(aid,ctx){
+  var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});
+  var nx=new Date(Date.now()+864e5).toISOString().slice(0,10);
+  openModal(`<h3>Concluir atividade</h3>
+    <p class="mut" style="font-size:13px;margin:0 0 8px">${a?esc(a.titulo):''}</p>
+    <label class="fl">O que aconteceu nesta atividade? <b style="color:var(--brand-bad)">*</b></label>
+    <textarea class="in" id="caObs" rows="3" placeholder="Ex.: liguei e não atendeu / falei com o paciente, vai pensar / consulta confirmada"></textarea>
+    <div style="border-top:1px solid var(--brand-line);margin:14px 0 10px"></div>
+    <label class="fl">Próxima atividade <b style="color:var(--brand-bad)">*</b> — todo lead precisa de um próximo passo</label>
+    <input class="in" id="caNextTit" placeholder="Ex.: Ligar de novo / Enviar WhatsApp / Consulta de avaliação" style="margin-top:6px">
+    <div class="row mt8"><div style="flex:1"><label class="fl">Tipo</label><select class="in" id="caNextTipo">${_NEXT_TYPES.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>';}).join('')}</select></div>
+      <div style="flex:1"><label class="fl">Data</label><input class="in" id="caNextData" type="date" value="${nx}"></div></div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--brand-muted)"><input type="checkbox" id="caEncerrar"> Encerrar (ganho/perdido) — sem próxima atividade</label>
+    <div class="flex between mt"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="concludeActDo('${aid}','${ctx}')">Concluir</button></div>`);
+}
+function concludeActDo(aid,ctx){
+  var obs=(document.getElementById("caObs").value||"").trim();
+  if(!obs){alert("Descreva o que aconteceu nesta atividade. A observação é obrigatória.");return;}
+  var enc=document.getElementById("caEncerrar").checked;
+  var nt=(document.getElementById("caNextTit").value||"").trim();
+  var ntipo=document.getElementById("caNextTipo").value;
+  var ndata=document.getElementById("caNextData").value||new Date().toISOString().slice(0,10);
+  if(!enc&&!nt){alert("Defina a próxima atividade (ou marque encerrar).");return;}
+  var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
+  DB.update(T(),"activities",aid,{done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)});
+  if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+" — "+obs,ts:Date.now()});
+  if(!enc&&lid){
+    DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,done:false,owner:a?a.owner:l_owner(lid)});
+    DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+")",ts:Date.now()});
+  }
+  closeModal();toast(enc?"Concluída ✓":"Concluída ✓ · próxima agendada");
+  if(ctx==="tarefas")vTarefas();else if(ctx==="meudia")vMeuDia();else if(lid)leadDetail(lid);
+  renderSidebar();
+}
+function doneActivity(aid,lid){concludeAct(aid,"lead");}
 function addNote(id){const txt=document.getElementById("nt_txt").value.trim();if(!txt)return;
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"Anotação: "+txt,ts:Date.now()});toast("Anotação salva");LD_TAB="atividade";leadDetail(id);}
 function checkin(id){DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"📍 Check-in de visita (GPS capturado)",ts:Date.now()});toast("Check-in registrado com GPS");leadDetail(id);}
@@ -2507,10 +2546,10 @@ function vFunil(){
        <div class="flex" style="gap:8px"><input class="in" style="max-width:260px;font-weight:800" value="${f.name}" onchange="renameFunnel('${f.id}','name',this.value)">
          <input class="in" style="max-width:130px" value="${f.papel||''}" onchange="renameFunnel('${f.id}','papel',this.value)" placeholder="papel"></div>
        <div class="flex"><span class="pill">${f.stages.length} etapas</span><button class="btn xs ghost" onclick="delFunnel('${f.id}')">🗑 excluir funil</button></div></div>
-     <table class="mt8"><thead><tr><th>#</th><th>Etapa</th><th>SLA (h)</th><th></th></tr></thead><tbody>
+     <table class="mt8"><thead><tr><th>#</th><th>Etapa</th><th>Prazo (SLA)</th><th></th></tr></thead><tbody>
      ${f.stages.map((s,i)=>`<tr><td class="mut">${i+1}</td>
        <td><input class="in" value="${s.name}" onchange="editStage('${f.id}','${s.id}','name',this.value)"></td>
-       <td><input class="in" type="number" style="width:100px" value="${s.sla}" onchange="editStage('${f.id}','${s.id}','sla',+this.value)"></td>
+       <td><div class="flex" style="gap:6px"><input class="in" type="number" style="width:70px" value="${s.sla}" onchange="editStage('${f.id}','${s.id}','sla',+this.value)"><select class="in" style="width:90px" onchange="editStage('${f.id}','${s.id}','slaUnit',this.value)"><option value="h" ${(s.slaUnit||'h')==='h'?'selected':''}>horas</option><option value="d" ${s.slaUnit==='d'?'selected':''}>dias</option></select></div></td>
        <td><button class="btn xs ghost" onclick="delStage('${f.id}','${s.id}')">remover</button></td></tr>`).join("")}
      </tbody></table>
      <div class="flex mt8"><input class="in" id="ns_${f.id}" placeholder="nova etapa…" style="max-width:240px"><button class="btn sm" onclick="addStage('${f.id}')">+ Etapa</button></div></div>`).join("")}
@@ -2550,7 +2589,7 @@ function vTarefas(){
    ${sec("Hoje",g.today,"var(--brand-ok)","ok","🟢")}
    ${sec("Futuras",g.future,"#5f6b8f","pri","⚪")}`;
 }
-function doneTask(aid){const a=DB.get(T(),"activities").find(x=>x.id===aid);DB.update(T(),"activities",aid,{done:true});if(a)DB.push(T(),"history",{id:DB.uid(),leadId:a.leadId,tipo:"atividade",txt:"Tarefa concluída: "+a.titulo,ts:Date.now()});toast("Tarefa concluída ✅");vTarefas();renderSidebar();}
+function doneTask(aid){concludeAct(aid,"tarefas");}
 function editStage(fid,sid,k,v){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);const s=f.stages.find(x=>x.id===sid);s[k]=v;DB.set(T(),"funnels",fs);toast("Funil atualizado");}
 function delStage(fid,sid){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages=f.stages.filter(x=>x.id!==sid);DB.set(T(),"funnels",fs);vFunil();toast("Etapa removida");}
 function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();if(!nm)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages.push({id:DB.uid(),name:nm,sla:24});DB.set(T(),"funnels",fs);vFunil();toast("Etapa adicionada");}
@@ -4185,7 +4224,7 @@ function vMeuDia(){
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
    ${fila}`;
 }
-function mdDone(leadId){var acts=DB.get(T(),"activities");var i=acts.findIndex(a=>a.leadId===leadId&&a.owner===SESSION.sellerId&&!a.done);var hoje=new Date().toISOString().slice(0,10);if(i>=0){acts[i]=Object.assign({},acts[i],{done:true,doneDate:hoje});}else{acts.unshift({id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:hoje,done:true,doneDate:hoje,owner:SESSION.sellerId});}DB.set(T(),"activities",acts);toast("Registrado ✓");vMeuDia();}
+function mdDone(leadId){var acts=DB.get(T(),"activities");var a=acts.find(function(x){return x.leadId===leadId&&x.owner===SESSION.sellerId&&!x.done;})||acts.find(function(x){return x.leadId===leadId&&!x.done;});if(!a){a={id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:new Date().toISOString().slice(0,10),done:false,owner:SESSION.sellerId};acts.unshift(a);DB.set(T(),"activities",acts);}concludeAct(a.id,"meudia");}
 function mdOnbClose(){try{localStorage.setItem('pc_onb_'+(SESSION.sellerId||SESSION.name||''),'1');}catch(e){}var c=document.getElementById('onbCard');if(c)c.remove();}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
