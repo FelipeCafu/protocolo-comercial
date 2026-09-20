@@ -1180,8 +1180,13 @@ function scBOT_ICB(){return `
    <div class="script"><b>Bot:</b> (3) Vai ser por <b>convênio</b> ou <b>particular</b>? <i>[convênio → marca o plano / particular=+10]</i></div>
    <div class="script"><b>Bot:</b> (4) Você é de <b>Brasília e entorno</b>? <i>[sim=+10]</i></div>
    <div class="script"><b>Bot:</b> Perfeito! O próximo passo é uma <b>consulta de avaliação</b> com o cirurgião. Prefere <b>hoje 15h ou amanhã 10h</b>? <i>[agenda → cria lead no CRM no funil SDR]</i></div></div>
+ <div class="card mt"><h2 style="margin:0 0 8px;font-size:15px">💬 Mensagens prontas (copie e cole no WhatsApp)</h2>
+   <div class="script"><b>1ª resposta (imediata, até 5 min):</b><br>"Oi [nome]! Aqui é a [você], da ICBARI 💚 Vi que você quer saber sobre [procedimento]. Posso te fazer 2 perguntinhas rápidas pra te orientar do jeito certo?"</div>
+   <div class="script"><b>Se só perguntar o preço:</b><br>"Ótima pergunta! O valor depende da avaliação do médico e do seu caso, por isso eu não quero te passar um número que não é o seu. Na consulta o Dr. explica tudo, e muitos pacientes parcelam em até 12x. Posso já te encaixar amanhã 10h ou 16h?"</div>
+   <div class="script"><b>Handoff pro SDR humano:</b><br>"Perfeito, já entendi seu caso! Vou te passar pra nossa equipe que vai marcar sua avaliação com o cirurgião. Só um instante 💚"</div>
+   <div class="script"><b>Não respondeu (segue a cadência):</b><br>"[nome], não consegui falar com você ainda. Sei que decidir isso dá insegurança, e a consulta serve justamente pra tirar suas dúvidas, sem compromisso. Quer que eu reserve um horário essa semana?"</div></div>
  <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
-   <p class="mut" style="font-size:13px">Já tem indicação de cirurgia → agenda direto (lead quente). Só quer avaliação → SDR qualifica e agenda a consulta. Sem cidade/sem indicação → nutrição + conteúdo. Tudo cai no CRM com temperatura e score.</p></div>`;
+   <p class="mut" style="font-size:13px">Já tem indicação de cirurgia → agenda direto (lead quente). Só quer avaliação → SDR qualifica e agenda a consulta. Sem cidade/sem indicação → nutrição + conteúdo. Tudo cai no CRM com temperatura e score. <b>Regra de ouro:</b> lead que chega pelo tráfego responde em minutos, não em horas.</p></div>`;
 }
 
 function scSDR_ICB(){return `
@@ -1351,17 +1356,19 @@ const ICB_ACAD_DINAMICAS=[
  ["🎭 Roleplay 3 — Objeção do convênio","A pergunta 'meu convênio cobre?'; a B responde sem prometer cobertura e mantém o próximo passo.","8 min + feedback"]
 ];
 function vAcademyIcb(){
- var chips=[["aula","🎬 Apresentação"],["agenda","📋 Roteiro"],["conteudo","📚 Método"],["personas","🧑‍⚕️ Personas"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]];
+ var chips=[["aula","🎬 Começar"],["agenda","📋 Plano da aula"],["conteudo","📚 Como a gente vende"],["personas","🧑‍⚕️ Com quem você fala"],["dinamicas","🎭 Treinar (roleplay)"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Objeções"],["compromisso","✅ Compromissos"]];
  if(!chips.find(function(c){return c[0]===ACAD_TAB;}))ACAD_TAB="aula";
  var body="";
  if(ACAD_TAB==="aula"){
    body=`<div class="card"><h2 style="margin:0 0 6px;font-size:16px">🎬 Treinamento comercial da ICBARI</h2>
-     <p class="mut" style="font-size:13px;margin:0 0 12px">Uma clínica que conduz o paciente do primeiro contato ao pós-operatório. Aqui o time aprende a <b>converter em etapas</b>: contato → consulta → exames → cirurgia. Abra as apresentações e o roteiro completo.</p>
+     <p class="mut" style="font-size:13px;margin:0 0 8px">Esta é a <b>aula que o gestor conduz com o time</b> (cerca de 3h). Cada aba acima é uma parte: <b>Plano da aula</b> (a ordem), <b>Como a gente vende</b> (o método), <b>Com quem você fala</b> (as personas), <b>Treinar</b> (roleplay), <b>Script de bolso</b>, <b>Objeções</b> e <b>Compromissos</b>.</p>
+     <p class="mut" style="font-size:12px;margin:0 0 12px">Obs.: as <b>apresentações</b> (para mostrar ao paciente) e o <b>roteiro/script de cada papel</b> ficam no menu <b>Roteiro & Apresentações</b> e <b>Script de Vendas</b>.</p>
      <div class="flex wrap" style="gap:8px"><button class="btn gold sm" onclick="window.open('apresentacoes/icbari/apresentacao-SDR.html','_blank')">▶ Apresentação SDR</button>
        <button class="btn gold sm" onclick="window.open('apresentacoes/icbari/apresentacao-CLOSER.html','_blank')">▶ Apresentação Closer</button>
        <button class="btn ghost sm" onclick="go('roteiro')">🎤 Roteiro completo</button></div></div>`;
  }else if(ACAD_TAB==="agenda"){
-   body=`<div class="card"><h2 style="margin:0 0 10px;font-size:15px">Roteiro do treinamento (3h)</h2>
+   body=`<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Plano da aula (treinamento guiado ~3h)</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">A ordem em que o gestor conduz o treino com o time. Cada módulo abaixo é um bloco da aula.</p>
      ${ICB_ACAD_AGENDA.map(function(a,i){return `<div style="display:flex;gap:14px;padding:12px 0;border-bottom:${i<ICB_ACAD_AGENDA.length-1?'1px solid var(--brand-line)':'none'}">
        <div style="min-width:52px"><b style="font-size:13px">${a[0]}</b><div class="mut" style="font-size:11px">${a[1]}</div></div>
        <div><b style="font-size:13.5px">${a[2]}</b>${a[3]?`<p class="mut" style="font-size:12.5px;margin:3px 0 0">${a[3]}</p>`:''}</div></div>`;}).join("")}</div>`;
@@ -1374,7 +1381,8 @@ function vAcademyIcb(){
           ["3 · Exames → Cirurgia","Resultados, retorno ao médico e marcação da cirurgia com o checklist do hospital."],
           ["4 · Cirurgia → Pós-op","Acompanhamento em 1, 2 e 3 meses. É onde nasce a indicação."]].map(function(x){return `<div class="card" style="margin:0"><b style="font-size:13px">${x[0]}</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">${x[1]}</p></div>`;}).join("")}</div></div>`;
  }else if(ACAD_TAB==="personas"){
-   body=`<div class="card"><h2 style="margin:0 0 10px;font-size:15px">Personas de paciente & dores</h2>
+   body=`<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Com quem você fala (personas) & o que cada um precisa ouvir</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">Identifique o tipo de paciente na conversa e leve a mensagem certa (coluna da direita).</p>
      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
      ${ICB_ACAD_PERSONAS.map(function(p){return `<div class="card" style="margin:0"><b>${p[0]}</b><p class="mut" style="font-size:12.5px;margin:6px 0">${p[1]}</p><span class="pill pri">${p[2]}</span></div>`;}).join("")}</div></div>`;
  }else if(ACAD_TAB==="dinamicas"){
