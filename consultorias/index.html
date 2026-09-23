@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O Protocolo Comercial</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="apresentacoes/icbari/roteiro-icbari.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1923,7 +1924,7 @@ const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"rot
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
 const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro & Apresentações"},
  {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
@@ -1933,8 +1934,11 @@ const NAV_ICB=[
 ];
 /* ICBARI — CS/pós-venda vê o Meu Dia + a Jornada do Paciente */
 const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
+/* ICBARI — SDR/Closer também podem subir os leads de tráfego do dia */
+const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 function activeNav(){
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
+  if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;
   if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
@@ -1973,7 +1977,7 @@ function go(view){
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
   /* prova nao trava mais o trabalho (Pergunta 1) — vira habito, nao cadeado */
   ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,diagnostico:vDiagnostico,
-    jornada:vJornada,cirmodelos:vCirModelos,
+    jornada:vJornada,cirmodelos:vCirModelos,importtrafego:vImportTrafego,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
 }
@@ -2648,6 +2652,147 @@ function baseNovoDo(){
     email:document.getElementById("nbEmail").value.trim(),cpf:"",cargo:"",instagram:"",membro:"",ramo:document.getElementById("nbRamo").value.trim(),
     origens:[document.getElementById("nbOrig").value.trim()||"Manual"],obs:"",inCrm:false});
   DB.set(T(),"base",base);closeModal();toast("Contato adicionado à Base");vBase();
+}
+
+/* ===== IMPORTAR LEADS DE TRÁFEGO (ICBARI) — entram direto no CRM (quentes) ===== */
+var TRAF_PARSED=null;
+function vImportTrafego(){
+  TRAF_PARSED=null;
+  M().innerHTML=`
+   <div class="view-title"><h1>📥 Importar Leads de Tráfego</h1><span class="pill pri">CRM · quentes</span></div>
+   <p class="view-sub">Suba a planilha do dia (Excel ou CSV) ou cole as linhas. Os leads entram <b>direto no CRM</b>, em <b>Prospecção → Novo Lead</b>, marcados como <b>quentes</b> e <b>sem dono</b> (o gestor distribui na sequência). Nada é apagado e os que já estão no CRM (mesmo telefone) são ignorados automaticamente.</p>
+   <div class="card">
+     <div class="flex wrap" style="gap:18px;align-items:flex-start">
+       <div style="flex:1;min-width:260px">
+         <label class="mut" style="font-size:12px;display:block;margin-bottom:6px"><b>1)</b> Enviar arquivo (.xlsx, .xls ou .csv)</label>
+         <input class="in" type="file" accept=".xlsx,.xls,.csv,text/csv" onchange="trafFile(this)">
+         <div class="mut" style="font-size:11.5px;margin-top:6px">Exporte do Meta/Google ou da sua planilha com colunas <b>Nome</b>, <b>Telefone</b> e <b>E-mail</b>. A 1ª linha deve ser o cabeçalho.</div>
+       </div>
+       <div style="flex:1;min-width:260px">
+         <label class="mut" style="font-size:12px;display:block;margin-bottom:6px"><b>2)</b> Ou colar da planilha (copia e cola)</label>
+         <textarea class="in" id="trafText" rows="5" placeholder="Nome, Telefone, E-mail&#10;Maria Silva, 61 99999-0000, maria@email.com&#10;João Souza, 61 98888-1111, joao@email.com" style="width:100%;font-family:monospace;font-size:12px"></textarea>
+         <button class="btn ghost sm" style="margin-top:8px" onclick="trafParseText(document.getElementById('trafText').value,'colado')">Processar dados colados</button>
+       </div>
+     </div>
+   </div>
+   <div id="trafPreview"></div>`;
+}
+function trafFile(inp){
+  var f=inp&&inp.files&&inp.files[0];if(!f)return;
+  var ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    if(!window.XLSX){toast("Leitor de Excel ainda carregando — tente de novo em 2s, ou cole os dados","warn");return;}
+    var r1=new FileReader();
+    r1.onload=function(e){try{var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];var m=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});trafBuild(m,f.name);}catch(err){toast("Não consegui ler o Excel: "+err.message,"bad");}};
+    r1.readAsArrayBuffer(f);
+  } else {
+    var r2=new FileReader();r2.onload=function(e){trafParseText(e.target.result,f.name);};r2.readAsText(f,'utf-8');
+  }
+}
+function _trafCsv(text,delim){
+  var rows=[],row=[],cur='',q=false;
+  for(var i=0;i<text.length;i++){var c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else{ if(c==='"')q=true; else if(c===delim){row.push(cur);cur='';} else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';} else if(c==='\r'){} else cur+=c; }
+  }
+  row.push(cur);if(row.length>1||(row[0]||'').trim()!=='')rows.push(row);
+  return rows;
+}
+function trafParseText(text,name){
+  text=String(text||'');if(!text.trim()){toast("Cole os dados ou envie um arquivo","warn");return;}
+  var fl=text.split(/\r?\n/)[0]||'';
+  var delim=fl.indexOf('\t')>=0?'\t':((fl.split(';').length>fl.split(',').length)?';':',');
+  trafBuild(_trafCsv(text,delim),name||'colado');
+}
+function trafBuild(matrix,name){
+  matrix=(matrix||[]).map(function(r){return (r||[]).map(function(c){return c==null?'':String(c);});}).filter(function(r){return r.some(function(c){return String(c).trim()!=='';});});
+  if(!matrix.length){toast("Arquivo/texto vazio","warn");return;}
+  var kw=/nome|name|lead|paciente|cliente|telefone|\btel\b|phone|fone|celular|whats|e-?mail|email|contato/i;
+  var hasHeader=matrix[0].some(function(c){return kw.test(String(c));});
+  var headers,rows;
+  if(hasHeader){headers=matrix[0];rows=matrix.slice(1);}
+  else{var w=0;matrix.forEach(function(r){if(r.length>w)w=r.length;});headers=[];for(var i=0;i<w;i++)headers.push('Coluna '+(i+1));rows=matrix;}
+  TRAF_PARSED={headers:headers,rows:rows,name:name||'',map:trafGuess(headers,rows)};
+  trafRender();
+}
+function trafGuess(headers,rows){
+  var m={nome:-1,tel:-1,email:-1,proc:-1,camp:-1};
+  headers.forEach(function(h,i){h=String(h||'').toLowerCase();
+    if(m.nome<0&&/nome|name|lead|paciente|cliente|full.?name/.test(h)&&!/empresa|company|sobrenome|last/.test(h))m.nome=i;
+    if(m.tel<0&&/tel|phone|fone|celular|whats|contato|n.mero|number/.test(h))m.tel=i;
+    if(m.email<0&&/e-?mail/.test(h))m.email=i;
+    if(m.proc<0&&/procedimento|interesse|cirurgia|servi|assunto|mensagem|message/.test(h))m.proc=i;
+    if(m.camp<0&&/campanha|campaign|an.ncio|conjunto|form|origem|fonte|source|midia|m.dia/.test(h))m.camp=i;
+  });
+  if(m.tel<0||m.email<0||m.nome<0){
+    var cols=headers.length,score=[];
+    for(var c=0;c<cols;c++){var dig=0,at=0,txt=0;
+      rows.slice(0,40).forEach(function(r){var v=String(r[c]||'').trim();if(!v)return;var d=v.replace(/\D/g,'');
+        if(v.indexOf('@')>=0)at++;else if(d.length>=8&&d.length<=13)dig++;else txt++;});
+      score[c]={dig:dig,at:at,txt:txt};}
+    if(m.email<0){var be=-1,bv=0;score.forEach(function(s,c){if(s.at>bv){bv=s.at;be=c;}});if(bv>0)m.email=be;}
+    if(m.tel<0){var bt=-1,bd=0;score.forEach(function(s,c){if(s.dig>bd&&c!==m.email){bd=s.dig;bt=c;}});if(bd>0)m.tel=bt;}
+    if(m.nome<0){var bn=-1,bx=0;score.forEach(function(s,c){if(s.txt>bx&&c!==m.email&&c!==m.tel){bx=s.txt;bn=c;}});m.nome=bn>=0?bn:0;}
+  }
+  return m;
+}
+function _trafOpts(sel){return TRAF_PARSED.headers.map(function(h,i){return '<option value="'+i+'"'+((+sel)===i?' selected':'')+'>'+esc(String(h||('Coluna '+(i+1))))+'</option>';}).join('');}
+function trafSetMap(f,v){if(TRAF_PARSED){TRAF_PARSED.map[f]=parseInt(v,10);trafRender();}}
+function _trafScan(){
+  var map=TRAF_PARSED.map,rows=TRAF_PARSED.rows,leads=DB.get(T(),"leads");
+  var exTel={},exNome={};leads.forEach(function(l){var t=_telDig(l.contato&&l.contato.tel);if(t)exTel[t]=1;var n=(l.nome||'').trim().toLowerCase();if(n)exNome[n]=1;});
+  var sTel={},sNome={},out={novos:0,dup:0,vazio:0,total:rows.length,sample:[],items:[]};
+  rows.forEach(function(r){
+    var nome=String(map.nome>=0?(r[map.nome]||''):'').trim();
+    var tel=String(map.tel>=0?(r[map.tel]||''):'').trim();
+    var email=String(map.email>=0?(r[map.email]||''):'').trim();
+    var proc=String(map.proc>=0?(r[map.proc]||''):'').trim();
+    var camp=String(map.camp>=0?(r[map.camp]||''):'').trim();
+    var td=_telDig(tel),nl=nome.toLowerCase(),st;
+    if(!nome&&!tel){out.vazio++;st='vazio';}
+    else if((td&&(exTel[td]||sTel[td]))||(!td&&nl&&(exNome[nl]||sNome[nl]))){out.dup++;st='dup';}
+    else{out.novos++;st='novo';if(td)sTel[td]=1;if(nl)sNome[nl]=1;out.items.push({nome:nome,tel:tel,email:email,proc:proc,camp:camp});}
+    if(out.sample.length<8)out.sample.push({nome:nome,tel:tel,email:email,st:st});
+  });
+  return out;
+}
+function trafRender(){
+  var el=document.getElementById("trafPreview");if(!el){return;}
+  if(!TRAF_PARSED){el.innerHTML='';return;}
+  var st=_trafScan(),map=TRAF_PARSED.map;
+  function selRow(label,field){return '<div style="min-width:150px"><label class="mut" style="font-size:11px;display:block;margin-bottom:3px">'+label+'</label><select class="in" onchange="trafSetMap(\''+field+'\',this.value)"><option value="-1"'+(map[field]<0?' selected':'')+'>— nenhuma —</option>'+_trafOpts(map[field])+'</select></div>';}
+  el.innerHTML='<div class="card" style="margin-top:12px">'
+   +'<div class="flex between wrap" style="gap:8px;align-items:center"><b>Confira as colunas antes de importar</b><small class="mut">'+esc(TRAF_PARSED.name||'')+' · '+st.total+' linha(s)</small></div>'
+   +'<div class="flex wrap" style="gap:10px;margin-top:10px">'+selRow('Nome','nome')+selRow('Telefone','tel')+selRow('E-mail','email')+selRow('Interesse / Procedimento','proc')+selRow('Campanha / Origem','camp')+'</div>'
+   +'<div class="flex wrap" style="gap:10px;margin-top:14px;font-size:13px"><span class="pill ok">'+st.novos+' novo(s)</span><span class="pill">'+st.dup+' já no CRM</span>'+(st.vazio?'<span class="pill">'+st.vazio+' sem dados</span>':'')+'</div>'
+   +'<div style="overflow:auto;margin-top:12px;max-height:40vh"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Situação</th></tr></thead><tbody>'
+   +st.sample.map(function(s){var tag=s.st==='novo'?'<span class="pill ok">novo</span>':(s.st==='dup'?'<span class="pill">já no CRM</span>':'<span class="pill">sem dados</span>');return '<tr><td>'+esc(s.nome||'—')+'</td><td>'+esc(s.tel||'—')+'</td><td>'+esc(s.email||'—')+'</td><td>'+tag+'</td></tr>';}).join('')
+   +'</tbody></table>'+(st.total>8?'<div class="mut" style="font-size:11px;margin-top:6px">Mostrando as 8 primeiras linhas.</div>':'')+'</div>'
+   +'<div class="flex between wrap mt" style="align-items:center;gap:10px"><small class="mut">Entram em <b>Prospecção → Novo Lead</b>, quentes, sem dono, com atividade "Ligar agora".</small>'
+   +'<button class="btn" '+(st.novos?'':'disabled')+' onclick="trafImport()">📥 Importar '+st.novos+' lead(s) para o CRM</button></div>'
+   +'</div>';
+}
+function trafImport(){
+  if(!TRAF_PARSED){toast("Envie ou cole os leads primeiro","warn");return;}
+  var st=_trafScan();
+  if(!st.novos){toast("Nenhum lead novo para importar"+(st.dup?" ("+st.dup+" já estavam no CRM)":""),"warn");return;}
+  var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),hist=DB.get(T(),"history");
+  var hoje=new Date().toISOString().slice(0,10),n=0;
+  st.items.forEach(function(it){
+    var lid=DB.uid();
+    leads.unshift({id:lid,nome:it.nome||"(sem nome)",fantasia:"",razaoSocial:"",setor:it.proc||"",
+      contato:{nome:it.nome,tel:it.tel||"",email:it.email||""},
+      origem:"Tráfego"+(it.camp?" · "+it.camp:""),funnelId:"prospeccao",estagio:"novo",temp:"quente",valor:0,score:100,
+      owner:"",criadoEm:Date.now(),movedAt:Date.now(),
+      notas:"Lead de tráfego"+(it.proc?" · interesse: "+it.proc:"")+(it.camp?" · campanha: "+it.camp:"")});
+    acts.unshift({id:DB.uid(),leadId:lid,tipo:"call",titulo:"Ligar agora — lead quente (tráfego)",data:hoje,done:false,owner:""});
+    hist.unshift({id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead importado do tráfego"+(it.camp?" ("+it.camp+")":""),ts:Date.now()});
+    n++;
+  });
+  DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);DB.set(T(),"history",hist);
+  TRAF_PARSED=null;
+  toast(n+" lead(s) de tráfego no CRM"+(st.dup?" · "+st.dup+" duplicado(s) ignorado(s)":""));
+  renderSidebar();go("crm");
 }
 
 /* ===== CONFIG DOS FUNIS ===== */
