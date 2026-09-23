@@ -727,13 +727,16 @@ const FUNNELS_ICB=[
    exames = exames de imagem/laboratório; aval = avaliações/consultas de especialistas;
    docs = itens exigidos para marcar a cirurgia no hospital. */
 const ICB_LAB_BASICO=["Hemograma completo","Glicemia de jejum","Sódio, Potássio, Ureia e Creatinina","Lipidograma completo","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase, LDH"];
-const ICB_LAB_BARIATRICA=["Hemograma completo","Glicemia de jejum, Insulina basal, HbA1c, Ácido úrico","Sódio, Potássio, Ureia, Creatinina","Lipidograma completo","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase, LDH","T3, T4 livre, TSH, Anti-TPO e Anti-TG","Vitamina B12, Vitamina D, Vitamina C, Cálcio, Ácido fólico, PTH","Ferro sérico, Ferritina, Transferrina","Sorologia para Hepatites B e C","Sorologia para Chagas e HIV","Prolactina, FSH, LH e Estradiol","DHEA e Sulfato de DHEA","Testosterona livre (homens)","ACTH","IGF-1","Androstenediona","Cortisol salivar noturno","EAS","Dosagem de cortisol após 1 mg de Dexametasona"];
+const ICB_LAB_BARIATRICA=["Hemograma completo","Glicemia de jejum, Insulina basal, HbA1c, Ácido úrico","Sódio, Potássio, Ureia, Creatinina","Lipidograma completo","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase, LDH","T3, T4 livre, TSH, Anti-TPO e Anti-TG","Vitamina B12, Vitamina D, Cálcio, Ácido fólico, PTH","Ferro sérico, Ferritina, Transferrina","Sorologia para Hepatites B e C","Sorologia para Chagas e HIV","Prolactina, FSH, LH e Estradiol","DHEA e Sulfato de DHEA","Testosterona livre (homens)","ACTH","IGF-1","Androstenediona","Cortisol salivar noturno","EAS"];
+/* Labs específicos por procedimento (fonte: pedidos pré-operatórios assinados Dr. Wander, CRM-DF 21361) */
+const ICB_LAB_HERNIA=["Hemograma completo","Glicemia de jejum, Insulina basal, HbA1c","Ureia, Creatinina","Coagulograma completo","EAS"];
+const ICB_LAB_VESICULA=["Hemograma completo","Glicemia de jejum, Insulina basal, HbA1c","Ureia, Creatinina","Coagulograma completo","TGO, TGP, Fosfatase Alcalina, GamaGT, Bilirrubinas totais e frações","Amilase, Lipase","EAS"];
 const ICB_DOCS_HOSP=["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio (se houver)","Carteirinha do convênio + documento com foto + CPF"];
 /* Modelos de cirurgia + exames (fonte: documento oficial "Exames essenciais para solicitação de cirurgia" da ICBARI).
    exames = imagem/laboratório; aval = laudos/avaliações de especialistas; docs = itens p/ marcar no hospital. Editável pelo gestor. */
 const ICB_CIRURGIAS_DEFAULT=[
  {id:"bariatrica",nome:"Cirurgia Bariátrica e Metabólica",cat:"Obesidade e Metabólica",
-  exames:["USG / Ecografia de abdome total","Endoscopia Digestiva Alta (EDA)","Polissonografia","Bioimpedância","RX de tórax","Exames cardiológicos (a pedido do cardiologista)","USG / Ecografia de tireoide (opcional)","USG / Ecografia transvaginal (opcional)","Espirometria (opcional)"].concat(ICB_LAB_BARIATRICA),
+  exames:["Endoscopia Digestiva Alta (EDA) com pesquisa de H. pylori e biópsia (com suporte anestésico)","Ecografia (USG) de abdome total","Ecografia (USG) de tireoide","Polissonografia domiciliar","Espirometria","RX de tórax (PA e perfil)","Bioimpedanciometria corporal","MAPA (monitorização ambulatorial da pressão arterial)"].concat(ICB_LAB_BARIATRICA),
   aval:["Consulta com Cirurgião","Laudo de Endocrinologia","Laudo de Nutrição","Laudo de Psicólogo","Laudo de Cardiologia","Laudo de Pneumologia (opcional)"],
   docs:["Pedido médico com código do procedimento","Laudos (endócrino, nutrição, psicólogo, cardiologia)","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / OPME (se houver)","Carteirinha do convênio + documento com foto + CPF"]},
  {id:"diastase",nome:"Diástase Abdominal (vídeo/robótica)",cat:"Parede Abdominal",
@@ -741,24 +744,24 @@ const ICB_CIRURGIAS_DEFAULT=[
   aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
   docs:ICB_DOCS_HOSP.slice(),notas:"Perfil ideal: IMC abaixo de 30 e diástase documentada (quanto mais magra a paciente, mais visível o resultado)."},
  {id:"hernia_umbilical",nome:"Herniorrafia Umbilical",cat:"Parede Abdominal",
-  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
-  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve","RX de tórax (PA e perfil)"].concat(ICB_LAB_HERNIA),
+  aval:["Consulta com Cirurgião","Cardiologista — Risco Cirúrgico"],
   docs:ICB_DOCS_HOSP.slice()},
  {id:"hernia_epigastrica",nome:"Herniorrafia Epigástrica",cat:"Parede Abdominal",
-  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
-  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU Tomografia (TC) de abdome total ou pelve","RX de tórax (PA e perfil)"].concat(ICB_LAB_HERNIA),
+  aval:["Consulta com Cirurgião","Cardiologista — Risco Cirúrgico"],
   docs:ICB_DOCS_HOSP.slice()},
  {id:"hernia_inguinal_uni",nome:"Herniorrafia Inguinal Unilateral",cat:"Parede Abdominal",
-  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
-  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal OU Tomografia (TC) de abdome total ou pelve","RX de tórax (PA e perfil)"].concat(ICB_LAB_HERNIA),
+  aval:["Consulta com Cirurgião","Cardiologista — Risco Cirúrgico"],
   docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / tela (OPME) se houver","Carteirinha do convênio + documento com foto + CPF"]},
  {id:"hernia_inguinal_bi",nome:"Herniorrafia Inguinal Bilateral",cat:"Parede Abdominal",
-  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal bilateral OU Tomografia (TC) de abdome total ou pelve"].concat(ICB_LAB_BASICO),
-  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  exames:["USG / Ecografia de parede abdominal (partes moles) OU de região inguinal bilateral OU Tomografia (TC) de abdome total ou pelve","RX de tórax (PA e perfil)"].concat(ICB_LAB_HERNIA),
+  aval:["Consulta com Cirurgião","Cardiologista — Risco Cirúrgico"],
   docs:["Pedido médico com código do procedimento","Laudos dos exames pré-operatórios","Termo de Consentimento Cirúrgico assinado","Termo de Consentimento Anestésico","Autorização do convênio / tela (OPME) se houver","Carteirinha do convênio + documento com foto + CPF"]},
  {id:"colecistectomia",nome:"Colecistectomia (retirada da vesícula)",cat:"Vesícula Biliar",
-  exames:["USG / Ecografia de abdome total OU Tomografia (TC) de abdome total"].concat(ICB_LAB_BASICO),
-  aval:["Consulta com Cirurgião","Risco cardiológico (Cardiologista)"],
+  exames:["USG / Ecografia de abdome total (documenta o cálculo)","RX de tórax (PA e perfil)"].concat(ICB_LAB_VESICULA),
+  aval:["Consulta com Cirurgião","Cardiologista — Risco Cirúrgico"],
   docs:ICB_DOCS_HOSP.slice(),notas:"Perfil ideal: exame de imagem prévio mostrando cálculo."},
  {id:"refluxo",nome:"Cirurgia de Refluxo (DRGE) / Hérnia de Hiato",cat:"Esôfago/Estômago",
   exames:["Endoscopia Digestiva Alta (EDA)","pHmetria esofágica","Manometria esofágica","Cintilografia de esvaziamento esofágico (opcional)","SEED — seriografia esôfago/estômago/duodeno (opcional)","Tomografia de tórax e abdome (opcional)"].concat(ICB_LAB_BASICO),
