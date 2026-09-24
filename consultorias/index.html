@@ -1929,6 +1929,10 @@ const NAV_CEO=[
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"}
 ];
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
+/* Líderes — vendedores (SDR/Closer/CS) acessam também CRM, Base, Prospecção, Scripts, Roteiro e Academia */
+const NAV_SELLER_LID=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"}];
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
 const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
@@ -1947,6 +1951,7 @@ const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:
 function activeNav(){
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
+  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;
   if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
