@@ -614,9 +614,11 @@ function roleLabel(r){return r==="closer"?lx("closerRoleUp"):(r||"").toUpperCase
 const USERS={
   protocolo:{pass:"1234",role:"consultor",tenant:"all",name:"Consultor Protocolo",initials:"PC"},
   lideres:  {pass:"1234",role:"gestor",   tenant:"lideres",name:"Líderes do Brasil",initials:"LB"},
-  sdr:      {pass:"1234",role:"sdr",      tenant:"lideres",name:"Ana Martins (SDR)",initials:"AM",sellerId:"ana"},
-  closer:   {pass:"1234",role:"closer",   tenant:"lideres",name:"Bruno Costa (Closer)",initials:"BC",sellerId:"bruno"},
-  cs:       {pass:"1234",role:"cs",       tenant:"lideres",name:"Carla Dias (CS)",initials:"CD",sellerId:"carla"},
+  "lis.lid":     {pass:"lislideres",     role:"sdr",    tenant:"lideres",name:"Lis (SDR)",        initials:"LI",sellerId:"lis"},
+  "melissa.lid": {pass:"melissalideres", role:"sdr",    tenant:"lideres",name:"Melissa (SDR)",    initials:"ME",sellerId:"melissa"},
+  "jessica.lid": {pass:"jessicalideres", role:"cs",     tenant:"lideres",name:"Jéssica (CS)",      initials:"JE",sellerId:"jessica"},
+  "daher.lid":   {pass:"daherlideres",   role:"closer", tenant:"lideres",name:"Daher (Closer)",   initials:"DA",sellerId:"daher"},
+  "claudia.lid": {pass:"claudialideres", role:"closer", tenant:"lideres",name:"Cláudia (Closer)", initials:"CL",sellerId:"claudia"},
   /* ===== B2 Inteligência Financeira ===== */
   ceob2:      {pass:"1234", role:"ceo",   tenant:"b2if",name:"Ricardo Bastos (CEO)",     initials:"RB"},
   b2if:       {pass:"1234", role:"gestor",tenant:"b2if",name:"Diego Martins (Gestor)",   initials:"DM"},
@@ -1475,10 +1477,11 @@ function seed(){
     beneficios:["Tudo do Master","Board de Membros Premium mensal (até 12 membros)","High Table exclusivo (a cada 2 meses)","Visita dos consultores à empresa do membro","Acesso ilimitado a reuniões e eventos","+1h de consultoria individualizada"]}
   ]);
   DB.set(t,"sellers",[
-   {id:"ana",nome:"Ana Martins",papel:"SDR",meta:40,realizado:31,foto:"AM"},
-   {id:"carla",nome:"Carla Dias",papel:"CS",meta:30,realizado:28,foto:"CD"},
-   {id:"bruno",nome:"Bruno Costa",papel:"Closer",meta:12,realizado:9,foto:"BC"},
-   {id:"diego",nome:"Diego Reis",papel:"Closer",meta:12,realizado:13,foto:"DR"}
+   {id:"lis",nome:"Lis",papel:"SDR",meta:40,realizado:0,foto:"LI"},
+   {id:"melissa",nome:"Melissa",papel:"SDR",meta:40,realizado:0,foto:"ME"},
+   {id:"jessica",nome:"Jéssica",papel:"CS",meta:30,realizado:0,foto:"JE"},
+   {id:"daher",nome:"Daher",papel:"Closer",meta:12,realizado:0,foto:"DA"},
+   {id:"claudia",nome:"Cláudia",papel:"Closer",meta:12,realizado:0,foto:"CL"}
   ]);
   const now=Date.now(),d=864e5,h=36e5;
   const L=o=>({id:DB.uid(),owner:"ana",temp:"morno",criadoEm:now-2*d,movedAt:now-1*d,score:70,funnelId:"prospeccao",...o});
