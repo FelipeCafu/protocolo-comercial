@@ -5314,9 +5314,12 @@ function closeModal(){document.getElementById("modalRoot").innerHTML="";}
 let toastT;
 function toast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.style.borderLeftColor=type==="bad"?"var(--brand-bad)":type==="warn"?"var(--brand-warn)":"var(--brand-ok)";t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);}
 
-initCloud();seed();seedB2();seedIcbari();document.getElementById("loginFelipe").src=FELIPE_BIG;setLoginBrand("protocolo");startBgFx();rotatePhrases();
+initCloud();seed();seedB2();seedIcbari();document.getElementById("loginFelipe").src=FELIPE_BIG;
+/* Link de entrada direta por empresa: ?e=lideres | ?e=icbari | ?e=b2  → já abre o login com a marca da empresa, sem expor as outras */
+(function(){try{var sp=new URLSearchParams(location.search);var q=(sp.get("e")||sp.get("empresa")||"").toLowerCase();var map={lideres:"lideres",b2:"b2if",b2if:"b2if",icbari:"icbari"};var t=map[q];if(t&&BRANDS[t]){applyBrand(t);setLoginBrand(t);window.__forcedBrand=t;return;}}catch(e){}setLoginBrand("protocolo");})();
+startBgFx();rotatePhrases();
 document.getElementById("lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:"protocolo";setLoginBrand(BRANDS[b]?b:"protocolo");});
+document.getElementById("lgUser").addEventListener("input",e=>{const v=e.target.value.trim().toLowerCase();const acc=USERS[v];const fb=window.__forcedBrand||"protocolo";const b=acc&&acc.tenant&&acc.tenant!=="all"?acc.tenant:fb;setLoginBrand(BRANDS[b]?b:fb);});
 /* SEGURANÇA — bloqueio automático por inatividade (30 min): protege dados numa tela deixada aberta */
 var _idleMs=30*60*1000,_idleTimer=null;
 function _doIdleLogout(){if(!(typeof SESSION!=='undefined'&&SESSION))return;try{localStorage.removeItem('pc_sso');localStorage.removeItem('pc_sso_user');localStorage.removeItem('pc_sso_pass');}catch(e){}try{toast&&toast('Sessão encerrada por inatividade 🔒');}catch(e){}location.reload();}
