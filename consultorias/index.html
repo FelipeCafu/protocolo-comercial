@@ -1896,7 +1896,7 @@ function openConsultoria(){
   if(!CLOUD_SYNCED["icbari"])syncTenant("icbari");
 }
 const NAV=[
- {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade",roles:["consultor","gestor"]},
+ {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial",ten:"lideres"},
@@ -1906,7 +1906,7 @@ const NAV=[
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 const NAV_B2=[
- {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade",roles:["consultor","gestor"]},
+ {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
  {g:"Jornada Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"scripts",ic:"💬",t:"Playbook de Vendas"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
@@ -1916,7 +1916,7 @@ const NAV_B2=[
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 const NAV_CEO=[
- {g:"Executivo"},{id:"exec",ic:"📈",t:"Painel Executivo"},{id:"painel",ic:"📊",t:"Painel Comercial"},{id:"diagnostico",ic:"🩺",t:"Diagnóstico de Maturidade"},
+ {g:"Executivo"},{id:"exec",ic:"📈",t:"Painel Executivo"},{id:"painel",ic:"📊",t:"Painel Comercial"},
  {g:"Resultado"},{id:"perf",ic:"🏆",t:"Performance do Time"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},
  {id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},{id:"fidelidade",ic:"💚",t:"Carteira & NPS"},
  {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
@@ -2562,7 +2562,7 @@ function vBase(){
      </div>
      <div class="flex between wrap mt8" style="gap:8px">
        <div class="mut" id="bCount" style="font-size:12.5px"></div>
-       <div class="flex" style="gap:8px"><button class="btn sm" onclick="baseSendSelected()">➡️ Enviar selecionados p/ CRM</button><button class="btn ghost sm" onclick="baseNovo()">+ Novo contato</button></div>
+       <div class="flex" style="gap:8px"><button class="btn sm" onclick="baseSendSelected()">➡️ Enviar selecionados p/ CRM</button><button class="btn ghost sm" onclick="baseImportOpen()">📥 Importar planilha</button><button class="btn ghost sm" onclick="baseNovo()">+ Novo contato</button></div>
      </div>
      <div style="overflow:auto;margin-top:10px;max-height:62vh"><table><thead><tr>
        <th style="width:26px"><input type="checkbox" id="bAll" onclick="baseToggleAll(this.checked)"></th>
@@ -2655,6 +2655,98 @@ function baseNovoDo(){
     email:document.getElementById("nbEmail").value.trim(),cpf:"",cargo:"",instagram:"",membro:"",ramo:document.getElementById("nbRamo").value.trim(),
     origens:[document.getElementById("nbOrig").value.trim()||"Manual"],obs:"",inCrm:false});
   DB.set(T(),"base",base);closeModal();toast("Contato adicionado à Base");vBase();
+}
+
+/* ===== IMPORTAR CLIENTES NA BASE (planilha Excel/CSV/colar) — todas as empresas ===== */
+var BASE_IMP=null;
+function baseImportOpen(){
+  BASE_IMP=null;
+  openModal(`<h3>📥 Importar ${lx("Clientes")} para a Base</h3>
+   <p class="mut" style="font-size:13px">Suba uma planilha (Excel .xlsx/.xls ou CSV) ou cole as linhas. Detecto as colunas, ignoro repetidos (mesmo telefone/nome) e adiciono à Base. Nada é apagado.</p>
+   <label class="mut" style="font-size:12px;display:block;margin-bottom:4px">Arquivo (.xlsx, .xls ou .csv)</label>
+   <input class="in" type="file" accept=".xlsx,.xls,.csv,text/csv" onchange="baseImpFile(this)" style="margin-bottom:10px">
+   <label class="mut" style="font-size:12px;display:block;margin-bottom:4px">Ou colar da planilha</label>
+   <textarea class="in" id="baseImpText" rows="4" placeholder="Nome, Empresa, Telefone, E-mail&#10;Maria Silva, Padaria X, 61 99999-0000, maria@email.com" style="width:100%;font-family:monospace;font-size:12px"></textarea>
+   <button class="btn ghost sm" style="margin-top:6px" onclick="baseImpText()">Processar</button>
+   <div id="baseImpPrev"></div>`);
+}
+function baseImpFile(inp){
+  var f=inp&&inp.files&&inp.files[0];if(!f)return;var ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(ext==='xlsx'||ext==='xls'){
+    if(!window.XLSX){toast("Leitor de Excel ainda carregando — tente de novo ou cole os dados","warn");return;}
+    var r=new FileReader();r.onload=function(e){try{var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];baseImpBuild(XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false}),f.name);}catch(err){toast("Não consegui ler o Excel: "+err.message,"bad");}};r.readAsArrayBuffer(f);
+  } else { var r2=new FileReader();r2.onload=function(e){baseImpParse(e.target.result,f.name);};r2.readAsText(f,'utf-8'); }
+}
+function baseImpText(){ baseImpParse((document.getElementById('baseImpText')||{}).value||'','colado'); }
+function baseImpParse(text,name){
+  text=String(text||'');if(!text.trim()){toast("Cole os dados ou envie um arquivo","warn");return;}
+  var fl=text.split(/\r?\n/)[0]||'';var d=fl.indexOf('\t')>=0?'\t':((fl.split(';').length>fl.split(',').length)?';':',');
+  baseImpBuild(_trafCsv(text,d),name||'colado');
+}
+function baseImpBuild(matrix,name){
+  matrix=(matrix||[]).map(function(r){return (r||[]).map(function(c){return c==null?'':String(c);});}).filter(function(r){return r.some(function(c){return String(c).trim()!=='';});});
+  if(!matrix.length){toast("Arquivo/texto vazio","warn");return;}
+  var kw=/nome|name|empresa|company|raz|telefone|\btel\b|phone|fone|celular|whats|e-?mail|email|ramo|cnpj|contato/i;
+  var hasH=matrix[0].some(function(c){return kw.test(String(c));});
+  var headers,rows;
+  if(hasH){headers=matrix[0];rows=matrix.slice(1);}
+  else{var w=0;matrix.forEach(function(r){if(r.length>w)w=r.length;});headers=[];for(var i=0;i<w;i++)headers.push('Coluna '+(i+1));rows=matrix;}
+  BASE_IMP={headers:headers,rows:rows,name:name||'',map:baseImpGuess(headers,rows)};
+  baseImpRender();
+}
+function baseImpGuess(headers,rows){
+  var m={nome:-1,empresa:-1,tel:-1,email:-1,ramo:-1,orig:-1};
+  headers.forEach(function(h,i){h=String(h||'').toLowerCase();
+    if(m.nome<0&&/nome|name|contato|respons/.test(h)&&!/empresa|company|fantasia|raz/.test(h))m.nome=i;
+    if(m.empresa<0&&/empresa|company|fantasia|raz.o|neg.cio/.test(h))m.empresa=i;
+    if(m.tel<0&&/tel|phone|fone|celular|whats|n.mero|number/.test(h))m.tel=i;
+    if(m.email<0&&/e-?mail/.test(h))m.email=i;
+    if(m.ramo<0&&/ramo|segmento|setor|categoria|tipo/.test(h))m.ramo=i;
+    if(m.orig<0&&/origem|fonte|evento|campanha|source|m.dia/.test(h))m.orig=i;
+  });
+  if(m.tel<0||m.email<0){
+    var sc=[];for(var c=0;c<headers.length;c++){var dig=0,at=0;rows.slice(0,40).forEach(function(r){var v=String(r[c]||'').trim();if(!v)return;if(v.indexOf('@')>=0)at++;else if(v.replace(/\D/g,'').length>=8&&v.replace(/\D/g,'').length<=13)dig++;});sc[c]={dig:dig,at:at};}
+    if(m.email<0){var be=-1,bv=0;sc.forEach(function(s,c){if(s.at>bv){bv=s.at;be=c;}});if(bv>0)m.email=be;}
+    if(m.tel<0){var bt=-1,bd=0;sc.forEach(function(s,c){if(s.dig>bd&&c!==m.email){bd=s.dig;bt=c;}});if(bd>0)m.tel=bt;}
+  }
+  if(m.nome<0)m.nome=0;
+  return m;
+}
+function _bImpScan(){
+  var map=BASE_IMP.map,rows=BASE_IMP.rows,base=DB.get(T(),"base");
+  var exT={},exN={};base.forEach(function(b){var t=_telDig(b.tel);if(t)exT[t]=1;var n=(b.nome||'').trim().toLowerCase();if(n)exN[n]=1;});
+  var sT={},sN={},o={novos:0,dup:0,vazio:0,total:rows.length,sample:[],items:[]};
+  rows.forEach(function(r){
+    var nome=String(map.nome>=0?(r[map.nome]||''):'').trim(),emp=String(map.empresa>=0?(r[map.empresa]||''):'').trim(),tel=String(map.tel>=0?(r[map.tel]||''):'').trim(),email=String(map.email>=0?(r[map.email]||''):'').trim(),ramo=String(map.ramo>=0?(r[map.ramo]||''):'').trim(),orig=String(map.orig>=0?(r[map.orig]||''):'').trim();
+    var td=_telDig(tel),nl=nome.toLowerCase(),st;
+    if(!nome&&!emp&&!tel){o.vazio++;st='vazio';}
+    else if((td&&(exT[td]||sT[td]))||(!td&&nl&&(exN[nl]||sN[nl]))){o.dup++;st='dup';}
+    else{o.novos++;st='novo';if(td)sT[td]=1;if(nl)sN[nl]=1;o.items.push({nome:nome,empresa:emp,tel:tel,email:email,ramo:ramo,orig:orig});}
+    if(o.sample.length<6)o.sample.push({nome:nome,empresa:emp,tel:tel,st:st});
+  });
+  return o;
+}
+function _bImpOpts(sel){return BASE_IMP.headers.map(function(h,i){return '<option value="'+i+'"'+((+sel)===i?' selected':'')+'>'+esc(String(h||('Coluna '+(i+1))))+'</option>';}).join('');}
+function baseImpSetMap(f,v){if(BASE_IMP){BASE_IMP.map[f]=parseInt(v,10);baseImpRender();}}
+function baseImpRender(){
+  var el=document.getElementById("baseImpPrev");if(!el||!BASE_IMP)return;
+  var st=_bImpScan(),map=BASE_IMP.map;
+  function sel(l,f){return '<div style="min-width:118px"><label class="mut" style="font-size:11px;display:block">'+l+'</label><select class="in" onchange="baseImpSetMap(\''+f+'\',this.value)"><option value="-1"'+(map[f]<0?' selected':'')+'>—</option>'+_bImpOpts(map[f])+'</select></div>';}
+  el.innerHTML='<div style="margin-top:12px;border-top:1px solid var(--line,rgba(0,0,0,.1));padding-top:10px">'
+   +'<div class="flex wrap" style="gap:8px">'+sel('Nome','nome')+sel('Empresa','empresa')+sel('Telefone','tel')+sel('E-mail','email')+sel('Ramo','ramo')+sel('Origem','orig')+'</div>'
+   +'<div class="flex wrap" style="gap:8px;margin-top:10px;font-size:12.5px"><span class="pill ok">'+st.novos+' novo(s)</span><span class="pill">'+st.dup+' já na base</span>'+(st.vazio?'<span class="pill">'+st.vazio+' vazio(s)</span>':'')+'</div>'
+   +'<div style="overflow:auto;max-height:26vh;margin-top:8px"><table><thead><tr><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Situação</th></tr></thead><tbody>'
+   +st.sample.map(function(s){var tg=s.st==='novo'?'<span class="pill ok">novo</span>':(s.st==='dup'?'<span class="pill">repetido</span>':'<span class="pill">vazio</span>');return '<tr><td>'+esc(s.nome||'—')+'</td><td>'+esc(s.empresa||'—')+'</td><td>'+esc(s.tel||'—')+'</td><td>'+tg+'</td></tr>';}).join('')
+   +'</tbody></table></div>'
+   +'<div class="flex between mt" style="align-items:center;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" '+(st.novos?'':'disabled')+' onclick="baseImpDo()">Importar '+st.novos+' p/ a Base</button></div></div>';
+}
+function baseImpDo(){
+  if(!BASE_IMP){return;}var st=_bImpScan();
+  if(!st.novos){toast("Nenhum contato novo para importar"+(st.dup?" ("+st.dup+" repetidos)":""),"warn");return;}
+  var base=DB.get(T(),"base");
+  st.items.forEach(function(it){base.unshift({id:DB.uid(),nome:it.nome||"(sem nome)",empresa:it.empresa||"",tel:it.tel||"",email:it.email||"",cpf:"",cargo:"",instagram:"",membro:"",ramo:it.ramo||"",origens:[it.orig||"Importação"],obs:"",inCrm:false});});
+  DB.set(T(),"base",base);closeModal();
+  toast(st.novos+" contato(s) adicionados à Base"+(st.dup?" · "+st.dup+" repetidos ignorados":""));vBase();
 }
 
 /* ===== IMPORTAR LEADS DE TRÁFEGO (ICBARI) — entram direto no CRM (quentes) ===== */
