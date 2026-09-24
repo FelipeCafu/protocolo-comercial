@@ -4443,6 +4443,7 @@ function vRoteiro(){
   +'<div style="flex:1"></div>'
   +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ Abrir apresentação SDR</button>'
   +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
+  +(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR · Repescagem</button><button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer · Repescagem</button>':'')
   +'</div>'+cards;
 }
 function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
