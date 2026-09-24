@@ -617,8 +617,9 @@ const USERS={
   "lis.lid":     {pass:"lislideres",     role:"sdr",    tenant:"lideres",name:"Lis (SDR)",        initials:"LI",sellerId:"lis"},
   "melissa.lid": {pass:"melissalideres", role:"sdr",    tenant:"lideres",name:"Melissa (SDR)",    initials:"ME",sellerId:"melissa"},
   "jessica.lid": {pass:"jessicalideres", role:"cs",     tenant:"lideres",name:"Jéssica (CS)",      initials:"JE",sellerId:"jessica"},
-  "daher.lid":   {pass:"daherlideres",   role:"closer", tenant:"lideres",name:"Daher (Closer)",   initials:"DA",sellerId:"daher"},
-  "claudia.lid": {pass:"claudialideres", role:"closer", tenant:"lideres",name:"Cláudia (Closer)", initials:"CL",sellerId:"claudia"},
+  "daher.lid":   {pass:"daherlideres",   role:"gestor", tenant:"lideres",name:"Daher (Closer/Gestor)",   initials:"DA",sellerId:"daher"},
+  "claudia.lid": {pass:"claudialideres", role:"gestor", tenant:"lideres",name:"Cláudia (Closer/Gestor)", initials:"CL",sellerId:"claudia"},
+  "luiz.lid":    {pass:"luizlideres",    role:"cs",     tenant:"lideres",name:"Luiz (CS)",                initials:"LU",sellerId:"luiz"},
   /* ===== B2 Inteligência Financeira ===== */
   ceob2:      {pass:"1234", role:"ceo",   tenant:"b2if",name:"Ricardo Bastos (CEO)",     initials:"RB"},
   b2if:       {pass:"1234", role:"gestor",tenant:"b2if",name:"Diego Martins (Gestor)",   initials:"DM"},
@@ -1480,6 +1481,7 @@ function seed(){
    {id:"lis",nome:"Lis",papel:"SDR",meta:40,realizado:0,foto:"LI"},
    {id:"melissa",nome:"Melissa",papel:"SDR",meta:40,realizado:0,foto:"ME"},
    {id:"jessica",nome:"Jéssica",papel:"CS",meta:30,realizado:0,foto:"JE"},
+   {id:"luiz",nome:"Luiz",papel:"CS",meta:30,realizado:0,foto:"LU"},
    {id:"daher",nome:"Daher",papel:"Closer",meta:12,realizado:0,foto:"DA"},
    {id:"claudia",nome:"Cláudia",papel:"Closer",meta:12,realizado:0,foto:"CL"}
   ]);
