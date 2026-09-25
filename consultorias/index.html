@@ -691,17 +691,15 @@ function setCloudBadge(state){const el=document.getElementById("cloudBadge");if(
   el.textContent=state==="on"?"☁ salvo":state==="sync"?"☁ …":state==="off"?"⚠ local":"☁";
   el.style.color=state==="off"?"var(--brand-warn)":"var(--brand-muted)";}
 const FUNNELS=[
- {id:"prospeccao",name:"Prospecção",papel:"SDR",stages:[
+ {id:"sdr",name:"SDR — Qualificação",papel:"SDR",stages:[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
-   {id:"contato",name:"Contato Realizado",sla:24},{id:"mql",name:"Qualificado (MQL)",sla:24}]},
- {id:"sdr",name:"Qualificação (SDR)",papel:"SDR",stages:[
-   {id:"qualif",name:"Em Qualificação",sla:48},{id:"spin",name:"SPIN aplicado",sla:24},
-   {id:"agendou",name:"Reunião Agendada",sla:24},{id:"noshow",name:"No-show / Remarcar",sla:12}]},
- {id:"closer",name:"Vendas (Closer)",papel:"Closer",stages:[
+   {id:"qualif",name:"Qualificação (SPIN)",sla:48},{id:"agendou",name:"Reunião Agendada",sla:24},
+   {id:"noshow",name:"No-show / Remarcar",sla:12}]},
+ {id:"closer",name:"Closer — Fechamento",papel:"Closer",stages:[
    {id:"reuniao",name:"Reunião Realizada",sla:24},{id:"apresent",name:"Apresentação",sla:48},
    {id:"proposta",name:"Proposta",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
    {id:"ganho",name:"Membro (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
- {id:"cs",name:"Pós-venda (CS)",papel:"CS",stages:[
+ {id:"cs",name:"CS — Pós-venda",papel:"CS",stages:[
    {id:"onboarding",name:"Onboarding",sla:48},{id:"ativado",name:"Ativado",sla:0},
    {id:"recorrente",name:"Recorrente",sla:0},{id:"risco",name:"Em Risco",sla:24},{id:"churn",name:"Churn",sla:0}]}
 ];
@@ -1931,8 +1929,8 @@ const NAV_CEO=[
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 /* Líderes — vendedores (SDR/Closer/CS) acessam também CRM, Base, Prospecção, Scripts, Roteiro e Academia */
 const NAV_SELLER_LID=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"}];
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & Recompra",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência",roles:["cs"]}];
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
 const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
@@ -2196,7 +2194,11 @@ function vExec(){
 }
 /* ===== CRM & FUNIS ===== */
 function vCRM(){
-  const funnels=DB.getObj(T(),"funnels",FUNNELS);
+  var allF=DB.getObj(T(),"funnels",FUNNELS);
+  var _pap={sdr:"SDR",closer:"Closer",cs:"CS"}[SESSION.role];
+  const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
+  if(!funnels.length)funnels.push(allF[0]);
+  if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
   if(!funnels.find(f=>f.id===CRM_FUNNEL))CRM_FUNNEL=funnels[0].id;
   const _crmL=DB.get(T(),"leads").filter(l=>!l.deleted&&l.funnelId===CRM_FUNNEL&&(CRM_SELLER==="all"||l.owner===CRM_SELLER)&&!["ganho","perdido","churn"].includes(l.estagio));
   const _parados=_crmL.filter(l=>{const st=actStatus(l.id);return st==="none"||st==="late";}).length;
@@ -2206,9 +2208,9 @@ function vCRM(){
    <div class="flex between wrap" style="margin-bottom:10px">
      <p class="view-sub" style="margin:0">Arraste os cards · <b style="color:var(--brand-bad)">🔴 atrasada</b> · <b style="color:var(--brand-ok)">🟢 hoje</b> · <b style="color:#8ea0cf">⚪ futura</b> · <b style="color:var(--brand-warn)">🟡 sem atividade</b> · clique p/ abrir.</p>
      <div class="flex">
-       <select class="in" id="crmSeller" style="width:180px" onchange="CRM_SELLER=this.value;renderKanban()">
+       ${isAdmin()?`<select class="in" id="crmSeller" style="width:180px" onchange="CRM_SELLER=this.value;renderKanban()">
          <option value="all">👥 Todos os vendedores</option>
-         ${DB.get(T(),"sellers").map(s=>`<option value="${s.id}" ${CRM_SELLER===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>
+         ${DB.get(T(),"sellers").map(s=>`<option value="${s.id}" ${CRM_SELLER===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>`:''}
        <input class="in" id="crmSearch" placeholder="🔎 buscar no funil…" style="width:200px" oninput="renderKanban()">
        <button class="btn sm" onclick="leadModal()">+ Novo lead</button></div></div>
    <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${DB.get(T(),"leads").filter(l=>l.funnelId===f.id&&!l.deleted).length})</small></span>`).join("")}
@@ -2229,7 +2231,8 @@ function renderKanban(){
   const funnel=funnels.find(f=>f.id===CRM_FUNNEL)||funnels[0];
   const q=(document.getElementById("crmSearch")?.value||"").toLowerCase();
   let leads=DB.get(T(),"leads").filter(l=>l.funnelId===funnel.id&&!l.deleted);
-  if(CRM_SELLER!=="all")leads=leads.filter(l=>l.owner===CRM_SELLER);
+  if(!isAdmin()&&SESSION.sellerId)leads=leads.filter(l=>l.owner===SESSION.sellerId);
+  else if(CRM_SELLER!=="all")leads=leads.filter(l=>l.owner===CRM_SELLER);
   if(q)leads=leads.filter(l=>(l.nome+(l.fantasia||"")+(l.razaoSocial||"")+((l.contato||{}).email||"")).toLowerCase().includes(q));
   const now=Date.now();
   document.getElementById("kanban").innerHTML=funnel.stages.map(s=>{
@@ -2523,7 +2526,8 @@ function leadModal(){
    <div class="row mt"><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div><div><label class="fl">E-mail</label><input class="in" id="f_email"></div></div>
    <div class="row mt"><div><label class="fl">Setor</label><input class="in" id="f_setor"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
    <div class="row mt"><div><label class="fl">Funil</label><select class="in" id="f_funnel">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${x.name}</option>`).join("")}</select></div>
-     <div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>
+     ${T()==="lideres"?`<div><label class="fl">Plano provável</label><select class="in" id="f_plano"><option>Evolução</option><option selected>Referência</option><option>Legado</option><option>A definir</option></select></div>
+     <div><label class="fl">Probabilidade</label><select class="in" id="f_prob"><option>Baixa</option><option selected>Média</option><option>Alta</option></select></div>`:`<div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>`}
      <div><label class="fl">Temp.</label><select class="in" id="f_temp"><option>quente</option><option selected>morno</option><option>frio</option></select></div></div>
    <div><label class="fl mt8">Responsável</label><select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}">${s.nome}</option>`).join("")}</select></div>
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="saveNewLead()">Criar lead</button></div>`);
@@ -2532,8 +2536,11 @@ function saveNewLead(){
   const g=x=>document.getElementById(x).value;const nome=g("f_nome");if(!nome){toast("Informe o nome","bad");return;}
   const fid=g("f_funnel");const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid);
   const id=DB.uid();
+  const _val=document.getElementById("f_valor")?(+g("f_valor")||0):0;
+  const _plano=document.getElementById("f_plano")?g("f_plano"):"";
+  const _prob=document.getElementById("f_prob")?g("f_prob"):"";
   DB.push(T(),"leads",{id,nome,fantasia:g("f_fant"),razaoSocial:g("f_fant"),setor:g("f_setor"),origem:g("f_origem"),
-    funnelId:fid,estagio:f.stages[0].id,valor:+g("f_valor"),temp:g("f_temp"),owner:g("f_owner"),score:50,
+    funnelId:fid,estagio:f.stages[0].id,valor:_val,plano:_plano,prob:_prob,temp:g("f_temp"),owner:g("f_owner"),score:50,
     contato:{nome,tel:g("f_tel"),email:g("f_email")},criadoEm:Date.now(),movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado",ts:Date.now()});
   closeModal();toast("Lead criado");renderSidebar();if(CURRENT_VIEW==="crm")vCRM();else if(CURRENT_VIEW==="base")vBase();
@@ -3025,9 +3032,12 @@ function saveTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());c[
 
 /* ===== SCRIPTS (restrição por papel) ===== */
 function scriptTabsFor(){
-  const all=[["visao","🧭 ICP & Empresa"],["sdr","🎯 SDR — Qualificação"],["bot","🤖 Bot de Qualificação"],["closer","🤝 "+lx("closerRole")+" — Fechamento"],["cs","💚 CS — Pós-venda"]];
+  const noBot=T()==="lideres"; /* Líderes não usa bot */
+  const all=[["visao","🧭 ICP & Empresa"],["sdr","🎯 SDR — Qualificação"]];
+  if(!noBot)all.push(["bot","🤖 Bot de Qualificação"]);
+  all.push(["closer","🤝 "+lx("closerRole")+" — Fechamento"],["cs","💚 CS — Pós-venda"]);
   if(isAdmin())return all;
-  const map={sdr:["visao","sdr","bot"],closer:["visao","closer"],cs:["visao","cs"]};
+  const map={sdr:noBot?["visao","sdr"]:["visao","sdr","bot"],closer:["visao","closer"],cs:["visao","cs"]};
   const perm=map[SESSION.role]||["visao"];
   return all.filter(t=>perm.includes(t[0]));
 }
@@ -4451,9 +4461,8 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>':'')
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
-  +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ Abrir apresentação SDR</button>'
-  +'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Abrir apresentação Closer</button>'
-  +(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR · Repescagem</button><button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer · Repescagem</button>':'')
+  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
+  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
   +'</div>'+cards;
 }
 function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
