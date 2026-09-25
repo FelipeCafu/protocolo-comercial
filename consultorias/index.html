@@ -4572,7 +4572,7 @@ function acadVideos(){
  return '<div class="card"><div class="flex between wrap" style="align-items:center"><b style="font-size:15px">🎬 Trilha de Vídeos · '+rk+'</b><span class="pill pri">'+ndone+'/'+total+' aulas · '+pct+'%</span></div>'
   +'<div style="height:8px;background:rgba(255,255,255,.08);border-radius:6px;margin:10px 0;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
   +'<p class="mut" style="font-size:12.5px;margin:0 0 6px">Aulas da Full Sales para o seu papel. Assista na ordem; no seu Meu Dia aparecem as próximas do dia.</p>'
-  +'<div style="max-height:56vh;overflow:auto">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:13px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' <b>'+esc(v.n)+'</b> · '+esc(v.t)+'</span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div></div>';
+  +'<div style="max-height:56vh;overflow:auto">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:13px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' <b>'+esc(v.n)+'</b> · '+esc(v.t)+' <small class="mut">· ⏱ '+trainMinFmt(v.d)+'</small></span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div></div>';
 }
 
 function leadScore(l){
@@ -4632,21 +4632,23 @@ function trainList(){return (window.TRAIN_LID&&window.TRAIN_LID[trainRoleKey()])
 function trainFind(id){var L=window.TRAIN_LID||{};for(var k in L){var v=(L[k]||[]).find(function(x){return x.id===id;});if(v)return v;}return null;}
 function trainDoneSet(){var me=SESSION.sellerId||SESSION.name;var rec=DB.get(T(),"vtrain").find(function(x){return x.id===me;});return new Set((rec&&rec.done)||[]);}
 function trainMarkDone(id){var me=SESSION.sellerId||SESSION.name;var arr=DB.get(T(),"vtrain");var rec=arr.find(function(x){return x.id===me;});if(!rec){rec={id:me,done:[]};arr.unshift(rec);}if(rec.done.indexOf(id)<0)rec.done.push(id);DB.set(T(),"vtrain",arr);}
-function trainTodayVideos(n){var list=trainList(),done=trainDoneSet();return list.filter(function(v){return !done.has(v.id);}).slice(0,n||3);}
+var TRAIN_MIN_SEC=3600; /* mínimo 1h de treino por dia */
+function trainMinFmt(sec){return Math.max(1,Math.round((sec||0)/60))+' min';}
+function trainTodayVideos(){var list=trainList(),done=trainDoneSet();var pend=list.filter(function(v){return !done.has(v.id);});var out=[],acc=0;for(var i=0;i<pend.length;i++){out.push(pend[i]);acc+=(pend[i].d||0);if(acc>=TRAIN_MIN_SEC)break;}return out;}
 function trainOpen(id){window.open('https://drive.google.com/file/d/'+id+'/view','_blank');}
 function trainMark(id){trainMarkDone(id);toast("Aula marcada como assistida ✓");if(CURRENT_VIEW==='meudia')vMeuDia();else if(CURRENT_VIEW==='academy')vAcademy();}
 function trainCard(){
   var list=trainList();if(!list.length)return '';
   var done=trainDoneSet();var total=list.length;var ndone=list.filter(function(v){return done.has(v.id);}).length;var pct=total?Math.round(ndone/total*100):0;
-  var today=trainTodayVideos(3);
-  var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">aula '+esc(v.n)+' · abre no Google Drive</small></div><button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost sm" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
+  var today=trainTodayVideos();var todaySec=today.reduce(function(a,v){return a+(v.d||0);},0);
+  var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">aula '+esc(v.n)+' · ⏱ '+trainMinFmt(v.d)+' · abre no Google Drive</small></div><button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost sm" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
   return '<div class="card" style="margin-bottom:14px;background:linear-gradient(160deg,rgba(31,200,202,.08),transparent)"><div class="flex between wrap" style="align-items:center"><b style="font-size:14px">🎓 Treinamento de hoje · '+trainRoleKey().toUpperCase()+'</b><small class="mut">'+ndone+'/'+total+' aulas · '+pct+'%</small></div>'
    +'<div style="height:7px;background:rgba(255,255,255,.08);border-radius:6px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
-   +'<p class="mut" style="font-size:12px;margin:8px 0 0">Assista suas aulas do dia (uns 3 vídeos ≈ 1h) e clique em assistido pra avançar na trilha.</p>'
+   +'<p class="mut" style="font-size:12px;margin:8px 0 0">Meta: <b>mínimo 1h de treino por dia</b>. Suas aulas de hoje somam <b>'+trainMinFmt(todaySec)+'</b> — assista e marque cada uma como feita pra avançar.</p>'
    +rows
    +'<div class="mt8"><button class="btn ghost sm" onclick="trainAll()">Ver trilha completa ('+total+' aulas)</button></div></div>';
 }
-function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' <b>'+esc(v.n)+'</b> · '+esc(v.t)+'</span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button></div>';}).join('')+'</div>');}
+function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' <b>'+esc(v.n)+'</b> · '+esc(v.t)+' <small class="mut">· ⏱ '+trainMinFmt(v.d)+'</small></span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div>');}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
   const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
