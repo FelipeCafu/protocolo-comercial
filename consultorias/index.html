@@ -2596,6 +2596,7 @@ function baseFiltered(){
   const per=document.getElementById("bPeriodo")?.value||"",tel=document.getElementById("bTel")?.value||"";
   const sort=document.getElementById("bSort")?.value||"";
   const out=DB.get(T(),"base").filter(b=>{
+    if(T()==="lideres" && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); a real fica bloqueada */
     if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
     if(org && !(b.origens||[]).includes(org))return false;
     if(ram && b.ramo!==ram)return false;
