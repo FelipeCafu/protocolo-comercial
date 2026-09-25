@@ -638,8 +638,12 @@ const USERS={
   "elaine.icb": {pass:"elaineicbari",   role:"closer", tenant:"icbari",name:"Elaine (Closer)",          initials:"EL",sellerId:"elaine"},
   "cs.icb":     {pass:"velo2026",       role:"cs",     tenant:"icbari",name:"CS / Pós-venda (a definir)",initials:"CS",sellerId:"csicb"}
 };
-const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role);
-const myRoles=()=>(SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""];
+let VIEW_AS='gestor'; /* gestor+closer (Daher/Cláudia): alternam entre "ver como gestor" e "ver como closer" */
+function dualRole(){return !!(SESSION&&SESSION.role==='gestor'&&SESSION.sellerId);} /* gestor que TAMBÉM é vendedor (Daher/Cláudia) */
+function effRole(){return (dualRole()&&VIEW_AS==='closer')?'closer':((SESSION&&SESSION.role)||"");}
+const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role)&&!(dualRole()&&VIEW_AS==='closer');
+const myRoles=()=>(dualRole()&&VIEW_AS==='closer')?['closer']:((SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""]);
+function setViewAs(m){VIEW_AS=m;renderSidebar();go(m==='closer'?'meudia':'painel');}
 const DB={
   key(t,c){return `pc.${t}.${c}`},
   get(t,c){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??[]}catch(e){return []}},
@@ -1948,6 +1952,7 @@ const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{
 /* ICBARI — SDR/Closer também podem subir os leads de tráfego do dia */
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 function activeNav(){
+  if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
@@ -1956,6 +1961,7 @@ function activeNav(){
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
 }
 function openTenant(tenant){
+  VIEW_AS='gestor';
   CURRENT_TENANT=tenant;applyBrand(BRANDS[tenant].brand);
   document.getElementById("tbMark").innerHTML=BRANDS[tenant].mark(28);
   document.getElementById("tbName").textContent=BRANDS[tenant].name;
@@ -1969,6 +1975,7 @@ const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
 function renderSidebar(){
   let html="";
   if(SESSION.role==="consultor")html+=`<div class="nav-item" onclick="openConsultoria()"><span class="ic">←</span> Todas as empresas</div>`;
+  if(dualRole())html+=`<div style="padding:10px 10px 6px;display:flex;gap:6px"><button class="btn ${VIEW_AS==='gestor'?'':'ghost'} sm" style="flex:1;padding:7px 8px" onclick="setViewAs('gestor')">👔 Gestor</button><button class="btn ${VIEW_AS==='closer'?'':'ghost'} sm" style="flex:1;padding:7px 8px" onclick="setViewAs('closer')">🎯 Closer</button></div>`;
   activeNav().forEach(n=>{
     if(n.g){html+=`<div class="sb-group">${n.g}</div>`;return;}
     if(n.url){html+=`<div class="nav-item" onclick="window.open('${n.url}','_blank')"><span class="ic">${n.ic}</span> ${n.t}<span style="margin-left:auto;opacity:.45;font-size:11px">↗</span></div>`;return;}
@@ -2196,7 +2203,7 @@ function vExec(){
 /* ===== CRM & FUNIS ===== */
 function vCRM(){
   var allF=DB.getObj(T(),"funnels",FUNNELS);
-  var _pap={sdr:"SDR",closer:"Closer",cs:"CS"}[SESSION.role];
+  var _pap={sdr:"SDR",closer:"Closer",cs:"CS"}[effRole()];
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
@@ -2977,11 +2984,11 @@ function cadCopy(di,ti){var c=(DB.getObj(T(),"cadences",defaultCadences())[CAD_R
 function vProspec(){
   const cads=DB.getObj(T(),"cadences",defaultCadences());
   const allRoles=[["sdr","🎯 SDR"],["closer","🤝 "+lx('closerRole')],["cs","💚 CS"]];
-  const roles=isAdmin()?allRoles:allRoles.filter(r=>r[0]===SESSION.role);
+  const roles=isAdmin()?allRoles:allRoles.filter(r=>r[0]===effRole());
   if(!roles.find(r=>r[0]===CAD_ROLE))CAD_ROLE=roles[0][0];
   const cad=cads[CAD_ROLE]||[];
   M().innerHTML=`
-   <div class="view-title"><h1>Prospecção & Cadências</h1>${isAdmin()?'':`<span class="pill pri">Sua cadência: ${roleLabel(SESSION.role)}</span>`}</div>
+   <div class="view-title"><h1>Prospecção & Cadências</h1>${isAdmin()?'':`<span class="pill pri">Sua cadência: ${roleLabel(effRole())}</span>`}</div>
    <p class="view-sub">Régua de relacionamento por papel — com <b>vários toques no mesmo dia</b> (atendeu / não atendeu), do D0 ao D12.</p>
    ${T()==="icbari"&&CAD_ROLE==="sdr"?`<div class="card" style="border:1px solid var(--brand-line);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-primary) 10%,transparent),transparent);margin-bottom:12px">
      <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
@@ -3041,7 +3048,7 @@ function scriptTabsFor(){
   all.push(["closer","🤝 "+lx("closerRole")+" — Fechamento"],["cs","💚 CS — Pós-venda"]);
   if(isAdmin())return all;
   const map={sdr:noBot?["visao","sdr"]:["visao","sdr","bot"],closer:["visao","closer"],cs:["visao","cs"]};
-  const perm=map[SESSION.role]||["visao"];
+  const perm=map[effRole()]||["visao"];
   return all.filter(t=>perm.includes(t[0]));
 }
 /* ===== ILUSTRAÇÕES ANIMADAS (SVG inline, sem depender de internet) ===== */
@@ -4616,7 +4623,7 @@ function vMeuDia(){
   const semT=hot.filter(l=>!acts.some(a=>a.leadId===l.id));
   if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade — maior chance (${semT.length})</div>`+semT.slice(0,20).map(l=>card(l)).join("");
   if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui — já com o que fazer e o roteiro do lado.</p></div>`;
-  M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
+  M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(effRole())}</span></div>
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar — a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
@@ -4653,7 +4660,7 @@ function trainCard(){
 function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' '+esc(v.t)+' <small class="mut">· '+esc(v.c||'')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+'</small></span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div>');}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
-  const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
+  const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(effRole())};
   const pct=meS.meta?Math.round(meS.realizado/meS.meta*100):0;
   const ranked=[...sellers].sort((a,b)=>((b.meta?b.realizado/b.meta:0)-(a.meta?a.realizado/a.meta:0)));
   const pos=ranked.findIndex(s=>s.id===me)+1;const role=SESSION.role;
@@ -4664,7 +4671,7 @@ function vMeuPlacar(){
   if(role==="sdr")comiss=money(meS.realizado*150)+" · R$150 × "+meS.realizado+" reuniões";
   else if(role==="closer")comiss="12% sobre as adesões fechadas";
   else if(role==="cs")comiss=money(meS.realizado*80)+" · R$80 × "+meS.realizado+" renovações";
-  M().innerHTML=`<div class="view-title"><h1>Meu Placar 🏆</h1><span class="pill pri">${roleLabel(SESSION.role)}</span></div>
+  M().innerHTML=`<div class="view-title"><h1>Meu Placar 🏆</h1><span class="pill pri">${roleLabel(effRole())}</span></div>
    <p class="view-sub">Seu desempenho do mês, sua posição no time e sua comissão.</p>
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.12),transparent);border:1px solid rgba(201,162,75,.4)">
      <div class="flex between" style="align-items:baseline"><b style="font-size:13.5px">🎯 Meta do mês</b><span class="mut" style="font-size:12.5px">${meS.realizado} de ${meS.meta||0} · ${pct}%</span></div>
@@ -4726,7 +4733,7 @@ function vScripts(){
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=tabs[0][0];
   const SC=T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:(T()==="icbari"?{visao:scICP_ICB,sdr:scSDR_ICB,bot:scBOT_ICB,closer:scCLO_ICB,cs:scCS_ICB}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS});
   M().innerHTML=`
-   <div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(SESSION.role)}</span>`}</div>
+   <div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(effRole())}</span>`}</div>
    <p class="view-sub">${isAdmin()?`Playbook completo da ${BRANDS[T()].name}: ICP, produtos e como conduzir cada etapa.`:"Você acessa o conhecimento da empresa e o playbook do seu papel."}</p>
    <div class="card" style="border:1px solid rgba(201,162,75,.5);background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:26px">🎤</div><div style="flex:1;min-width:200px"><b style="font-size:15px">Roteiro Comercial completo (SDR + Closer)</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">O mesmo roteiro das apresentações — palavra por palavra: ancoragem, silêncios, quebras de objeção e fechamento.</p></div><button class="btn gold sm" onclick="go('roteiro')">Abrir roteiro completo →</button></div></div><div class="flex wrap" style="margin-bottom:14px">${tabs.map(([id,t])=>`<span class="chip ${SCRIPT_TAB===id?'on':''}" onclick="SCRIPT_TAB='${id}';vScripts()">${t}</span>`).join("")}</div>
    <div>${(SC[SCRIPT_TAB]||SC.visao)()}</div>`;
