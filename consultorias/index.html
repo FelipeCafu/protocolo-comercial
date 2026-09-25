@@ -4051,9 +4051,9 @@ const ACAD_AGENDA=[
  ["03:00","10 min","✅ Módulo 7 — Compromisso","Sua meta de amanhã, assinada. Onde consultar quando travar.","m7"]
 ];
 function acadHeader(){
- return `<div class="view-title"><h1>Academia de Vendas</h1><span class="pill pri">Treinamento ao vivo · 3h</span></div>
- <p class="view-sub">Do zero à primeira ligação. Ao final deste treinamento você sabe <b>para quem ligar</b>, <b>o que perguntar</b>, <b>como contornar o não</b> e <b>o que registrar</b> — e liga amanhã.</p>
- <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["aula","🖥️ Apresentação"],["agenda","📋 Roteiro"],["conteudo","📚 Conteúdo"],["dinamicas","🎭 Dinâmicas"],["bolso","📞 Script de bolso"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
+ return `<div class="view-title"><h1>Academia de Vendas</h1><span class="pill pri">Aprendizado contínuo</span></div>
+ <p class="view-sub">Onde o time aprende: a <b>trilha de vídeos</b> do seu papel, a <b>matriz de objeções</b> pra treinar as respostas e os seus <b>compromissos</b> de evolução.</p>
+ <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
 }
 function acadAgenda(){
  return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Roteiro do treinamento</h2>
@@ -4574,8 +4574,8 @@ function acadCompromisso(){
 }
 function vAcademy(){
  if(T()==="icbari")return vAcademyIcb();
- M().innerHTML=acadHeader()+({videos:acadVideos,aula:acadSumario,agenda:acadAgenda,conteudo:acadConteudo,dinamicas:acadDinamicas,
-   bolso:acadBolso,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadSumario)();
+ if(["videos","objecoes","compromisso"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
+ M().innerHTML=acadHeader()+({videos:acadVideos,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadVideos)();
 }
 function acadVideos(){
  var list=(typeof trainList==="function")?trainList():[];
