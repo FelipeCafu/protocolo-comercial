@@ -4485,92 +4485,76 @@ function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ
 function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
 function acadAddObj(){
  const o=(document.getElementById("mxObj").value||"").trim();
- if(!o)return alert("Escreva a objeção que você ouviu.");
- const help=!!(document.getElementById("mxHelp")&&document.getElementById("mxHelp").checked);
+ if(!o)return alert("Escreva a objeção que o cliente disse.");
  const resp=(document.getElementById("mxResp").value||"").trim();
  const m=objMatrix();
- m.push({id:DB.uid(),obj:o,tras:(document.getElementById("mxTras").value||"").trim(),
-   resp:resp,cat:document.getElementById("mxCat").value,by:SESSION.name,needsHelp:(help&&!resp),ts:Date.now()});
- saveObjMatrix(m);
- if(help&&!resp){DB.push(T(),"alerts",{id:DB.uid(),tipo:"objecao",colaborador:SESSION.name,ts:Date.now(),txt:SESSION.name+' pediu ajuda para quebrar a objeção: "'+o+'"'});updateBell();toast("Enviado! O gestor foi avisado para te ajudar a quebrar essa objeção.");}
- vAcademy();
+ m.unshift({id:DB.uid(),obj:o,resp:resp,by:SESSION.name,needsHelp:false,ts:Date.now()});
+ saveObjMatrix(m);vAcademy();
 }
-function acadDelObj(id){
- if(!confirm("Remover esta objeção da matriz?"))return;
- saveObjMatrix(objMatrix().filter(x=>x.id!==id));vAcademy();
-}
+function acadDelObj(id){ if(!confirm("Remover esta objeção da matriz?"))return; saveObjMatrix(objMatrix().filter(x=>x.id!==id));vAcademy(); }
 function acadEditObj(id,campo,el){
  const m=objMatrix();const i=m.findIndex(x=>x.id===id);
  if(i<0)return;m[i][campo]=el.innerText.trim();if(campo==="resp"&&m[i][campo])m[i].needsHelp=false;saveObjMatrix(m);
 }
+function acadPedeAjuda(id){
+ const m=objMatrix();const i=m.findIndex(x=>x.id===id);if(i<0)return;
+ m[i].needsHelp=true;saveObjMatrix(m);
+ DB.push(T(),"alerts",{id:DB.uid(),tipo:"objecao",colaborador:SESSION.name,ts:Date.now(),txt:(SESSION.name||"Colaborador")+' pediu ajuda para quebrar a objeção: "'+m[i].obj+'"'});
+ if(typeof updateBell==="function")updateBell();
+ toast("Enviado! O Felipe foi avisado e vai te ajudar a quebrar essa objeção.");vAcademy();
+}
 function acadObjecoes(){
  const m=objMatrix();
- const CAT={medo:["😨 Medo","bad"],duvida:["🤔 Dúvida","warn"],confusao:["🌀 Confusão","pri"]};
  return `
  <div class="card"><h2 style="margin:0 0 4px;font-size:15px">🛡️ Matriz de Objeções</h2>
- <p class="mut" style="font-size:13px;margin:0 0 4px">O que a sala ouve de verdade, com resposta pronta. <b>Salva na nuvem</b> — todo mundo vê e usa. Clique em qualquer texto para editar.</p>
- <p class="mut" style="font-size:12.5px;margin:6px 0 0">Toda objeção é <b>medo</b> (de errar/gastar mal), <b>dúvida</b> (não viu valor) ou <b>confusão</b> (não é hora na cabeça dele). Classificar ajuda a escolher a resposta.</p></div>
-
- <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Adicionar objeção que você já ouviu</h3>
-  <div class="grid2" style="gap:10px">
-   <div><label class="mut" style="font-size:12px">A frase que o cliente diz</label><input id="mxObj" placeholder='Ex.: "Já tenho muito compromisso"' style="width:100%"></div>
-   <div><label class="mut" style="font-size:12px">O que está por trás</label><input id="mxTras" placeholder="Ex.: medo de mais uma agenda que não usa" style="width:100%"></div>
-  </div>
-  <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como responder (ACRD: acolhe → confirma → reformula → devolve pergunta)</label>
-   <textarea id="mxResp" rows="2" placeholder="Ex.: Entendo — e é justamente por isso que a gente curou pra ser 1 encontro por mês. Se fosse só 1 manhã e voltasse com 2 contatos bons, valeria?" style="width:100%"></textarea></div>
-  <div class="flex" style="margin-top:10px;align-items:center;gap:10px">
-   <select id="mxCat"><option value="medo">😨 Medo</option><option value="duvida" selected>🤔 Dúvida</option><option value="confusao">🌀 Confusão</option></select>
-   <label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="mxHelp"> ⚠️ preciso de ajuda p/ quebrar</label><button class="btn gold sm" onclick="acadAddObj()">Adicionar à matriz</button>
-   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span><div style="flex:1"></div><button class="btn ghost sm" onclick="acadPDF()">📄 Gerar PDF para enviar</button>
-  </div>
+ <p class="mut" style="font-size:13px;margin:0">A frase que o cliente diz e como responder. Se não souber quebrar, peça ajuda que o Felipe entra pra te ajudar. <b>Salva na nuvem</b> — todo o time vê e usa.</p></div>
+ <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Registrar uma objeção que você ouviu</h3>
+  <div><label class="mut" style="font-size:12px">A frase que o cliente diz (a objeção)</label><input id="mxObj" placeholder='Ex.: "Tá caro", "Preciso pensar", "Vou ver com meu sócio"' style="width:100%"></div>
+  <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como responder (se já souber; senão deixe em branco e peça ajuda no card)</label>
+   <textarea id="mxResp" rows="2" placeholder="Escreva a resposta que funciona…" style="width:100%"></textarea></div>
+  <div class="flex" style="margin-top:10px;align-items:center;gap:10px"><button class="btn gold sm" onclick="acadAddObj()">Adicionar à matriz</button>
+   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span><div style="flex:1"></div><button class="btn ghost sm" onclick="acadPDF()">📄 Gerar PDF</button></div>
  </div>
-
  ${m.map(o=>`<div class="card" style="padding:14px 16px">
    <div class="flex" style="align-items:center;gap:8px;margin-bottom:6px">
-    <span class="pill ${(CAT[o.cat]||CAT.duvida)[1]}">${(CAT[o.cat]||CAT.duvida)[0]}</span>
-    <span class="mut" style="font-size:11.5px">${o.by==="playbook"?"do playbook":"por "+o.by}</span>${o.needsHelp&&!o.resp?'<span class="pill warn" style="margin-left:6px">⚠️ precisa de resposta</span>':''}
-    <div style="flex:1"></div>
-    <button class="btn ghost sm" onclick="acadDelObj('${o.id}')">✕</button>
+    <span class="pill pri">OBJEÇÃO</span>
+    <span class="mut" style="font-size:11.5px">${o.by&&o.by!=="playbook"?"por "+esc(o.by):"do playbook"}</span>
+    ${o.needsHelp&&!o.resp?'<span class="pill warn" style="margin-left:6px">⏳ ajuda pedida ao Felipe</span>':''}
+    <div style="flex:1"></div><button class="btn ghost sm" onclick="acadDelObj('${o.id}')">✕</button>
    </div>
-   <div style="font-size:14px;font-weight:700;margin-bottom:4px">“<span contenteditable onblur="acadEditObj('${o.id}','obj',this)">${o.obj}</span>”</div>
-   <div class="mut" style="font-size:12.5px;margin-bottom:6px"><b>Por trás:</b> <span contenteditable onblur="acadEditObj('${o.id}','tras',this)">${o.tras||"— clique para preencher —"}</span></div>
-   <div style="background:var(--brand-panel2);padding:9px 13px;border-radius:7px;font-size:13px;line-height:1.6">
-    <b style="font-size:12px;color:var(--brand-ok)">RESPOSTA</b><br><span contenteditable onblur="acadEditObj('${o.id}','resp',this)">${o.resp||"— clique para escrever a resposta —"}</span></div>
+   <div style="font-size:14.5px;font-weight:700;margin-bottom:8px">“<span contenteditable onblur="acadEditObj('${o.id}','obj',this)">${esc(o.obj)}</span>” <span class="mut" style="font-weight:400;font-size:11.5px">(objeção)</span></div>
+   ${o.resp?`<div style="background:var(--brand-panel2);padding:9px 13px;border-radius:7px;font-size:13px;line-height:1.6"><b style="font-size:12px;color:var(--brand-ok)">COMO RESPONDER</b><br><span id="resp_${o.id}" contenteditable onblur="acadEditObj('${o.id}','resp',this)">${esc(o.resp)}</span></div>`:`<div style="background:var(--brand-panel2);padding:10px 13px;border-radius:7px"><div style="font-size:13px;margin-bottom:6px"><b>Você sabe como responder?</b></div><div class="mut" style="font-size:12px;margin-bottom:5px">Se sim, escreva aqui:</div><div id="resp_${o.id}" contenteditable onblur="acadEditObj('${o.id}','resp',this)" style="min-height:20px;border:1px dashed var(--line2);border-radius:6px;padding:6px 9px;font-size:13px"></div><div class="flex" style="gap:8px;margin-top:8px"><button class="btn ghost sm" onclick="document.getElementById('resp_${o.id}').focus()">✅ Sei — escrever resposta</button><button class="btn sm" style="background:var(--brand-bad);color:#fff" onclick="acadPedeAjuda('${o.id}')">🆘 Não sei — preciso de ajuda p/ quebrar</button></div></div>`}
   </div>`).join("")}`;
 }
 function acadSaveCommit(){
  const c=DB.getObj(T(),"trainCommit",{});
  c[SESSION.name]={lig:+document.getElementById("cmLig").value||0,hora:document.getElementById("cmHora").value||"",
-   foco:(document.getElementById("cmFoco").value||"").trim(),quando:new Date().toLocaleString("pt-BR")};
- DB.set(T(),"trainCommit",c);vAcademy();
+   f1:(document.getElementById("cmF1").value||"").trim(),f2:(document.getElementById("cmF2").value||"").trim(),f3:(document.getElementById("cmF3").value||"").trim(),
+   dia:new Date().toISOString().slice(0,10),quando:new Date().toLocaleString("pt-BR")};
+ DB.set(T(),"trainCommit",c);toast("Compromisso de amanhã assinado ✓");vAcademy();
 }
 function acadCompromisso(){
  const c=DB.getObj(T(),"trainCommit",{});const meu=c[SESSION.name]||{};
+ const hoje=new Date().toISOString().slice(0,10);const okHoje=meu.dia===hoje;
  return `
- <div class="card"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de amanhã</h2>
- <p class="mut" style="font-size:13px;margin:0 0 12px">Treinamento sem compromisso vira conversa boa e nada muda. Escreva o seu — fica salvo e o gestor acompanha.</p>
- <div class="grid3" style="gap:12px">
-  <div><label class="mut" style="font-size:12px">Ligações que farei amanhã</label><input id="cmLig" type="number" value="${meu.lig||30}" style="width:100%"></div>
-  <div><label class="mut" style="font-size:12px">Meu horário de prospecção (bloqueado)</label><input id="cmHora" value="${meu.hora||"09:00 às 11:30"}" style="width:100%"></div>
-  <div><label class="mut" style="font-size:12px">O que vou treinar em mim</label><input id="cmFoco" value="${meu.foco||""}" placeholder="Ex.: fazer a pausa depois de perguntar" style="width:100%"></div>
+ <div class="card" style="border:1px solid ${okHoje?'rgba(46,204,113,.45)':'rgba(201,162,75,.55)'}"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de amanhã</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 12px">Todo dia, antes de sair, assine o seu compromisso. ${okHoje?'<b style="color:var(--brand-ok)">Você já assinou o de hoje ✓</b>':'<b style="color:var(--brand-warn)">Ainda não assinou hoje.</b>'}</p>
+ <div class="grid2" style="gap:12px">
+  <div><label class="mut" style="font-size:12px">Quantas ligações farei amanhã?</label><input id="cmLig" type="number" value="${meu.lig||30}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Meu horário de prospecção (de tal a tal)</label><input id="cmHora" value="${esc(meu.hora||"09:00 às 11:30")}" style="width:100%"></div>
  </div>
- <div style="margin-top:12px"><button class="btn gold sm" onclick="acadSaveCommit()">Assinar meu compromisso</button>
- ${meu.quando?`<span class="mut" style="font-size:12px;margin-left:10px">assinado em ${meu.quando}</span>`:""}</div>
+ <div style="margin-top:12px"><label class="mut" style="font-size:12px">O que vou treinar em mim — 3 coisas pra amanhã ser melhor que hoje</label>
+  <input id="cmF1" value="${esc(meu.f1||"")}" placeholder="1ª coisa" style="width:100%;margin-top:5px">
+  <input id="cmF2" value="${esc(meu.f2||"")}" placeholder="2ª coisa" style="width:100%;margin-top:6px">
+  <input id="cmF3" value="${esc(meu.f3||"")}" placeholder="3ª coisa" style="width:100%;margin-top:6px"></div>
+ <div style="margin-top:12px"><button class="btn gold sm" onclick="acadSaveCommit()">✍️ Assinar meu compromisso de hoje</button>
+ ${meu.quando?`<span class="mut" style="font-size:12px;margin-left:10px">último: ${esc(meu.quando)}</span>`:""}</div>
  </div>
  ${isAdmin()?`<div class="card"><h3 style="margin:0 0 10px;font-size:14px">Compromissos do time</h3>
-  ${Object.keys(c).length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Ligações/dia</th><th>Horário</th><th>Foco de treino</th></tr></thead><tbody>
-  ${Object.entries(c).map(([n,v])=>`<tr><td><b>${n}</b></td><td>${v.lig}</td><td>${v.hora||"—"}</td><td class="mut">${v.foco||"—"}</td></tr>`).join("")}
+  ${Object.keys(c).length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Ligações</th><th>Horário</th><th>O que vai treinar</th><th>Assinado</th></tr></thead><tbody>
+  ${Object.entries(c).map(([n,v])=>`<tr><td><b>${esc(n)}</b></td><td>${v.lig||"—"}</td><td>${esc(v.hora||"—")}</td><td class="mut">${[v.f1,v.f2,v.f3].filter(Boolean).map(esc).join(" · ")||esc(v.foco||"")||"—"}</td><td class="mut" style="font-size:11.5px">${v.dia===hoje?'<span class="pill ok">hoje</span>':esc(v.dia||v.quando||"—")}</td></tr>`).join("")}
   </tbody></table>`:`<p class="mut" style="font-size:13px">Ninguém assinou ainda.</p>`}
- </div>`:""}
- <div class="card"><h2 style="margin:0 0 8px;font-size:15px">🧭 Travou? Onde procurar</h2>
- <div class="grid2">
-  <div><b style="font-size:13px">Esqueci o que falar</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Academia → <b>Script de bolso</b>, ou <b>Script de Vendas</b> para o roteiro completo dos 8 passos.</p></div>
-  <div><b style="font-size:13px">Levei uma objeção nova</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Matriz de Objeções</b> — e registre a nova lá para ajudar o time.</p></div>
-  <div><b style="font-size:13px">Ele não atendeu</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Prospecção &amp; Cadências</b> — o que fazer no D0, D1, D3… até o D12.</p></div>
-  <div><b style="font-size:13px">O que faço hoje?</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Tarefas / Agenda</b> — atrasadas em vermelho, hoje em verde.</p></div>
-  <div><b style="font-size:13px">Esqueci sobre o produto</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Script de Vendas → ICP &amp; Empresa</b> — planos, benefícios e personas.</p></div>
-  <div><b style="font-size:13px">Quero melhorar</b><p class="mut" style="font-size:12.5px;margin:3px 0 0"><b>Treinamento &amp; Prova</b> — 4 perguntas por dia. É rápido e mantém afiado.</p></div>
- </div></div>`;
+ </div>`:""}`;
 }
 function vAcademy(){
  if(T()==="icbari")return vAcademyIcb();
