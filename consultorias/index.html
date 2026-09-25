@@ -1936,6 +1936,11 @@ const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"rot
 const NAV_SELLER_LID=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & Recompra",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência",roles:["cs"]}];
+/* Daher/Cláudia vendo COMO GESTOR: só visão de gestão (sem CRM/Base/Prospecção/Scripts/Roteiro — isso veem como closer) */
+const NAV_GESTOR_DUAL=[{g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},
+ {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
+ {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos"}];
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
 const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
@@ -1953,6 +1958,7 @@ const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 function activeNav(){
   if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
+  if(dualRole()&&VIEW_AS==='gestor')return NAV_GESTOR_DUAL; /* Daher/Cláudia vendo como gestor (enxuto) */
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
