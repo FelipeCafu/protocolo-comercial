@@ -634,6 +634,8 @@ const USERS={
   "wander.icb": {pass:"wandericbari",   role:"gestor", tenant:"icbari",name:"Dr. Wander (Gestor)",      initials:"DW"},
   "ritiele.icb":{pass:"ritieleicbari",  role:"gestor", tenant:"icbari",name:"Ritiele (Gestora)",        initials:"RI"},
   "ingrid.icb": {pass:"ingridicbari",   role:"sdr",    tenant:"icbari",name:"Ingrid (SDR)",             initials:"IN",sellerId:"ingrid"},
+  "rani.icb":   {pass:"raniicbari",     role:"sdr",    tenant:"icbari",name:"Rani (SDR)",               initials:"RA",sellerId:"rani"},
+  "nayara.icb": {pass:"nayaraicbari",   role:"sdr",    tenant:"icbari",name:"Nayara (SDR)",             initials:"NA",sellerId:"nayara"},
   "bruna.icb":  {pass:"brunaicbari",    role:"sdr",    tenant:"icbari",name:"Bruna (SDR)",              initials:"BR",sellerId:"bruna"},
   "elaine.icb": {pass:"elaineicbari",   role:"closer", tenant:"icbari",name:"Elaine (Closer)",          initials:"EL",sellerId:"elaine"},
   "cs.icb":     {pass:"velo2026",       role:"cs",     tenant:"icbari",name:"CS / Pós-venda (a definir)",initials:"CS",sellerId:"csicb"}
@@ -804,6 +806,8 @@ function seedIcbari(){
   ]);
   DB.set(t,"sellers",[
    {id:"ingrid",nome:"Ingrid",papel:"SDR",meta:40,realizado:0,foto:"IN"},
+   {id:"rani",nome:"Rani",papel:"SDR",meta:40,realizado:0,foto:"RA"},
+   {id:"nayara",nome:"Nayara",papel:"SDR",meta:40,realizado:0,foto:"NA"},
    {id:"bruna",nome:"Bruna",papel:"SDR",meta:40,realizado:0,foto:"BR"},
    {id:"elaine",nome:"Elaine",papel:"Closer",meta:12,realizado:0,foto:"EL"},
    {id:"csicb",nome:"CS / Pós-venda (a definir)",papel:"CS",meta:30,realizado:0,foto:"CS"}
@@ -2629,6 +2633,7 @@ function baseFiltered(){
   const sort=document.getElementById("bSort")?.value||"";
   const out=DB.get(T(),"base").filter(b=>{
     if(T()==="lideres" && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); a real fica bloqueada */
+    if(T()==="icbari" && !isAdmin() && b.treino!==true)return false; /* ICBARI: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
     if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
     if(org && !(b.origens||[]).includes(org))return false;
     if(ram && b.ramo!==ram)return false;
