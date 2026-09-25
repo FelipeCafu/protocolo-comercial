@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="apresentacoes/icbari/roteiro-icbari.js"></script>
+<script src="treino-videos.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -653,7 +654,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase) — nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos","cirurgias","pacientes"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos","cirurgias","pacientes","vtrain"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 /* BLINDAGEM: salva por REGISTRO (merge por id) — ninguem apaga o dado do outro. Fallback seguro. */
@@ -4610,10 +4611,32 @@ function vMeuDia(){
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar — a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
+   ${trainCard()}
    ${fila}`;
 }
 function mdDone(leadId){var acts=DB.get(T(),"activities");var a=acts.find(function(x){return x.leadId===leadId&&x.owner===SESSION.sellerId&&!x.done;})||acts.find(function(x){return x.leadId===leadId&&!x.done;});if(!a){a={id:DB.uid(),leadId:leadId,tipo:"call",titulo:"Contato realizado",data:new Date().toISOString().slice(0,10),done:false,owner:SESSION.sellerId};acts.unshift(a);DB.set(T(),"activities",acts);}concludeAct(a.id,"meudia");}
 function mdOnbClose(){try{localStorage.setItem('pc_onb_'+(SESSION.sellerId||SESSION.name||''),'1');}catch(e){}var c=document.getElementById('onbCard');if(c)c.remove();}
+/* ===== TREINAMENTO EM VÍDEO (rotina diária por papel — Full Sales via Google Drive) ===== */
+function trainRoleKey(){var r=SESSION&&SESSION.role;if(r==='sdr'||r==='closer'||r==='cs')return r;var sel=DB.get(T(),"sellers").find(function(s){return s.id===SESSION.sellerId;});var pap=((sel&&sel.papel)||'').toLowerCase();if(pap.indexOf('sdr')>=0)return 'sdr';if(pap.indexOf('cs')>=0||pap.indexOf('pós')>=0||pap.indexOf('pos')>=0)return 'cs';return 'closer';}
+function trainList(){return (window.TRAIN_LID&&window.TRAIN_LID[trainRoleKey()])||[];}
+function trainFind(id){var L=window.TRAIN_LID||{};for(var k in L){var v=(L[k]||[]).find(function(x){return x.id===id;});if(v)return v;}return null;}
+function trainDoneSet(){var me=SESSION.sellerId||SESSION.name;var rec=DB.get(T(),"vtrain").find(function(x){return x.id===me;});return new Set((rec&&rec.done)||[]);}
+function trainMarkDone(id){var me=SESSION.sellerId||SESSION.name;var arr=DB.get(T(),"vtrain");var rec=arr.find(function(x){return x.id===me;});if(!rec){rec={id:me,done:[]};arr.unshift(rec);}if(rec.done.indexOf(id)<0)rec.done.push(id);DB.set(T(),"vtrain",arr);}
+function trainTodayVideos(n){var list=trainList(),done=trainDoneSet();return list.filter(function(v){return !done.has(v.id);}).slice(0,n||3);}
+function trainOpen(id){var v=trainFind(id)||{t:'Treinamento'};openModal('<h3 style="margin:0 0 10px;font-size:16px">🎬 '+esc(v.t)+'</h3><div style="position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000"><iframe src="https://drive.google.com/file/d/'+id+'/preview" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay" allowfullscreen></iframe></div><div class="flex between mt" style="align-items:center;gap:8px"><small class="mut">Full Sales · '+trainRoleKey().toUpperCase()+'</small><button class="btn sm" onclick="trainMark(\''+id+'\')">✓ Marquei como assistido</button></div>');}
+function trainMark(id){trainMarkDone(id);closeModal();toast("Aula marcada como assistida ✓");if(CURRENT_VIEW==='meudia')vMeuDia();}
+function trainCard(){
+  var list=trainList();if(!list.length)return '';
+  var done=trainDoneSet();var total=list.length;var ndone=list.filter(function(v){return done.has(v.id);}).length;var pct=total?Math.round(ndone/total*100):0;
+  var today=trainTodayVideos(3);
+  var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">aula '+esc(v.n)+' · Full Sales</small></div><button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
+  return '<div class="card" style="margin-bottom:14px;background:linear-gradient(160deg,rgba(31,200,202,.08),transparent)"><div class="flex between wrap" style="align-items:center"><b style="font-size:14px">🎓 Treinamento de hoje · '+trainRoleKey().toUpperCase()+'</b><small class="mut">'+ndone+'/'+total+' aulas · '+pct+'%</small></div>'
+   +'<div style="height:7px;background:rgba(255,255,255,.08);border-radius:6px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
+   +'<p class="mut" style="font-size:12px;margin:8px 0 0">Assista suas aulas do dia (uns 3 vídeos ≈ 1h) e clique em assistido pra avançar na trilha.</p>'
+   +rows
+   +'<div class="mt8"><button class="btn ghost sm" onclick="trainAll()">Ver trilha completa ('+total+' aulas)</button></div></div>';
+}
+function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' <b>'+esc(v.n)+'</b> · '+esc(v.t)+'</span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button></div>';}).join('')+'</div>');}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
   const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(SESSION.role)};
