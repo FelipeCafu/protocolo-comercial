@@ -2237,7 +2237,7 @@ function renderKanban(){
   const now=Date.now();
   document.getElementById("kanban").innerHTML=funnel.stages.map(s=>{
     const ls=leads.filter(l=>l.estagio===s.id);const val=ls.reduce((a,l)=>a+(l.valor||0),0);
-    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
+    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>slaMs(s);const as=actStatus(l.id);
         const cls=as==="late"?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
@@ -2967,6 +2967,7 @@ function vTarefas(){
 }
 function doneTask(aid){concludeAct(aid,"tarefas");}
 function editStage(fid,sid,k,v){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);const s=f.stages.find(x=>x.id===sid);s[k]=v;DB.set(T(),"funnels",fs);toast("Funil atualizado");}
+function renameStage(fid,sid,val){val=(val||"").trim();if(!val)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);if(!f)return;const s=f.stages.find(x=>x.id===sid);if(!s||s.name===val)return;s.name=val;DB.set(T(),"funnels",fs);toast("Etapa renomeada ✓");}
 function delStage(fid,sid){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages=f.stages.filter(x=>x.id!==sid);DB.set(T(),"funnels",fs);vFunil();toast("Etapa removida");}
 function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();if(!nm)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages.push({id:DB.uid(),name:nm,sla:24});DB.set(T(),"funnels",fs);vFunil();toast("Etapa adicionada");}
 
