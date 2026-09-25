@@ -4594,7 +4594,7 @@ function acadCompromisso(){
  </div>`:""}`;
 }
 function vAcademy(){
- if(T()==="icbari")return vAcademyIcb();
+ /* ICBARI usa a mesma Academia enxuta (Trilha de Vídeos + Matriz de Objeções + Compromissos) */
  if(["videos","objecoes","compromisso"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
  M().innerHTML=acadHeader()+({videos:acadVideos,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadVideos)();
 }
