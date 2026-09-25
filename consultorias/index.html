@@ -1952,10 +1952,14 @@ const NAV_ICB=[
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
-/* ICBARI — CS/pós-venda vê o Meu Dia + a Jornada do Paciente */
-const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
-/* ICBARI — SDR/Closer também podem subir os leads de tráfego do dia */
-const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
+/* ICBARI — CS/pós-venda: Meu Dia/Placar + Jornada + acesso comercial (cada um vê o seu) */
+const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
+/* ICBARI — SDR/Closer: Meu Dia/Placar + comercial completo do seu papel */
+const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
 function activeNav(){
   if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
   if(dualRole()&&VIEW_AS==='gestor')return NAV_GESTOR_DUAL; /* Daher/Cláudia vendo como gestor (enxuto) */
@@ -2535,26 +2539,40 @@ function delLead(id){if(!confirm("Arquivar este lead? Ele sai do funil mas fica 
 function leadModal(){
   const funnels=DB.getObj(T(),"funnels",FUNNELS),sellers=DB.get(T(),"sellers");
   const f=funnels.find(x=>x.id===CRM_FUNNEL)||funnels[0];
+  const isIcb=T()==="icbari";
+  const cirs=isIcb?DB.getObj(T(),"cirurgias",(typeof ICB_CIRURGIAS_DEFAULT!=="undefined"?ICB_CIRURGIAS_DEFAULT:[])):[];
+  const funSel=`<select class="in" id="f_funnel">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select>`;
+  const ownSel=`<select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}">${esc(s.nome)}</option>`).join("")}</select>`;
+  const tempSel=`<select class="in" id="f_temp"><option>quente</option><option selected>morno</option><option>frio</option></select>`;
   openModal(`<h3>Novo lead</h3>
+   ${isIcb?`
+   <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div></div>
+   <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><select class="in" id="f_origem"><option>Instagram</option><option>Google</option><option>Facebook</option><option>WhatsApp</option><option>Indicação</option><option>Tráfego pago</option><option>Outro</option></select></div></div>
+   <div class="row mt"><div><label class="fl">Procedimento / Cirurgia</label><select class="in" id="f_proc">${cirs.map(c=>`<option>${esc(c.nome)}</option>`).join("")}<option>Outro / A definir</option></select></div><div><label class="fl">Funil</label>${funSel}</div></div>
+   <div class="row mt"><div><label class="fl">Temp.</label>${tempSel}</div><div><label class="fl">Responsável</label>${ownSel}</div></div>
+   `:`
    <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Nome fantasia</label><input class="in" id="f_fant"></div></div>
    <div class="row mt"><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div><div><label class="fl">E-mail</label><input class="in" id="f_email"></div></div>
    <div class="row mt"><div><label class="fl">Setor</label><input class="in" id="f_setor"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
-   <div class="row mt"><div><label class="fl">Funil</label><select class="in" id="f_funnel">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${x.name}</option>`).join("")}</select></div>
+   <div class="row mt"><div><label class="fl">Funil</label>${funSel}</div>
      ${T()==="lideres"?`<div><label class="fl">Plano provável</label><select class="in" id="f_plano"><option>Evolução</option><option selected>Referência</option><option>Legado</option><option>A definir</option></select></div>
      <div><label class="fl">Probabilidade</label><select class="in" id="f_prob"><option>Baixa</option><option selected>Média</option><option>Alta</option></select></div>`:`<div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>`}
-     <div><label class="fl">Temp.</label><select class="in" id="f_temp"><option>quente</option><option selected>morno</option><option>frio</option></select></div></div>
-   <div><label class="fl mt8">Responsável</label><select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}">${s.nome}</option>`).join("")}</select></div>
+     <div><label class="fl">Temp.</label>${tempSel}</div></div>
+   <div><label class="fl mt8">Responsável</label>${ownSel}</div>
+   `}
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="saveNewLead()">Criar lead</button></div>`);
 }
 function saveNewLead(){
-  const g=x=>document.getElementById(x).value;const nome=g("f_nome");if(!nome){toast("Informe o nome","bad");return;}
-  const fid=g("f_funnel");const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid);
+  const g=x=>{var e=document.getElementById(x);return e?e.value:"";};const nome=g("f_nome");if(!nome){toast("Informe o nome","bad");return;}
+  const funnels=DB.getObj(T(),"funnels",FUNNELS);const fid=g("f_funnel");const f=funnels.find(x=>x.id===fid)||funnels[0];
   const id=DB.uid();
   const _val=document.getElementById("f_valor")?(+g("f_valor")||0):0;
   const _plano=document.getElementById("f_plano")?g("f_plano"):"";
   const _prob=document.getElementById("f_prob")?g("f_prob"):"";
-  DB.push(T(),"leads",{id,nome,fantasia:g("f_fant"),razaoSocial:g("f_fant"),setor:g("f_setor"),origem:g("f_origem"),
-    funnelId:fid,estagio:f.stages[0].id,valor:_val,plano:_plano,prob:_prob,temp:g("f_temp"),owner:g("f_owner"),score:50,
+  const _proc=document.getElementById("f_proc")?g("f_proc"):"";
+  const setor=_proc||g("f_setor");
+  DB.push(T(),"leads",{id,nome,fantasia:g("f_fant"),razaoSocial:g("f_fant"),setor:setor,procedimento:_proc,origem:g("f_origem"),
+    funnelId:fid,estagio:f.stages[0].id,valor:_val,plano:_plano,prob:_prob,temp:g("f_temp")||"morno",owner:g("f_owner"),score:50,
     contato:{nome,tel:g("f_tel"),email:g("f_email")},criadoEm:Date.now(),movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado",ts:Date.now()});
   closeModal();toast("Lead criado");renderSidebar();if(CURRENT_VIEW==="crm")vCRM();else if(CURRENT_VIEW==="base")vBase();
@@ -2690,9 +2708,10 @@ function baseNovoDo(){
 }
 
 /* ===== IMPORTAR CLIENTES NA BASE (planilha Excel/CSV/colar) — todas as empresas ===== */
-var BASE_IMP=null;
+var BASE_IMP=null;var BASE_IMP_DEST='base';
+function baseImpSetDest(d){BASE_IMP_DEST=d;baseImpRender();}
 function baseImportOpen(){
-  BASE_IMP=null;
+  BASE_IMP=null;BASE_IMP_DEST='base';
   openModal(`<h3>📥 Importar ${lx("Clientes")} para a Base</h3>
    <p class="mut" style="font-size:13px">Suba uma planilha (Excel .xlsx/.xls ou CSV) ou cole as linhas. Detecto as colunas, ignoro repetidos (mesmo telefone/nome) e adiciono à Base. Nada é apagado.</p>
    <label class="mut" style="font-size:12px;display:block;margin-bottom:4px">Arquivo (.xlsx, .xls ou .csv)</label>
@@ -2770,11 +2789,29 @@ function baseImpRender(){
    +'<div style="overflow:auto;max-height:26vh;margin-top:8px"><table><thead><tr><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Situação</th></tr></thead><tbody>'
    +st.sample.map(function(s){var tg=s.st==='novo'?'<span class="pill ok">novo</span>':(s.st==='dup'?'<span class="pill">repetido</span>':'<span class="pill">vazio</span>');return '<tr><td>'+esc(s.nome||'—')+'</td><td>'+esc(s.empresa||'—')+'</td><td>'+esc(s.tel||'—')+'</td><td>'+tg+'</td></tr>';}).join('')
    +'</tbody></table></div>'
-   +'<div class="flex between mt" style="align-items:center;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" '+(st.novos?'':'disabled')+' onclick="baseImpDo()">Importar '+st.novos+' p/ a Base</button></div></div>';
+   +'<div style="margin-top:12px;border-top:1px solid var(--line,rgba(0,0,0,.1));padding-top:10px"><b style="font-size:13px">Esses contatos são…</b>'
+   +'<label style="display:block;font-size:12.5px;margin-top:7px;cursor:pointer"><input type="radio" name="bimpDest" '+(BASE_IMP_DEST==="crm"?"checked":"")+' onchange="baseImpSetDest(\'crm\')"> 🔥 <b>Leads novos / quentes</b> → vão <b>direto pro CRM</b> (Novo Lead, funil SDR)</label>'
+   +'<label style="display:block;font-size:12.5px;margin-top:5px;cursor:pointer"><input type="radio" name="bimpDest" '+(BASE_IMP_DEST!=="crm"?"checked":"")+' onchange="baseImpSetDest(\'base\')"> ❄️ <b>Lista antiga / fria</b> → vão para a '+lx("Base de Clientes")+'</label></div>'
+   +'<div class="flex between mt" style="align-items:center;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" '+(st.novos?'':'disabled')+' onclick="baseImpDo()">'+(BASE_IMP_DEST==="crm"?('🔥 Importar '+st.novos+' p/ o CRM'):('Importar '+st.novos+' p/ a Base'))+'</button></div></div>';
 }
 function baseImpDo(){
   if(!BASE_IMP){return;}var st=_bImpScan();
   if(!st.novos){toast("Nenhum contato novo para importar"+(st.dup?" ("+st.dup+" repetidos)":""),"warn");return;}
+  if(BASE_IMP_DEST==="crm"){ /* leads quentes → direto no CRM, funil SDR, Novo Lead */
+    var funnels=DB.getObj(T(),"funnels",FUNNELS);var f=funnels.find(function(x){return x.papel==="SDR";})||funnels[0];var stg=(f.stages[0]||{}).id;
+    var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),hist=DB.get(T(),"history");
+    var exT={},exN={};leads.forEach(function(l){var t=_telDig((l.contato||{}).tel);if(t)exT[t]=1;var n=(l.nome||'').trim().toLowerCase();if(n)exN[n]=1;});
+    var hoje=new Date().toISOString().slice(0,10),n=0,dup2=0;
+    st.items.forEach(function(it){var td=_telDig(it.tel),nl=(it.nome||'').toLowerCase();
+      if((td&&exT[td])||(!td&&nl&&exN[nl])){dup2++;return;}
+      var lid=DB.uid();
+      leads.unshift({id:lid,nome:it.nome||"(sem nome)",fantasia:"",razaoSocial:it.empresa||"",setor:it.ramo||"",contato:{nome:it.nome,tel:it.tel||"",email:it.email||""},origem:it.orig||"Importação",funnelId:f.id,estagio:stg,temp:"quente",valor:0,score:80,owner:"",criadoEm:Date.now(),movedAt:Date.now(),notas:"Lead importado (quente)"});
+      acts.unshift({id:DB.uid(),leadId:lid,tipo:"call",titulo:"Ligar agora — lead quente",data:hoje,done:false,owner:""});
+      hist.unshift({id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead importado (quente) direto no CRM",ts:Date.now()});
+      if(td)exT[td]=1;if(nl)exN[nl]=1;n++;});
+    DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);DB.set(T(),"history",hist);
+    closeModal();toast(n+" lead(s) quente(s) no CRM"+(dup2?" · "+dup2+" já existiam":""));renderSidebar();go('crm');return;
+  }
   var base=DB.get(T(),"base");
   st.items.forEach(function(it){base.unshift({id:DB.uid(),nome:it.nome||"(sem nome)",empresa:it.empresa||"",tel:it.tel||"",email:it.email||"",cpf:"",cargo:"",instagram:"",membro:"",ramo:it.ramo||"",origens:[it.orig||"Importação"],obs:"",inCrm:false});});
   DB.set(T(),"base",base);closeModal();
