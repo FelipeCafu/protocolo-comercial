@@ -168,7 +168,7 @@ window.ROTEIRO_ICBARI={
    Espelha o Script de Vendas: o que a pessoa vai FALAR, palavra por palavra, sabendo o que fazer. */
 window.ROTEIRO_ICB_SDR=function(orig){
  orig=orig||"anuncio";
- var s1={title:"Antes de discar",t:"Pré-ligação · 30s",tec:"Preparação · espelhamento",
+ var s1={title:"O que falar, na ordem certa.",t:"Pré-ligação · 30s",tec:"Preparação · espelhamento",
   s:"**Respire, sorria, tom firme e acolhedor.** Você não está vendendo, está cuidando de uma pessoa que procurou ajuda para um problema de saúde.\nTenha à mão: **nome**, **por qual canal** a pessoa chegou e a **queixa/procedimento** de interesse.\n\n**ESPELHAMENTO (regra de ouro):** copie o ritmo da pessoa. Fala rápido, fale rápido; fala devagar, vá devagar.",
   do:"Sorria (ouve-se no telefone). Uma pergunta de cada vez, ouça de verdade.",
   av:"Ligar no automático, sem energia. Ir direto ao procedimento ou ao preço."};
