@@ -1707,19 +1707,19 @@ function seedB2(){
 function cadencesB2(){
  const sdr=[
   {dia:0,toques:[
-    {h:"09:00",canal:"ligação",cond:"1º toque — Ligação",texto:"Apresentação (30s) + gancho ('deixa eu te dar um norte'). Oferece a Sessão Estratégica gratuita (diagnóstico) e tenta agendar."},
-    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp",texto:"Áudio curto: 'faço um raio-x gratuito da sua vida financeira'. CTA: 'posso te ligar 15h ou 17h?'"},
-    {h:"16:00",canal:"ligação",cond:"Não atendeu → 2ª ligação",texto:"Ligar em horário diferente do 1º toque."}]},
+    {h:"09:00",canal:"ligação",cond:"1º toque — Ligação",texto:"Siga o Script de Vendas (aba Script & Roteiro), abertura pela origem do lead. Qualifica e tenta agendar a Sessão Estratégica. Registre o resultado no lead."},
+    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"Só reconexão: 'Oi [nome], aqui é a [SDR] da B2. Te liguei agora e não consegui falar. Te ligo de novo mais tarde, tá? Um abraço.'"},
+    {h:"+3h",canal:"ligação",cond:"Não atendeu → 2ª ligação",texto:"Ligue de novo, em horário diferente. Ainda NÃO envie conteúdo nem material."}]},
   {dia:1,toques:[
-    {h:"10:00",canal:"ligação",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente."},
-    {h:"14:00",canal:"wa",cond:"Sem resposta → WhatsApp com valor",texto:"Enviar conteúdo: 'os 3 erros que travam sua vida financeira' (gera autoridade)."}]},
+    {h:"10:00",canal:"ligação",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente da véspera."},
+    {h:"15:00",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"'Oi [nome], continuo tentando falar com você. Qual o melhor horário pra você, de manhã ou à tarde?' Nada de material ainda."}]},
   {dia:2,toques:[
-    {h:"11:00",canal:"ligação",cond:"Ligação",texto:"Quebra de padrão: 'vou ser rápido, 1 pergunta só sobre seu dinheiro…'"},
-    {h:"15:00",canal:"email",cond:"E-mail com case",texto:"1 case (de endividado a investidor) + como funciona a Sessão Estratégica."}]},
-  {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Ligação",texto:"Retomar o conteúdo enviado."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um cliente que saiu do vermelho."}]},
-  {dia:6,toques:[{h:"11:00",canal:"ligação",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes…' (última tentativa quente)."},{h:"15:00",canal:"insta",cond:"Instagram",texto:"Reagir a story + DM leve."}]},
-  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite p/ diagnóstico gratuito, sem compromisso."}]},
-  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Encerramento amigável",texto:"'Vou encerrar seu contato por ora. Quando quiser colocar a vida financeira nos trilhos, me chama.' (reativa ~40%)."}]}
+    {h:"10:00",canal:"ligação",cond:"Ligação",texto:"Nova tentativa. A partir do 3º dia já dá pra agregar valor."},
+    {h:"15:00",canal:"wa",cond:"WhatsApp com valor (só a partir do 3º dia)",texto:"Agora sim: 1 prova social curta (cliente que organizou a vida financeira) + convite pra Sessão gratuita."}]},
+  {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Ligação",texto:"Retome o que enviou."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um cliente que organizou a vida financeira."}]},
+  {dia:6,toques:[{h:"11:00",canal:"ligação",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes…' última tentativa quente."},{h:"15:00",canal:"insta",cond:"Instagram",texto:"Reagir a story + DM leve."}]},
+  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite pra diagnóstico gratuito, sem compromisso."}]},
+  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Encerramento amigável",texto:"'Vou encerrar seu contato por ora. Quando quiser colocar a vida financeira nos trilhos, me chama.'"}]}
  ];
  const closer=[
   {dia:0,toques:[
@@ -1779,15 +1779,15 @@ function quizBankB2(){return [
 function defaultCadences(){
  const sdr=[
   {dia:0,toques:[
-    {h:"09:00",canal:"ligação",cond:"1º toque — Ligação",texto:"Apresentação (30s) + prova social. Gera curiosidade e tenta agendar a qualificação."},
-    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp",texto:"Áudio curto + foto do último encontro. CTA: 'posso te ligar 15h ou 17h?'"},
-    {h:"16:00",canal:"ligação",cond:"Não atendeu → 2ª ligação",texto:"Ligar em horário diferente do 1º toque."}]},
+    {h:"09:00",canal:"ligação",cond:"1º toque — Ligação",texto:"Siga o Script de Vendas (aba Script & Roteiro), abertura pela origem. Qualifica e tenta agendar a reunião. Registre o resultado no lead."},
+    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"Só reconexão: 'Oi [nome], aqui é a [SDR] do Líderes. Te liguei agora e não consegui falar. Te ligo de novo mais tarde, tá? Abraço.'"},
+    {h:"+3h",canal:"ligação",cond:"Não atendeu → 2ª ligação",texto:"Ligue de novo em horário diferente. Ainda NÃO envie material."}]},
   {dia:1,toques:[
-    {h:"10:00",canal:"ligação",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente."},
-    {h:"14:00",canal:"wa",cond:"Sem resposta → WhatsApp com valor",texto:"Convite pro próximo Encontro das Comunidades (pertencimento)."}]},
+    {h:"10:00",canal:"ligação",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente da véspera."},
+    {h:"15:00",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"'Oi [nome], continuo tentando falar com você. Qual o melhor horário, de manhã ou à tarde?' Nada de material ainda."}]},
   {dia:2,toques:[
-    {h:"11:00",canal:"ligação",cond:"Ligação",texto:"Quebra de padrão: 'vou ser rápido, 1 pergunta só…'"},
-    {h:"15:00",canal:"email",cond:"E-mail com case",texto:"1 case de membro + resumo Master vs Premium."}]},
+    {h:"11:00",canal:"ligação",cond:"Ligação",texto:"Nova tentativa. A partir do 3º dia já dá pra agregar valor."},
+    {h:"15:00",canal:"wa",cond:"WhatsApp com valor (só a partir do 3º dia)",texto:"Agora sim: convite pro próximo Encontro das Comunidades + 1 prova social (pertencimento)."}]},
   {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Ligação",texto:"Retomar case enviado."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Vídeo curto do presidente / bastidor do encontro."}]},
   {dia:6,toques:[{h:"11:00",canal:"ligação",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes…' (última tentativa quente)."},{h:"15:00",canal:"insta",cond:"Instagram",texto:"Reagir a story + DM leve."}]},
   {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Enviar convite aberto p/ visitante em 1 encontro."}]},
@@ -2755,6 +2755,7 @@ function baseFiltered(){
   const out=DB.get(T(),"base").filter(b=>{
     if(T()==="lideres" && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); a real fica bloqueada */
     if(T()==="icbari" && !isAdmin() && b.treino!==true)return false; /* ICBARI: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
+    if(T()==="b2if" && !isAdmin() && b.treino!==true)return false; /* B2: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
     if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
     if(org && !(b.origens||[]).includes(org))return false;
     if(ram && b.ramo!==ram)return false;
@@ -3158,15 +3159,22 @@ function vProspec(){
   const cad=cads[CAD_ROLE]||[];
   M().innerHTML=`
    <div class="view-title"><h1>Prospecção & Cadências</h1>${isAdmin()?'':`<span class="pill pri">Sua cadência: ${roleLabel(effRole())}</span>`}</div>
-   <p class="view-sub">Régua de relacionamento por papel — com <b>vários toques no mesmo dia</b> (atendeu / não atendeu), do D0 ao D12.</p>
+   <p class="view-sub">Régua de relacionamento por papel — com <b>vários toques no mesmo dia</b> (atendeu / não atendeu), do 1º ao 12º dia. Ligada ao <b>Script</b> e ao <b>CRM</b>.</p>
    ${T()==="icbari"&&CAD_ROLE==="sdr"?`<div class="card" style="border:1px solid var(--brand-line);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-primary) 10%,transparent),transparent);margin-bottom:12px">
      <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
      <ol class="mut" style="font-size:13px;line-height:1.7;margin:8px 0 0;padding-left:18px">
        <li>Entrou lead <b>novo</b> no CRM (a maioria vem pelo WhatsApp do tráfego)? Abra o lead e clique em <b>▶ Iniciar cadência</b> — os toques do 1º e 2º dia já entram na sua Agenda.</li>
        <li><b>Bombardeio nos 2 primeiros dias:</b> responda na hora, ligue, mande áudio. Quem responde rápido é quem agenda. Não desista no 1º "não atendeu".</li>
        <li><b>Atendeu e marcou a consulta?</b> Mova o lead para <b>Consulta Agendada</b> — a cadência para e entra a régua anti-falta.</li>
-       <li><b>Não atendeu?</b> Cada toque é uma atividade: ao concluir, registre o que aconteceu e a próxima já é criada. Siga a régua até o D12.</li>
-     </ol></div>`:''}
+       <li><b>Não atendeu?</b> Cada toque é uma atividade: ao concluir, registre o que aconteceu e a próxima já é criada. Siga a régua até o 12º dia.</li>
+     </ol></div>`:(CAD_ROLE==="sdr"?`<div class="card" style="border:1px solid var(--brand-line);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-primary) 10%,transparent),transparent);margin-bottom:12px">
+     <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
+     <ol class="mut" style="font-size:13px;line-height:1.7;margin:8px 0 0;padding-left:18px">
+       <li>Na ligação, <b>siga o Script de Vendas</b> (aba Script & Roteiro), abertura pela origem do lead. A cadência é o ritmo; o Script é o que falar.</li>
+       <li>Abra o lead no CRM e clique em <b>▶ Iniciar cadência</b> — cada toque vira uma <b>atividade na sua Agenda</b>. Ao concluir, registre o que aconteceu e a próxima é criada.</li>
+       <li><b>1º e 2º dia: sem enviar material.</b> Se não atender, só reconecte ("te liguei e não consegui, te ligo de novo"). Conteúdo/prova social só <b>a partir do 3º dia</b>.</li>
+       <li><b>Atendeu e agendou?</b> Mova o lead pra próxima etapa — a cadência para e entra a régua anti-falta.</li>
+     </ol></div>`:'')}
    <div class="flex between wrap" style="margin-bottom:12px">
      <div class="flex wrap">${roles.map(([id,t])=>`<span class="chip ${CAD_ROLE===id?'on':''}" onclick="CAD_ROLE='${id}';vProspec()">${t}</span>`).join("")}</div>
      ${isAdmin()?`<div class="flex"><button class="btn ghost sm" onclick="resetCad()">restaurar padrão</button><button class="btn sm" onclick="addCadDay()">+ Dia</button></div>`:""}</div>
@@ -4652,7 +4660,7 @@ var ROT_ORIG_AB={
  b2if:{
   anuncio:'**Abertura (anúncio / inbound):**\n"Olá {NOME}, tudo bem? Aqui é {SDR}, da B2 Inteligência Financeira. Vi que você se interessou pela gente. Prometo ser rápido. Deixa eu te entender pra já te dar um norte, posso?"',
   indicacao:'**Abertura (indicação):**\n"Olá {NOME}! Aqui é {SDR}, da B2. Quem me passou seu contato foi o {INDICADOR}, falou que você ia curtir organizar melhor a vida financeira. Prometo ser rápido. Deixa eu te entender?"',
-  retorno:'**Reconectar (retorno / repescagem — lead frio):**\n"Olá {NOME}, aqui é {SDR}, da B2 Inteligência Financeira. A gente já tinha se falado um tempo atrás. Tô te ligando só pra saber **como está a sua vida financeira hoje**. Tem um minutinho?"\n\n**Descobrir o que travou:** "Na época a gente não fez a Sessão. O que fez você segurar, foi o momento, a agenda, ou faltou eu explicar direito como funciona?"'
+  retorno:'**Reconectar (retorno / repescagem — lead frio):**\n"Olá {NOME}, aqui é {SDR}, da B2. A gente já tinha se falado um tempo atrás, **como empresa**, e eu tô te ligando com carinho só pra saber **como está a sua vida financeira hoje**."\n\n**Reabrir com humildade:** "Na época a gente não chegou a dar prosseguimento. **Muita coisa mudou aqui na empresa**, e eu queria saber se eu poderia ter um minuto pra te apresentar os nossos diferenciais hoje, e também entender **o que a gente deixou de fazer** naquela época." → deixe a pessoa falar.\n\n**Reacender:** "E hoje, se o dinheiro ainda te preocupa, talvez seja a hora de finalmente organizar com método. Que tal a gente retomar do ponto onde parou?"'
  }
 };
 function roteiroWithOrigin(base){
