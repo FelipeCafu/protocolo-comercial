@@ -1155,6 +1155,24 @@ const ICB_OBJ=[
  {id:"io10",obj:"Tenho medo de tomar vitamina pra sempre e de ficar com flacidez",tras:"Medo — imaginário negativo sobre o pós-operatório",resp:"Ninguém quer trocar 5 remédios por 10 suplementos. Aqui é o contrário: polivitamínico e whey, com nutricionista por 6 meses e foco em ganho de massa magra, que é o que cuida da flacidez. A gente acompanha isso desde o primeiro dia.",cat:"medo",by:"playbook"}
 ];
 
+/* ICP + Planos — regra oficial da ICBARI (doc "Perfil do Lead"). Reutilizado no Script (Visão e SDR). */
+function icbICPBlock(){return `
+ <div class="card" style="border-left:3px solid var(--brand-ok)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ICP — o paciente ideal (Perfil A)</h2><span class="pill pri">O plano decide antes do IMC</span></div>
+   <p style="font-size:13px;line-height:1.6;margin:10px 0 0"><b>Plano de cobertura integral + critério clínico da linha atendido.</b> É o paciente que a clínica quer: converte em consulta e em cirurgia, prioridade máxima de contato e de agenda.</p>
+   <div class="grid mt" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">
+     <div class="card" style="padding:11px 13px;border-top:3px solid var(--brand-ok)"><b style="font-size:12.5px;color:var(--brand-ok)">✅ Cobertura integral</b><p class="mut" style="font-size:12px;margin:6px 0 0">Opera sem dificuldade — o convênio paga o honorário.<br><b>Bradesco, Unimed, INAS, SulAmérica, Porto Seguro, Postal Saúde, CBMDF, PMDF</b> e demais de cobertura ampla.</p></div>
+     <div class="card" style="padding:11px 13px;border-top:3px solid var(--brand-warn)"><b style="font-size:12.5px;color:var(--brand-warn)">⚠️ Baixo retorno</b><p class="mut" style="font-size:12px;margin:6px 0 0">O plano <b>não paga o honorário</b>. Consulta como cortesia + honorário particular (~R$ 7-8 mil, 10-12x). Muitos desistem ao saber.<br><b>Amil, Quality, Unity, MedSênior.</b></p></div>
+     <div class="card" style="padding:11px 13px;border-top:3px solid var(--brand-bad)"><b style="font-size:12.5px;color:var(--brand-bad)">🚫 NÃO atendido</b><p class="mut" style="font-size:12px;margin:6px 0 0"><b>Hapvida</b> — a clínica não atende nem opera, em nenhuma hipótese. <b>Não agende.</b> Encerre com orientação e marque STATUS DO CONTATO = "Não cobrimos".</p></div>
+   </div>
+   <div style="margin-top:10px"><b style="font-size:12.5px">Critério clínico por linha (o que caracteriza o perfil ideal):</b>
+     <ul class="mut" style="font-size:12.5px;line-height:1.75;margin:6px 0 0;padding-left:18px">
+       <li><b>Bariátrica / Revisional:</b> IMC ≥ 35 (obesidade grau II/III). IMC 30–34,9 (grau I) não é descarte, mas é régua mais longa — o plano costuma negar a autorização.</li>
+       <li><b>Vesícula:</b> exame de imagem prévio mostrando cálculo.</li>
+       <li><b>Hérnia:</b> exame de imagem prévio OU abaulamento visível.</li>
+       <li><b>Refluxo (DRGE):</b> exame prévio que documente a doença.</li>
+       <li><b>Diástase:</b> IMC abaixo de 30 + diástase documentada (quanto mais magra, mais visível o resultado). Honorário é particular.</li>
+     </ul></div>
+ </div>`;}
 function scICP_ICB(){
  var prods=DB.get(T(),"products");
  function benef(p){return (p&&p.beneficios?p.beneficios:[]).map(function(b){return "<li>"+b+"</li>";}).join("");}
@@ -1167,11 +1185,8 @@ function scICP_ICB(){
      <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${benef(prods[0])}</ul></div>
    <div class="card" style="border-top:3px solid var(--brand-accent)"><h2 style="margin:0 0 4px;font-size:15px">${prods[1]?prods[1].nome:"Procedimento Cirúrgico"}</h2><small class="mut">O destino da jornada</small>
      <ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">${benef(prods[1])}</ul></div></div>
- <div class="section-h"><h2>Perfil de paciente ideal</h2><div class="line"></div></div>
- <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
-   ${[["✅ Quem é","Pessoa com queixa digestiva, obesidade/sobrepeso com indicação, hérnia, cálculo/vesícula, refluxo, diástase — que busca resolver com segurança, particular ou por convênio, em Brasília-DF e entorno."],
-      ["🎯 Momento","Convive com o problema há um tempo e quer resolver · já ouviu que precisa operar e está pesquisando · tem exames antigos e quer uma avaliação."],
-      ["🚫 Não encaixa agora","Quem quer só o preço da cirurgia por telefone sem avaliação, quem não tem indicação clínica, ou quem busca resultado sem passar pela consulta."]].map(function(x){return `<div class="card persona"><b style="color:var(--brand-accent)">${x[0]}</b><p style="font-size:13px;margin:8px 0 0">${x[1]}</p></div>`;}).join("")}</div>
+ <div class="section-h"><h2>Perfil de paciente ideal (ICP) & planos</h2><div class="line"></div></div>
+ ${icbICPBlock()}
  <div class="section-h"><h2>Personas & dores</h2><div class="line"></div></div>
  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
    ${[["🩺 O que tem sintoma","Dor, refluxo, cálculo, hérnia que incomoda. Dor: medo do que é e de piorar.","Consulta que esclarece"],
@@ -1219,7 +1234,102 @@ function icbPerfilCalc(){var g=function(id){var e=document.getElementById(id);re
  var el=document.getElementById("pf_result");if(!el)return;
  el.innerHTML='<div style="display:flex;gap:12px;align-items:center"><div style="width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:26px;font-weight:800;color:#04201c;background:'+r.c+'">'+r.p+'</div><div><b style="font-size:15px">Perfil '+r.p+' — '+r.t+'</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+r.d+'</p></div></div>';
 }
-function scSDR_ICB(){return `
+function scSDR_ICB(){
+ var O=ICB_ORIG||"anuncio";
+ var GO=function(t){return '<span class="go">'+t+'</span>';};
+ var STEP=function(n,titulo,corpo,go){return '<div class="step" data-n="'+n+'"><h3>'+titulo+'</h3>'+corpo+(go?GO(go):'')+'</div>';};
+ /* objeções: as gerais (ICB_OBJ) + específicas do lead frio */
+ var objGerais=ICB_OBJ.map(function(o){return '<div class="script"><b>'+o.obj+'</b><br>'+o.resp+'</div>';}).join("");
+ var objFrio=[
+   ['"Já pensei sobre isso e acabei deixando pra lá."','"Faz todo sentido, a vida corre e a gente adia o que não aperta. Deixa eu te perguntar: hoje o [queixa] ainda te incomoda? Porque, se ainda está aí, talvez seja a hora de finalmente resolver, agora com a gente marcando tudo pra você."'],
+   ['"Não era o momento naquela época."','"Entendo perfeitamente. E hoje, como está o momento? Às vezes só faltou alguém organizar o caminho, e é exatamente isso que a gente faz aqui. Que tal a gente retomar do ponto onde você parou?"'],
+   ['"Achei caro na época."','"Obrigado por ser sincero. Muita coisa mudou: hoje a clínica conduz a jornada inteira e a maioria dos pacientes parcela. Antes de falar de valor, o passo é a consulta, é nela que o médico vê o seu caso. Posso reservar um horário pra você?"'],
+   ['"Já resolvi em outro lugar."','"Que bom que você cuidou disso! Posso te perguntar como foi? E, se surgir qualquer outra necessidade digestiva, hérnia, vesícula, refluxo, quero que você lembre da ICBARI. Posso deixar seu contato atualizado aqui com a gente?"']
+ ].map(function(o){return '<div class="script"><b>'+o[0]+'</b><br>'+o[1]+'</div>';}).join("");
+
+ var steps="";
+ if(O==="retorno"){
+   steps=
+    STEP(1,"Reconectar (leve, sem cobrar)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Lead frio = já veio na clínica OU se interessou e a gente não fechou. <b>Não cobre, não pressione.</b> Reabra com carinho e curiosidade de verdade.</p>'+
+     '<div class="script">"Oi <b>[nome]</b>, aqui é o/a [SDR] da ICBARI. Você chegou a falar com a gente sobre <b>[procedimento]</b> um tempo atrás. Tô te ligando com carinho só pra saber como você está com isso hoje. Tem um minutinho?"</div>',
+     "↓ Ele topou conversar? Vá pro passo 2.")+
+    STEP(2,"Descobrir o que travou (sem culpa)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Ninguém gosta de se justificar. Pergunte leve e <b>ouça</b> — aqui você acha a objeção real (BANT).</p>'+
+     '<div class="script">"Na época a gente não chegou a seguir com a sua avaliação. Só pra eu te entender e te ajudar melhor agora: o que fez você segurar naquele momento? Foi o <b>tempo</b>, o <b>valor</b>, algum <b>medo</b>, ou a dúvida com o <b>convênio</b>?"</div>',
+     "↓ Anote o que travou e reacenda a dor (passo 3).")+
+    STEP(3,"Reacender a dor (SPIN de repescagem)",
+     '<div class="script"><b>Situação/Problema:</b> "E hoje, o <b>[queixa]</b> continua te incomodando? Em quê ele atrapalha o seu dia a dia?"</div>'+
+     '<div class="script"><b>Implicação:</b> "Já faz um tempo que você sabe que precisa resolver e ainda convive com isso. Se seguir mais um ano do mesmo jeito, o que pode acontecer?"</div>'+
+     '<div class="script"><b>Necessidade:</b> "Se a gente cuidasse de tudo pra você agora, avaliação, exames e cirurgia marcados pela clínica, isso mudaria a sua decisão?"</div>',
+     "↓ Ele reconheceu a dor? Reofereça a consulta (passo 4).")+
+    STEP(4,"Reoferecer a consulta (com a novidade: a clínica marca tudo)",
+     '<div class="script">"<b>[nome]</b>, muita coisa evoluiu por aqui. Hoje a <b>clínica marca todos os exames e a própria cirurgia pra você</b>, e a consulta é justamente pra tirar suas dúvidas, sem compromisso. Que tal a gente retomar do ponto onde você parou? Tenho <b>[dia] 10h ou [dia] 16h</b>, qual encaixa melhor?"</div>',
+     "↓ Confirme e blinde o no-show (passo 5).")+
+    STEP(5,"Confirmar e blindar o no-show (WhatsApp)",
+     '<div class="script">"Fechado, <b>[nome]</b>! Que bom te ter de volta 💚 Sua consulta ficou pra <b>[data] às [hora]</b>. Te mando o endereço aqui. Se tiver exames antigos, leve com você. Qualquer coisa é só me chamar!"</div>',
+     "↓ Surgiu objeção? Use o passo 6.")+
+    STEP(6,"Quebra de objeções (do lead frio + gerais)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Primeiro as que mais aparecem em repescagem; depois as gerais da clínica.</p>'+objFrio+objGerais,"")+
+    STEP(7,"Se NÃO atendeu → cadência de repescagem",
+     '<p class="mut" style="font-size:13px;margin:0">Frio não responde de primeira. Alterne ligação e WhatsApp acolhedor ("passando pra saber como você está com o [procedimento]"), envie 1 prova social (depoimento) e tente de novo. Registre cada toque no CRM. Não desista antes de 5-7 tentativas espaçadas.</p>',
+     "Abra: Prospecção & Cadências →");
+ } else {
+   var ab={
+     anuncio:{tag:"📩 Veio de anúncio / tráfego (Instagram, Google)",
+       nota:'Responda em <b>minutos</b>, lead de tráfego esfria rápido. Tom leve e já emende na pergunta.',
+       linha:'"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Vi que você buscou informação sobre <b>[procedimento]</b>. Posso te fazer duas perguntas rápidas pra te orientar do jeito certo?"'},
+     indicacao:{tag:"🤝 Veio por indicação",
+       nota:'Indicação já vem com confiança. Use o nome de quem indicou se puder, mas ainda qualifique.',
+       linha:'"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Quem me passou seu contato falou que você está querendo resolver <b>[queixa]</b>. Que bom que chegou até a gente, deixa eu te entender melhor pra já te direcionar."'}
+   }[O];
+   steps=
+    STEP(1,"Abertura — "+ab.tag,
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">'+ab.nota+' Tom sereno passa segurança em tema de saúde. Prometa que é rápido.</p>'+
+     '<div class="script">'+ab.linha+'</div>',
+     "↓ EMENDE DIRETO NO PASSO 2")+
+    STEP(2,"Acolher e entender (as perguntas que qualificam)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Uma pergunta de cada vez, sem diagnosticar. Você mapeia o caso pro médico. Aqui já saem os dados do <b>ICP</b> (veja o bloco abaixo).</p>'+
+     '<div class="script">"Me conta com suas palavras: <b>o que você está sentindo</b> / o que quer resolver?" → "Há <b>quanto tempo</b>? Está atrapalhando seu dia a dia?" → "Você já tem <b>algum exame ou laudo</b> recente, já passou por outro médico?"</div>'+
+     '<div class="script"><b>Perguntas que qualificam (antes eram do bot):</b><br>"Você já tem <b>indicação de cirurgia</b> ou quer uma <b>avaliação</b>?" → "Vai ser por <b>convênio</b> ou <b>particular</b>?" (se convênio: <b>qual plano?</b>) → "Você é de <b>Brasília e entorno</b>?"</div>'+
+     '<p class="mut" style="font-size:12px;margin:8px 0 0">⚠️ Com o <b>plano</b> em mãos você já sabe o perfil (bloco ICP abaixo). <b>Hapvida = não agenda</b>, encerre com orientação.</p>',
+     "↓ Valide o sentimento e vá pro passo 3.")+
+    STEP(3,"Gerar clareza e urgência saudável (SPIN clínico)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Reaja ao que ele disse, com empatia:</p>'+
+     '<div class="script"><b>Situação:</b> "Entendi. E no dia a dia, isso te limita em quê, trabalho, sono, alimentação?"</div>'+
+     '<div class="script"><b>Problema:</b> "O que mais te incomoda nisso hoje?"</div>'+
+     '<div class="script"><b>Implicação:</b> "E deixar como está, sem avaliar, o que pode acontecer? Costuma melhorar sozinho esperando?"</div>'+
+     '<div class="script"><b>Necessidade:</b> "Se você tivesse uma avaliação com um cirurgião que já opera isso todo dia, e a clínica cuidasse de todos os exames pra você, isso te ajudaria?"</div>',
+     "↓ Ele quer resolver? Converta para a consulta (passo 4).")+
+    STEP(4,"Converter para a CONSULTA (o objetivo do SDR)",
+     '<div class="script">"<b>[nome]</b>, pelo que você me contou, o passo certo agora é uma <b>consulta de avaliação com o nosso cirurgião</b>. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento e explica a jornada. E aqui a clínica marca todos os exames e a cirurgia pra você. <b>Prefere amanhã 10h ou 16h?</b>"</div>'+
+     '<p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Consulta Agendada"</b> no CRM, o sistema cria sozinho as tarefas anti-no-show.</p>',
+     "↓ Feche o loop no WhatsApp (passo 5).")+
+    STEP(5,"Confirmar e blindar o no-show (WhatsApp)",
+     '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Mande na hora: (1) confirmação com dia/hora + endereço/mapa; (2) o que levar (exames antigos, carteirinha, documento).</p>'+
+     '<div class="script">"Fechado, <b>[nome]</b>! Sua consulta está marcada pra <b>[data] às [hora]</b> 🙌. Te mando aqui o endereço. Se você tiver exames antigos, leve com você. Qualquer coisa, é só me chamar por aqui!"</div>',
+     "↓ Surgiu objeção? Use o passo 6.")+
+    STEP(6,"Quebra de objeções (acolhe → reformula → devolve pergunta)",objGerais,"")+
+    STEP(7,"Se NÃO atendeu → cadência",
+     '<p class="mut" style="font-size:13px;margin:0">Siga a <b>cadência do SDR</b> (aba Prospecção & Cadências): no mesmo D0, ligou/não atendeu → WhatsApp acolhedor + conteúdo → liga de novo à tarde. Até o break-up no D12. Nunca desista antes de 7-12 toques.</p>',
+     "Abra: Prospecção & Cadências →");
+ }
+
+ return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 SCRIPT DO SDR — siga de cima para baixo</h2><span class="pill pri">Converter para a CONSULTA, não vender a cirurgia</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>acolhe e conduz com perguntas</b> (fale 30%, ouça 70%), vende o <b>próximo passo: a consulta de avaliação</b> (nunca o preço da cirurgia) e <b>anota tudo no CRM</b>. É um fluxo só, cada passo emenda no próximo, até <b>marcar a consulta</b>.</p>
+   <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conversas/dia</div></div><div><div style="font-size:19px;font-weight:800">3-5</div><div class="eyebrow mut">consultas agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
+
+ ${icbOrigChips(O)}
+
+ <div class="card mt"><div class="rot">${steps}</div></div>
+
+ <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:15px">✅ Checklist de handoff pro Closer/consulta</h2>
+   <p class="mut" style="font-size:13px;margin:0">[ ] queixa/procedimento de interesse anotado · [ ] tempo do sintoma · [ ] exames prévios · [ ] convênio (qual plano) ou particular · [ ] perfil A–F · [ ] data/hora da consulta confirmada + WhatsApp enviado · [ ] anti-no-show criado · [ ] temperatura e score preenchidos.</p></div>
+
+ <div class="section-h mt"><h2>🧰 Apoio — técnicas e classificação</h2><div class="line"></div></div>
+ <p class="mut" style="font-size:12.5px;margin:-4px 0 10px">O script acima é o que você segue na ligação. Abaixo ficam as técnicas por trás dele (SPIN e BANT), a classificação do perfil e o ICP com os planos.</p>
+
  <div class="card" style="border-left:3px solid var(--brand-accent)"><h2 style="margin:0 0 8px;font-size:15px">🧭 SPIN — as 4 perguntas que conduzem</h2>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
      <div><b style="color:var(--brand-primary-2)">S · Situação</b><p class="mut" style="font-size:12.5px;margin:4px 0 0">"O que você está sentindo / quer resolver? Há quanto tempo convive com isso?"</p></div>
@@ -1229,7 +1339,7 @@ function scSDR_ICB(){return `
    </div></div>
  <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 8px;font-size:15px">✅ Alinhamento (BANT) — confirme antes de agendar</h2>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
-     <div><b>B · Investimento</b><p class="mut" style="font-size:12px;margin:3px 0 0">convênio ou particular (sem prometer cobertura)</p></div>
+     <div><b>B · Investimento</b><p class="mut" style="font-size:12px;margin:3px 0 0">convênio (qual plano) ou particular, sem prometer cobertura</p></div>
      <div><b>A · Autoridade</b><p class="mut" style="font-size:12px;margin:3px 0 0">é quem decide, ou vai trazer a família</p></div>
      <div><b>N · Necessidade</b><p class="mut" style="font-size:12px;margin:3px 0 0">tem queixa/sobrepeso que atrapalha e reconhece</p></div>
      <div><b>T · Tempo</b><p class="mut" style="font-size:12px;margin:3px 0 0">quer resolver agora, não daqui a um ano</p></div>
@@ -1245,51 +1355,12 @@ function scSDR_ICB(){return `
    </div>
    <div id="pf_result" style="margin-top:12px"></div>
    <p class="mut" style="font-size:11.5px;margin:10px 0 0"><b>A</b> cobertura integral + critério clínico · <b>B</b> Amil/Quality/Unity/MedSênior (cortesia + particular) · <b>C</b> particular · <b>D</b> plano bom sem critério (maturação) · <b>E</b> Hapvida/fora do raio/sem indicação · <b>F</b> faltam dados.</p></div>
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Converter para a CONSULTA — não vender a cirurgia</span></div>
-   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>acolhe e conduz com perguntas</b> (fale 30%, ouça 70%), vende o <b>próximo passo: a consulta de avaliação</b> (nunca o preço da cirurgia) e <b>anota tudo no CRM</b>. É um fluxo só, cada passo emenda no próximo.</p>
-   <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conversas/dia</div></div><div><div style="font-size:19px;font-weight:800">3-5</div><div class="eyebrow mut">consultas agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
+ ${icbICPBlock()}
 
- <div class="card mt"><div class="rot">
-   <div class="step" data-n="1"><h3>Abertura (acolhedora, pela origem)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Escolha pela origem. Tom sereno passa segurança em tema de saúde. Prometa que é rápido e já emende na pergunta.</p>
-     <div class="script"><b>📩 Veio de anúncio/Instagram:</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Vi que você buscou informação sobre <b>[procedimento]</b>. Posso te fazer duas perguntas rápidas pra te orientar do jeito certo?"</div>
-     <div class="script"><b>🤝 Indicação:</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] da ICBARI. Quem me passou seu contato falou que você está querendo resolver <b>[queixa]</b>. Deixa eu te entender melhor pra já te direcionar…"</div>
-     <div class="script"><b>📞 Retorno:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] da ICBARI, você tinha pedido informação com a gente. Consigo te ajudar agora rapidinho?"</div>
-     <span class="go">↓ EMENDE DIRETO NO PASSO 2</span></div>
-
-   <div class="step" data-n="2"><h3>Acolher e entender (perguntas encadeadas, sem diagnosticar)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Você mapeia o caso pro médico — não dá opinião clínica.</p>
-     <div class="script">"Me conta com suas palavras: <b>o que você está sentindo</b> / o que quer resolver?" → "Há <b>quanto tempo</b>? Está atrapalhando seu dia a dia?" → "Você já tem <b>algum exame ou laudo</b> recente, já passou por outro médico?" → "Vai ser por <b>convênio</b> ou particular?"</div>
-     <span class="go">↓ Valide o sentimento e vá pro passo 3.</span></div>
-
-   <div class="step" data-n="3"><h3>Gerar clareza e urgência saudável (SPIN clínico)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Reaja ao que ele disse, com empatia:</p>
-     <div class="script"><b>Situação:</b> "Entendi. E no dia a dia, isso te limita em quê — trabalho, sono, alimentação?"</div>
-     <div class="script"><b>Problema:</b> "O que mais te incomoda nisso hoje?"</div>
-     <div class="script"><b>Implicação:</b> "E deixar como está, sem avaliar, o que pode acontecer? Costuma melhorar sozinho esperando?"</div>
-     <div class="script"><b>Necessidade:</b> "Se você tivesse uma avaliação com um cirurgião que já opera isso todo dia, e a clínica cuidasse de todos os exames pra você, isso te ajudaria?"</div>
-     <span class="go">↓ Ele quer resolver? Converta para a consulta (passo 4).</span></div>
-
-   <div class="step" data-n="4"><h3>Converter para a CONSULTA (o objetivo do SDR)</h3>
-     <div class="script">"<b>[nome]</b>, pelo que você me contou, o passo certo agora é uma <b>consulta de avaliação com o nosso cirurgião</b>. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento e explica a jornada. E aqui a clínica marca todos os exames e a cirurgia pra você. <b>Prefere amanhã 10h ou 16h?</b>"</div>
-     <p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Consulta Agendada"</b> no CRM, o sistema cria sozinho as tarefas anti-no-show.</p>
-     <span class="go">↓ Feche o loop no WhatsApp (passo 5).</span></div>
-
-   <div class="step" data-n="5"><h3>Confirmar e blindar o no-show (WhatsApp)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Mande na hora: (1) confirmação com dia/hora + endereço/mapa; (2) o que levar (exames antigos, carteirinha, documento).</p>
-     <div class="script">"Fechado, <b>[nome]</b>! Sua consulta está marcada pra <b>[data] às [hora]</b> 🙌. Te mando aqui o endereço. Se você tiver exames antigos, leve com você. Qualquer coisa, é só me chamar por aqui!"</div>
-     <span class="go">↓ Surgiu objeção? Use o passo 6.</span></div>
-
-   <div class="step" data-n="6"><h3>Quebra de objeções (acolhe → reformula → devolve pergunta)</h3>
-     ${ICB_OBJ.map(function(o){return `<div class="script"><b>${o.obj}</b><br>${o.resp}</div>`;}).join("")}</div>
-
-   <div class="step" data-n="7"><h3>Se NÃO atendeu → cadência</h3>
-     <p class="mut" style="font-size:13px;margin:0">Siga a <b>cadência do SDR</b> (aba Prospecção & Cadências): no mesmo D0 — ligou/não atendeu → WhatsApp acolhedor + conteúdo → liga de novo à tarde. Até o break-up no D12. Nunca desista antes de 7-12 toques.</p>
-     <span class="go">Abra: Prospecção & Cadências →</span></div>
- </div></div>
-
- <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:15px">✅ Checklist de handoff pro Closer/consulta</h2>
-   <p class="mut" style="font-size:13px;margin:0">[ ] queixa/procedimento de interesse anotado · [ ] tempo do sintoma · [ ] exames prévios · [ ] convênio ou particular · [ ] data/hora da consulta confirmada + WhatsApp enviado · [ ] anti-no-show criado · [ ] temperatura e score preenchidos.</p></div>`;
+ <div class="card mt"><h2 style="margin:0 0 8px;font-size:15px">💬 Mensagens prontas de WhatsApp (copie e cole)</h2>
+   <div class="script"><b>1ª resposta (imediata, até 5 min):</b><br>"Oi [nome]! Aqui é a [você], da ICBARI 💚 Vi que você quer saber sobre [procedimento]. Posso te fazer duas perguntinhas rápidas pra te orientar do jeito certo?"</div>
+   <div class="script"><b>Se só perguntar o preço:</b><br>"Ótima pergunta! O valor depende da avaliação do médico e do seu caso, por isso eu não quero te passar um número que não é o seu. Na consulta o Dr. explica tudo, e muitos pacientes parcelam em até 12x. Posso já te encaixar amanhã 10h ou 16h?"</div>
+   <div class="script"><b>Não respondeu (segue a cadência):</b><br>"[nome], não consegui falar com você ainda. Sei que decidir isso dá insegurança, e a consulta serve justamente pra tirar suas dúvidas, sem compromisso. Quer que eu reserve um horário essa semana?"</div></div>`;
 }
 
 function scCLO_ICB(){return `
@@ -1759,6 +1830,10 @@ function quizBank(){return [
 /* ===== SESSÃO / AUTH ===== */
 let SESSION=null,CURRENT_TENANT=null,CURRENT_VIEW="painel";
 let CRM_FUNNEL="prospeccao", CRM_SELLER="all", SCRIPT_TAB="visao", CAD_ROLE="sdr", LD_TAB="atividade", LD_ATYPE="call", LD_HFILTER="todos";
+let ICB_ORIG="anuncio"; /* origem do lead no script/roteiro/apresentação ICBARI: anuncio | indicacao | retorno */
+function icbSetOrig(o){ICB_ORIG=o;if(CURRENT_VIEW==="scripts")vScripts();else if(CURRENT_VIEW==="roteiro")vRoteiro();}
+function icbOrigChips(active){var O=[["anuncio","📩","Anúncio / Tráfego"],["indicacao","🤝","Indicação"],["retorno","📞","Retorno / Repescagem (frio)"]];
+ return '<div class="card" style="border:1px solid var(--brand-accent);background:linear-gradient(160deg,rgba(42,157,143,.10),transparent);margin-bottom:14px"><b style="font-size:14px">1️⃣ De onde veio esse lead? Escolha para carregar o script certo</b><p class="mut" style="font-size:12.5px;margin:4px 0 10px">O script inteiro muda conforme a origem — clique e siga só o fluxo daquele tipo de lead.</p><div class="flex wrap" style="gap:8px">'+O.map(function(o){return '<button class="btn '+(active===o[0]?"gold":"ghost")+' sm" onclick="icbSetOrig(\''+o[0]+'\')">'+o[1]+" "+o[2]+"</button>";}).join("")+"</div></div>";}
 function applyBrand(b){document.body.setAttribute("data-brand",BRANDS[b].brand);setWatermark(b);}
 function setWatermark(b){
   const wm=document.getElementById("watermark");if(!wm)return;
@@ -3088,7 +3163,7 @@ function saveTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());c[
 
 /* ===== SCRIPTS (restrição por papel) ===== */
 function scriptTabsFor(){
-  const noBot=T()==="lideres"; /* Líderes não usa bot */
+  const noBot=T()==="lideres"||T()==="icbari"; /* Líderes e ICBARI não usam bot (perguntas do bot foram pro script) */
   const all=[["visao","🧭 ICP & Empresa"],["sdr","🎯 SDR — Qualificação"]];
   if(!noBot)all.push(["bot","🤖 Bot de Qualificação"]);
   all.push(["closer","🤝 "+lx("closerRole")+" — Fechamento"],["cs","💚 CS — Pós-venda"]);
@@ -4657,7 +4732,7 @@ function vMeuDia(){
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar — a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
-   <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação — treine um script no Roteiro.</p></div><button class="btn sm" onclick="go('roteiro')">Treinar agora →</button></div></div>
+   <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação treinando o Script de Vendas do seu papel.</p></div><button class="btn sm" onclick="go('scripts')">Treinar agora →</button></div></div>
    ${(function(){var ok=quizPassedToday();return '<div class="card" style="margin-bottom:14px;border:1px solid '+(ok?'rgba(46,204,113,.4)':'rgba(201,162,75,.5)')+'"><div class="flex between wrap" style="align-items:center;gap:8px"><div><b style="font-size:14px">📝 Prova do dia</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+(ok?'Você já fez a prova de hoje ✓':'Faça a prova rápida — antes dos vídeos e das tarefas.')+'</p></div>'+(ok?'<span class="pill ok">feita</span>':'<button class="btn sm" onclick="go(\'treino\')">Fazer a prova →</button>')+'</div></div>';})()}
    ${trainCard()}
    ${fila}`;
