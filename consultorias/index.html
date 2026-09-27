@@ -607,7 +607,7 @@ const BRANDS={
 /* ===== Léxico por marca (mesmas funcionalidades, vocabulário diferente) ===== */
 const LEX={
   lideres:{cliente:"membro",clientes:"membros",Cliente:"Membro",Clientes:"Membros",venda:"adesão",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"},
-  b2if:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"contratação",planoUp:"plano",closerRole:"Planejador",closerRoleUp:"PLANEJADOR"},
+  b2if:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"contratação",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"},
   icbari:{cliente:"paciente",clientes:"pacientes",Cliente:"Paciente",Clientes:"Pacientes",venda:"agendamento",planoUp:"procedimento",closerRole:"Closer",closerRoleUp:"CLOSER"}
 };
 function lx(k){const t=(typeof CURRENT_TENANT!=="undefined"&&CURRENT_TENANT)?CURRENT_TENANT:"lideres";return (LEX[t]||LEX.lideres)[k]||(LEX.lideres[k]||k);}
@@ -624,15 +624,15 @@ const USERS={
   /* ===== B2 Inteligência Financeira ===== */
   ceob2:      {pass:"1234", role:"ceo",   tenant:"b2if",name:"Ricardo Bastos (CEO)",     initials:"RB"},
   b2if:       {pass:"1234", role:"gestor",tenant:"b2if",name:"Diego Martins (Gestor)",   initials:"DM"},
-  planejador1:{pass:"1234", role:"closer",tenant:"b2if",name:"Rafael Nunes (Planejador)",initials:"RN",sellerId:"rafael"},
-  planejadora:{pass:"1234", role:"closer",tenant:"b2if",name:"Beatriz Souza (Planejadora)",initials:"BS",sellerId:"bia"},
+  especialista1:{pass:"1234", role:"closer",tenant:"b2if",name:"Rafael Nunes (Closer)",initials:"RN",sellerId:"rafael"},
+  especialista:{pass:"1234", role:"closer",tenant:"b2if",name:"Beatriz Souza (Closer)",initials:"BS",sellerId:"bia"},
   sdrb2:      {pass:"1234", role:"sdr",   tenant:"b2if",name:"Marina Alves (SDR)",       initials:"MA",sellerId:"marina"},
   csb2:       {pass:"velo2026", role:"cs", tenant:"b2if",name:"CS / Pós-venda (a definir)",initials:"CS",sellerId:"camila"},
-  /* B2 — time oficial (27/09/2026): Jorge+Pedro gestores (só gestão), Bruna SDR, Melissa Planejadora */
+  /* B2 — time oficial (27/09/2026): Jorge+Pedro gestores (só gestão), Bruna SDR, Melissa Closer */
   "jorge.b2":  {pass:"jorgeb2",   role:"gestor",tenant:"b2if",name:"Jorge (Gestor)",        initials:"JO"},
   "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
   "bruna.b2":  {pass:"brunab2",   role:"sdr",   tenant:"b2if",name:"Bruna (SDR)",           initials:"BR",sellerId:"bruna"},
-  "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Planejadora)", initials:"ME",sellerId:"melissa"},
+  "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Closer)", initials:"ME",sellerId:"melissab2"},
   /* ===== ICBARI — Clínica (cirurgia digestiva/bariátrica) ===== */
   icbari:       {pass:"1234",           role:"gestor", tenant:"icbari",name:"ICBARI (Clínica)",         initials:"IC"},
   "pedro.icb":  {pass:"pedroicbari",    role:"gestor", tenant:"icbari",name:"Dr. Pedro (Gestor)",       initials:"DP"},
@@ -663,7 +663,7 @@ function previewAs(role){
     REAL_SESSION=real;
     if(role==='gestor'){SESSION={tenant:CURRENT_TENANT,role:'gestor',roles:['gestor'],name:nm+' · ver como Gestor',initials:'VG'};}
     else{
-      var papel=(role==='closer'&&CURRENT_TENANT==='b2if')?'planejador':role;
+      var papel=(role==='closer'&&CURRENT_TENANT==='b2if')?'especialista':role;
       var sid=(real.sellerId&&sellerHasPapel(real.sellerId,papel))?real.sellerId:firstSellerOf(papel);
       SESSION={tenant:CURRENT_TENANT,role:role,roles:[role],sellerId:sid,name:nm+' · ver como '+roleLabel(role),initials:'V'+((role[0]||'').toUpperCase())};
     }
@@ -1636,7 +1636,7 @@ const FUNNELS_B2=[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
    {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
    {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"Falta / Remarcar",sla:12}]},
- {id:"closer",name:"Planejamento (Planejador)",papel:"Planejador",stages:[
+ {id:"closer",name:"Planejamento (Closer)",papel:"Closer",stages:[
    {id:"reuniao",name:"Sessão Realizada (R0)",sla:24},{id:"apresent",name:"Diagnóstico Apresentado",sla:48},
    {id:"proposta",name:"Proposta do Plano",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
    {id:"ganho",name:"Cliente (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
@@ -1657,7 +1657,7 @@ function seedB2(){
   ]);
   DB.set(t,"sellers",[
    {id:"bruna",nome:"Bruna",papel:"SDR",meta:45,realizado:0,foto:"BR"},
-   {id:"melissa",nome:"Melissa",papel:"Planejador",meta:14,realizado:0,foto:"ME"},
+   {id:"melissab2",nome:"Melissa",papel:"Closer",meta:14,realizado:0,foto:"ME"},
    {id:"camila",nome:"CS / Pós-venda (a definir)",papel:"CS",meta:35,realizado:0,foto:"CS"}
   ]);
   const now=Date.now(),d=864e5,h=36e5;
@@ -1760,14 +1760,14 @@ function quizBankB2(){return [
  {tag:"produto",q:"'Café Consigo' é:",a:["um cafezinho da equipe","o hábito recorrente do cliente de revisar suas finanças","um produto de investimento","uma taxa"],c:1},
  {tag:"spin",q:"Na letra S do SPIN, o objetivo é:",a:["falar preço","entender a situação financeira atual do cliente","fechar","dar desconto"],c:1},
  {tag:"spin",q:"Na letra P do SPIN, você explora:",a:["a proposta","o problema/dor financeira (dívida, desorganização, medo de investir)","o pagamento","a papelada"],c:1},
- {tag:"spin",q:"Na letra I (Implicação), o SDR/Planejador:",a:["apresenta a empresa","amplia a dor: quanto custa continuar sem planejar (juros, oportunidade perdida)","fecha o contrato","fala de preço"],c:1},
+ {tag:"spin",q:"Na letra I (Implicação), o SDR/Closer:",a:["apresenta a empresa","amplia a dor: quanto custa continuar sem planejar (juros, oportunidade perdida)","fecha o contrato","fala de preço"],c:1},
  {tag:"spin",q:"Na letra N (Necessidade), você faz o cliente:",a:["verbalizar o ganho de ter um plano e um guia","pagar","desistir","abrir conta em banco"],c:0},
  {tag:"cadencia",q:"Se o lead NÃO atende a 1ª ligação (D0), o próximo passo é:",a:["desistir","esperar 30 dias","WhatsApp com áudio (diagnóstico gratuito) no mesmo dia + ligar de novo à tarde","mandar boleto"],c:2},
  {tag:"cadencia",q:"Quantos toques, no mínimo, antes de desistir de um lead?",a:["1","2","7 a 12","30"],c:2},
- {tag:"cadencia",q:"O que o SDR agenda (não vende o plano)?",a:["o pagamento","a Sessão Estratégica gratuita (R0) com o Planejador","um investimento","um empréstimo"],c:1},
+ {tag:"cadencia",q:"O que o SDR agenda (não vende o plano)?",a:["o pagamento","a Sessão Estratégica gratuita (R0) com o Closer","um investimento","um empréstimo"],c:1},
  {tag:"cadencia",q:"A cadência do CS acompanha, no 1º mês:",a:["nada","as reuniões R1 a R4 (diagnóstico, projeção, fluxo, jornada)","só cobrança","só NPS"],c:1},
- {tag:"script",q:"O papel do SDR é:",a:["fechar o plano","qualificar e agendar a Sessão Estratégica com o Planejador","fazer pós-venda","emitir nota"],c:1},
- {tag:"script",q:"O papel do Planejador Financeiro é:",a:["prospectar","conduzir a Sessão Estratégica (R0), diagnosticar e fechar o plano","dar suporte","criar conteúdo"],c:1},
+ {tag:"script",q:"O papel do SDR é:",a:["fechar o plano","qualificar e agendar a Sessão Estratégica com o Closer","fazer pós-venda","emitir nota"],c:1},
+ {tag:"script",q:"O papel do Closer Financeiro é:",a:["prospectar","conduzir a Sessão Estratégica (R0), diagnosticar e fechar o plano","dar suporte","criar conteúdo"],c:1},
  {tag:"script",q:"O papel do CS é:",a:["prospectar","fechar","onboarding (R1–R4), acompanhamento, retenção e expansão do cliente","cobrar"],c:2},
  {tag:"objecao",q:"Objeção 'não tenho dinheiro sobrando pra isso'. Melhor resposta:",a:["dar desconto na hora","'é exatamente por isso que você precisa — o plano se paga com o que a gente organiza e economiza'","desligar","concordar e sair"],c:1},
  {tag:"objecao",q:"Objeção 'eu mesmo consigo organizar / faço sozinho'. Boa conduta:",a:["desistir","'ótimo que você se cuida — nosso papel é ser o guia e a disciplina que fazem você chegar mais rápido e sem erro'","brigar","ignorar"],c:1},
@@ -2062,7 +2062,7 @@ const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
-/* B2 — vendedores (SDR/Planejador/CS): Meu Dia/Placar + comercial completo do seu papel */
+/* B2 — vendedores (SDR/Closer/CS): Meu Dia/Placar + comercial completo do seu papel */
 const NAV_SELLER_B2=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
  {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão",roles:["cs"]}];
@@ -2095,7 +2095,7 @@ function renderSidebar(){
   if(SESSION.role==="consultor")html+=`<div class="nav-item" onclick="openConsultoria()"><span class="ic">←</span> Todas as empresas</div>`;
   if(canPreview()){
     var _cur=previewingRole()||'self';
-    var _cl=(CURRENT_TENANT==='b2if')?'Planejador':'Closer';
+    var _cl=(CURRENT_TENANT==='b2if')?'Closer':'Closer';
     var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 '+_cl],['cs','💚 CS']];
     html+='<div style="padding:9px 9px 7px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));margin-bottom:6px"><div class="mut" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px">👁️ Ver como</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_opts.map(function(o){return '<button class="btn '+(_cur===o[0]?'':'ghost')+' xs" style="padding:5px 8px;font-size:11px" onclick="previewAs(\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div>'+(_cur!=='self'?'<div class="mut" style="font-size:10.5px;margin:6px 2px 0">Você está vendo como <b>'+roleLabel(_cur==='gestor'?'gestor':_cur)+'</b>. Clique em <b>Eu</b> pra voltar.</div>':'')+'</div>';
   }
@@ -2328,7 +2328,7 @@ function vExec(){
 /* ===== CRM & FUNIS ===== */
 function vCRM(){
   var allF=DB.getObj(T(),"funnels",FUNNELS);
-  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS"}[effRole()];/* B2: closer = "Planejador" */
+  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS"}[effRole()];/* B2: closer = "Closer" */
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
@@ -4631,16 +4631,16 @@ const ROTEIRO_B2={
   {n:3,title:"Só quero te entender.",t:"Intenções · 40s",tec:"Baixa a guarda",s:`**Setar as intenções:**\n\"{NOME}, deixa eu deixar claro: **um** — eu não vou te empurrar nada; **dois** — quero primeiro entender o seu momento pra ver se a gente consegue te ajudar; **três** — e te explicar como funciona a B2, pra você decidir com clareza. Combinado?\" → **espere o \"combinado\".**`,do:"Diga \"combinado?\" e faça silêncio até o sim.",av:"Emendar sem pausa — a pausa gera a concordância."},
   {n:4,title:"O que muda com a B2.",t:"Pitch curto · 1 a 2 min",tec:"Vender o método",s:`**Pitch curto — venda o MÉTODO e a CLAREZA:**\n\"{NOME}, o que a B2 faz diferente é que a gente **não vende produto financeiro**. A gente **planeja a sua vida financeira inteira** e te dá um método: organizar o que entra e sai, montar a sua reserva, sair das dívidas e, aí sim, investir com um plano. Você para de decidir no escuro.\"\n\n**Micropacto:** \"Faz sentido ter esse acompanhamento?\"`,do:"Enfatize: método e clareza, sem conflito de interesse. A gente não ganha te vendendo produto.",av:"Prometer rendimento. Falar de produto específico."},
   {n:5,title:"Não é achismo, é método.",t:"Prova · 1 min",tec:"Autoridade sem promessa",s:`**Gerar segurança:**\n\"A gente conduz uma jornada estruturada, do diagnóstico até a sua independência financeira, com revisões mês a mês. Já ajudamos muita gente a sair do vermelho e a começar a investir com plano.\"\n\nSe couber, cite **1 caso curto** (sem número inventado) de alguém que se organizou.`,do:"Fale do método e do acompanhamento. Seja fiel aos números.",av:"Inventar resultado. Prometer ganho financeiro."},
-  {n:6,title:"As perguntas que qualificam.",t:"Qualificação · o coração do SDR",tec:"Situação + dor + perfil",s:`**Qualificação (anote tudo):**\n1) \"{NOME}, hoje a sua renda mensal fica mais ou menos em qual faixa?\" → anote (sem constranger).\n2) \"Você já tem uma **reserva** guardada? Tem **dívida** te incomodando hoje?\" → anote.\n3) \"Qual é o seu **foco agora**: sair de dívida, organizar e guardar, ou investir melhor?\" → anote a dor.\n4) \"E a **decisão** sobre o dinheiro é sua, ou tem alguém que decide junto (cônjuge)?\" → anote.\n\n→ Você está mapeando o perfil e a dor pro Planejador.`,do:"Anote renda, reserva, dívida, foco e quem decide — o Planejador usa tudo.",av:"Julgar a resposta. Prometer solução no telefone."},
+  {n:6,title:"As perguntas que qualificam.",t:"Qualificação · o coração do SDR",tec:"Situação + dor + perfil",s:`**Qualificação (anote tudo):**\n1) \"{NOME}, hoje a sua renda mensal fica mais ou menos em qual faixa?\" → anote (sem constranger).\n2) \"Você já tem uma **reserva** guardada? Tem **dívida** te incomodando hoje?\" → anote.\n3) \"Qual é o seu **foco agora**: sair de dívida, organizar e guardar, ou investir melhor?\" → anote a dor.\n4) \"E a **decisão** sobre o dinheiro é sua, ou tem alguém que decide junto (cônjuge)?\" → anote.\n\n→ Você está mapeando o perfil e a dor pro Closer.`,do:"Anote renda, reserva, dívida, foco e quem decide — o Closer usa tudo.",av:"Julgar a resposta. Prometer solução no telefone."},
   {n:7,title:"Confirme o PDMAF (em voz alta).",t:"Confirmação · 40s",tec:"Fechar o diagnóstico do lead",s:`**Confirme o PDMAF devolvendo o que ouviu (peça o \"é isso?\"):**\n**P (Perfil):** \"Deixa ver se entendi: você tem uma renda de mais ou menos {RENDA} e busca organização, certo?\"\n**D (Dor):** \"E o que mais te incomoda hoje é {DOR} (dívida / não sobra / medo de investir).\"\n**M (Momento):** \"E é algo que você quer resolver **agora**, não daqui a um ano.\"\n**A (Autoridade):** \"A decisão é sua (ou com o {CÔNJUGE}).\"\n**F (Fit):** \"E você quer um **método e um guia** pra isso, não só uma dica solta. É isso?\"\n\n→ **Espere o \"é isso\".** Se faltar alguma peça, pergunte de novo antes de agendar.`,do:"Devolva cada letra em forma de pergunta e confirme. Só agende com os 5 confirmados.",av:"Só pensar o PDMAF na cabeça. Agendar sem confirmar a dor e quem decide."},
-  {n:8,title:"O próximo passo é a Sessão.",t:"Transição · 1 a 2 min",tec:"Agendar a Sessão Estratégica",s:`**Conduzir para a Sessão Estratégica (gratuita):**\n\"{NOME}, pelo que você me contou, o passo certo agora é uma **Sessão Estratégica gratuita** com o nosso Planejador. Ele faz um **raio-x** da sua vida financeira e já te mostra um caminho, sem compromisso.\"\n\nFeche com **duas opções**: \"Tenho **quinta 10h ou sexta 16h** — qual encaixa melhor?\"\n\n**Se pedir o preço do plano:** \"O valor a gente vê depois, na Sessão, porque depende do seu perfil. A Sessão em si é gratuita.\"`,do:"Ofereça 2 horários fechados. Confirme e-mail e WhatsApp. Se decide com cônjuge, os dois na Sessão.",av:"\"Me avisa quando puder\". Dar preço de plano por telefone."},
-  {n:9,title:"Objeção é pedido de clareza.",t:"Objeções · sob demanda",tec:"Acolhe → reenquadra → agenda",s:`**Objeções (só pra vender a Sessão):**\n\"Me manda por WhatsApp\" → \"Por mensagem eu não consigo te explicar com propriedade o que é o nosso programa e como a gente te ajuda. Por isso é uma Sessão rápida com o Planejador: ele faz um raio-x e te mostra, primeiro, se a gente consegue te ajudar.\"\n\"Não tenho interesse\" → \"Tranquilo, só pra eu entender: o tema não é prioridade hoje, é o momento, ou não fez sentido o que eu falei? Porque você me disse que sente {DOR}...\"\n\"Eu mesmo me organizo\" → \"Ótimo que você se cuida! Nosso papel é ser o guia pra você chegar mais rápido. Com a nossa metodologia, será que não sobraria ainda mais pra realizar seus sonhos?\"\n\"Já tenho gerente/assessor no banco\" → \"Faz sentido. A diferença é que a gente **não vende produto**: a B2 planeja a sua vida inteira, sem interesse em te empurrar nada. A gente mostra a melhor forma de aumentar seus ativos ou reduzir seus custos.\"\n\"Estou sem tempo\" → \"É justamente por isso que a gente organiza: pra você ter mais assertividade mesmo com pouco tempo.\"\n\"Quanto custa?\" → \"A Sessão é gratuita. O valor do plano depende do seu perfil, e quem te diz isso é o Planejador. Eu só vejo se faz sentido e se você está no perfil.\"\n\"Vou pensar\" → \"Deixa eu te garantir um diagnóstico: com ele você já sai com muito mais clareza do que tem hoje.\"`,do:"Acolha, reenquadre e volte pro agendamento.",av:"Discutir. Prometer rendimento. Insistir sem empatia."},
-  {n:10,title:"Confirmado e sem sumiço.",t:"Fechamento do agendamento",tec:"E-mail + confirmação + lembrete",s:`**Fechar o agendamento:**\n\"Fechado, {NOME}: **{DIA} às {HORA}**. Vou te mandar a confirmação — me passa seu **melhor e-mail e WhatsApp**. Você recebe lembrete um dia antes e no dia. Se puder, chega com uma noção dos seus gastos do mês, deixa o raio-x mais preciso.\"\n\nPasse o contexto (renda, dívida, foco, quem decide) pro Planejador. **Nada se perde no sistema.**`,do:"Capture contato, confirme e ative o lembrete anti-falta.",av:"Encerrar sem contato e sem próximo passo."}
+  {n:8,title:"O próximo passo é a Sessão.",t:"Transição · 1 a 2 min",tec:"Agendar a Sessão Estratégica",s:`**Conduzir para a Sessão Estratégica (gratuita):**\n\"{NOME}, pelo que você me contou, o passo certo agora é uma **Sessão Estratégica gratuita** com o nosso Closer. Ele faz um **raio-x** da sua vida financeira e já te mostra um caminho, sem compromisso.\"\n\nFeche com **duas opções**: \"Tenho **quinta 10h ou sexta 16h** — qual encaixa melhor?\"\n\n**Se pedir o preço do plano:** \"O valor a gente vê depois, na Sessão, porque depende do seu perfil. A Sessão em si é gratuita.\"`,do:"Ofereça 2 horários fechados. Confirme e-mail e WhatsApp. Se decide com cônjuge, os dois na Sessão.",av:"\"Me avisa quando puder\". Dar preço de plano por telefone."},
+  {n:9,title:"Objeção é pedido de clareza.",t:"Objeções · sob demanda",tec:"Acolhe → reenquadra → agenda",s:`**Objeções (só pra vender a Sessão):**\n\"Me manda por WhatsApp\" → \"Por mensagem eu não consigo te explicar com propriedade o que é o nosso programa e como a gente te ajuda. Por isso é uma Sessão rápida com o Closer: ele faz um raio-x e te mostra, primeiro, se a gente consegue te ajudar.\"\n\"Não tenho interesse\" → \"Tranquilo, só pra eu entender: o tema não é prioridade hoje, é o momento, ou não fez sentido o que eu falei? Porque você me disse que sente {DOR}...\"\n\"Eu mesmo me organizo\" → \"Ótimo que você se cuida! Nosso papel é ser o guia pra você chegar mais rápido. Com a nossa metodologia, será que não sobraria ainda mais pra realizar seus sonhos?\"\n\"Já tenho gerente/assessor no banco\" → \"Faz sentido. A diferença é que a gente **não vende produto**: a B2 planeja a sua vida inteira, sem interesse em te empurrar nada. A gente mostra a melhor forma de aumentar seus ativos ou reduzir seus custos.\"\n\"Estou sem tempo\" → \"É justamente por isso que a gente organiza: pra você ter mais assertividade mesmo com pouco tempo.\"\n\"Quanto custa?\" → \"A Sessão é gratuita. O valor do plano depende do seu perfil, e quem te diz isso é o Closer. Eu só vejo se faz sentido e se você está no perfil.\"\n\"Vou pensar\" → \"Deixa eu te garantir um diagnóstico: com ele você já sai com muito mais clareza do que tem hoje.\"`,do:"Acolha, reenquadre e volte pro agendamento.",av:"Discutir. Prometer rendimento. Insistir sem empatia."},
+  {n:10,title:"Confirmado e sem sumiço.",t:"Fechamento do agendamento",tec:"E-mail + confirmação + lembrete",s:`**Fechar o agendamento:**\n\"Fechado, {NOME}: **{DIA} às {HORA}**. Vou te mandar a confirmação — me passa seu **melhor e-mail e WhatsApp**. Você recebe lembrete um dia antes e no dia. Se puder, chega com uma noção dos seus gastos do mês, deixa o raio-x mais preciso.\"\n\nPasse o contexto (renda, dívida, foco, quem decide) pro Closer. **Nada se perde no sistema.**`,do:"Capture contato, confirme e ative o lembrete anti-falta.",av:"Encerrar sem contato e sem próximo passo."}
  ],
  "closer":[
   {n:1,title:"Conduzir uma decisão financeira.",t:"Pré-sessão · mindset",tec:"Sereno · preparado",s:`Antes da Sessão: **tom sereno**, ritmo calmo. O silêncio vale mais que a pressa. Releia as anotações do SDR: **renda, reserva, dívida, foco e quem decide.**\n\n**ESPELHAMENTO:** acompanhe o ritmo da pessoa.`,do:"Chegue sabendo o caso. Confirme o nome e como a pessoa prefere ser chamada.",av:"Recomeçar do zero, ignorando o que o SDR já mapeou."},
   {n:2,title:"Retomar antes de propor.",t:"Abertura · 2 a 4 min",tec:"Rapport + recap",s:`**Retomada:**\n\"{NOME}, o {SDR} me passou o seu caso. Deixa eu confirmar rapidinho pra não te fazer repetir: a sua renda gira em torno de {RENDA}, o que mais te incomoda hoje é {DOR}, e a decisão é sua (ou com o {CÔNJUGE}). É isso?\" → confirme cada ponto.\n\nRecrie o pacto: **não vim te vender nada, vim te dar clareza.**`,do:"Confirme os pontos em voz alta. Mostre que a B2 já conhece o caso.",av:"Ir direto à proposta sem reconfirmar a dor e quem decide."},
-  {n:3,title:"O raio-x da sua vida financeira.",t:"Diagnóstico · o coração da Sessão",tec:"Diagnóstico ao vivo",s:`**Fazer o raio-x (o Planejador conduz):**\nLevante com a pessoa: pra onde vai o dinheiro hoje, o quanto sobra (ou falta), as dívidas e os juros que ela paga, se há reserva. Mostre na tela, com os números dela.\n\n\"{NOME}, olha só o que os seus próprios números estão dizendo...\" → deixe o diagnóstico falar por si.`,do:"Use os números reais da pessoa. Deixe ela enxergar a realidade sozinha.",av:"Palestrar. Julgar. Falar de produto."},
+  {n:3,title:"O raio-x da sua vida financeira.",t:"Diagnóstico · o coração da Sessão",tec:"Diagnóstico ao vivo",s:`**Fazer o raio-x (o Closer conduz):**\nLevante com a pessoa: pra onde vai o dinheiro hoje, o quanto sobra (ou falta), as dívidas e os juros que ela paga, se há reserva. Mostre na tela, com os números dela.\n\n\"{NOME}, olha só o que os seus próprios números estão dizendo...\" → deixe o diagnóstico falar por si.`,do:"Use os números reais da pessoa. Deixe ela enxergar a realidade sozinha.",av:"Palestrar. Julgar. Falar de produto."},
   {n:4,title:"O caminho, em palavras simples.",t:"Apresentação · 3 a 5 min",tec:"Traduzir a jornada",s:`**Mostrar a jornada (R0 → R4):**\n\"O caminho é este: primeiro a gente **organiza** o seu fluxo e monta a sua **reserva de emergência**; depois um **plano pra sair das dívidas**; e aí sim a gente monta a sua **carteira de investimentos**, alinhada aos seus objetivos. Tudo com **revisões mês a mês** e o Café Consigo.\"\n\n**Micropacto:** \"Ficou claro o caminho?\"`,do:"Uma etapa de cada vez. Ligue cada etapa à dor que ele te contou.",av:"Enterrar em jargão. Pular a explicação da jornada."},
   {n:5,title:"Imagine já resolvido.",t:"Benefício · 1 min",tec:"Benefício do benefício",s:`**Projetar o depois:**\n\"{NOME}, imagina daqui a alguns meses: as contas em dia, uma **reserva** te dando tranquilidade, o dinheiro **sobrando** e trabalhando pra você realizar {SONHO que ele citou}. É isso que a organização devolve: **liberdade e sono tranquilo.**\"\n\n→ deixe a pessoa completar o cenário.`,do:"Pinte o futuro com as palavras que ELE usou. Depois cale-se.",av:"Voltar ao racional cedo demais."},
   {n:6,title:"Sem conflito de interesse.",t:"Confiança · 1 a 2 min",tec:"O diferencial da B2",s:`**Reforçar o diferencial:**\n\"Uma coisa importante: a B2 **não ganha te vendendo produto**. O gerente do banco ganha comissão do que te empurra; a gente **não**. A gente planeja a sua vida financeira inteira e trabalha **do seu lado**, pra você aumentar seus ativos e reduzir seus custos. Sem conflito de interesse.\"`,do:"Deixe claro: a gente trabalha pra você, não pra um banco.",av:"Usar termo em inglês. Falar de produto específico."},
@@ -4701,7 +4701,7 @@ function vRoteiro(){
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
   +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
-  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ '+(T()==="b2if"?"Planejador":"Closer")+' — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
+  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ '+(T()==="b2if"?"Closer":"Closer")+' — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
   +'</div>'
   +((["icbari","lideres","b2if"].includes(T())&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
   +cards;
@@ -5228,18 +5228,18 @@ function scBOT_B2(){return `
    <div class="script"><b>Bot:</b> (2) Sua renda mensal (pessoal ou da família) está em qual faixa? <i>[até 5k=+5 / 5k–15k=+20 / 15k+=+30]</i></div>
    <div class="script"><b>Bot:</b> (3) Você já tem uma <b>reserva de emergência</b> (3–6 meses de gastos)? <i>[Não → marca dor / Sim=+10]</i></div>
    <div class="script"><b>Bot:</b> (4) Seu maior objetivo agora é: <b>A)</b> sair das dívidas · <b>B)</b> organizar e começar a guardar · <b>C)</b> investir melhor / aposentadoria? <i>[qualquer=+15, marca o objetivo]</i></div>
-   <div class="script"><b>Bot:</b> Perfeito! Faz total sentido você fazer uma <b>Sessão Estratégica gratuita</b> (um raio-x da sua vida financeira) com um dos nossos planejadores. Prefere <b>hoje 15h ou amanhã 10h</b>? <i>[agenda → cria lead no CRM no funil SDR]</i></div></div>
+   <div class="script"><b>Bot:</b> Perfeito! Faz total sentido você fazer uma <b>Sessão Estratégica gratuita</b> (um raio-x da sua vida financeira) com um dos nossos especialistaes. Prefere <b>hoje 15h ou amanhã 10h</b>? <i>[agenda → cria lead no CRM no funil SDR]</i></div></div>
  <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
-   <p class="mut" style="font-size:13px">Score <b>≥ 60</b> → agenda direto a Sessão Estratégica com o <b>Planejador</b> (lead quente). <b>30–59</b> → <b>SDR</b> nutre e qualifica. <b>&lt; 30</b> → nutrição/conteúdo (organização financeira) + reabordar. Tudo cai no CRM com temperatura, score e objetivo marcado.</p></div>`;
+   <p class="mut" style="font-size:13px">Score <b>≥ 60</b> → agenda direto a Sessão Estratégica com o <b>Closer</b> (lead quente). <b>30–59</b> → <b>SDR</b> nutre e qualifica. <b>&lt; 30</b> → nutrição/conteúdo (organização financeira) + reabordar. Tudo cai no CRM com temperatura, score e objetivo marcado.</p></div>`;
 }
 /* Quebra de objeções da B2 — usada no SDR E no Closer (mesma matriz) */
 const OBJ_B2=[
- ["“Me manda por WhatsApp”","Por mensagem eu não consigo te explicar com propriedade o que é o nosso programa e como a gente te ajuda. Por isso é uma Sessão bem rápida com o nosso planejador: ele faz um raio-x e te mostra, primeiro, se a gente consegue te ajudar, e se você está disposto a fazer a nossa metodologia."],
+ ["“Me manda por WhatsApp”","Por mensagem eu não consigo te explicar com propriedade o que é o nosso programa e como a gente te ajuda. Por isso é uma Sessão bem rápida com o nosso especialista: ele faz um raio-x e te mostra, primeiro, se a gente consegue te ajudar, e se você está disposto a fazer a nossa metodologia."],
  ["“Não tenho interesse”","Tranquilo, só pra eu entender melhor (não pra te incomodar): o tema não é prioridade pra você hoje, é o momento, ou não fez sentido o que eu falei? Porque, pelo que você me disse, você está com a dor de [X]. Então resolver isso, ou ter mais dinheiro sobrando, não seria uma prioridade agora?"],
  ["“Eu mesmo consigo me organizar”","Ótimo que você se cuida! Nosso papel é ser o seu guia pra você chegar mais rápido. Mas você acredita que, com a nossa metodologia, que já ajudou muita gente, você se organizaria ainda melhor, e sobraria mais dinheiro pra realizar seus sonhos, guardar ou viajar?"],
  ["“Já tenho gerente/assessor no banco”","Faz sentido. A nossa diferença é que a gente não está aqui vendendo produto. A B2 planeja a sua vida financeira inteira, sem interesse em te empurrar nada: a gente mostra a melhor forma de aumentar os seus ativos e de reduzir os seus custos."],
  ["“Estou sem tempo”","É justamente por isso que a gente precisa de uma organização melhor: pra que, mesmo sem tempo, você tenha muito mais assertividade com o seu dinheiro."],
- ["“Quanto custa?”","A nossa Sessão é gratuita. O valor do plano eu não consigo te falar agora, depende muito do seu perfil e do que você precisa. Quem tem a expertise pra te dizer o melhor pro seu perfil é o nosso planejador. Eu só vejo se faz sentido e se você está dentro do perfil."],
+ ["“Quanto custa?”","A nossa Sessão é gratuita. O valor do plano eu não consigo te falar agora, depende muito do seu perfil e do que você precisa. Quem tem a expertise pra te dizer o melhor pro seu perfil é o nosso especialista. Eu só vejo se faz sentido e se você está dentro do perfil."],
  ["“Esse investimento é seguro?”","Não é um investimento, é um planejamento. A gente não te empurra produto nenhum. É uma sessão em que a gente te mostra, às claras, o que você pode fazer pra melhorar a sua vida financeira."],
  ["“Vou pensar / depois eu vejo”","Deixa eu te garantir um diagnóstico gratuito. Com ele você vai ter muito mais clareza do que tem hoje pra resolver essas situações. Posso reservar o seu horário?"]
 ];
@@ -5292,17 +5292,17 @@ function scSDR_B2(){
      <span class="go">↓ Confirmou as 5? Vá pro passo 5.</span></div>
 
    <div class="step" data-n="5"><h3>Ponte + Agendamento da Sessão Estratégica (retome tudo)</h3>
-     <div class="script">"<b>[nome]</b>, deixa eu te falar por que faz TANTO sentido: você me disse que sofre com <b>[dor]</b> <i>(D)</i>, que quer <b>[objetivo]</b> e que agora é a hora <i>(M)</i>. É exatamente pra isso que a B2 existe <i>(F)</i> — a gente te dá um norte e um método. Vou te reservar uma <b>Sessão Estratégica gratuita de ~1h com o [Planejador]</b>, que faz um raio-x da sua vida financeira e te mostra o caminho. <b>Prefere amanhã 10h ou 16h?</b>"</div>
+     <div class="script">"<b>[nome]</b>, deixa eu te falar por que faz TANTO sentido: você me disse que sofre com <b>[dor]</b> <i>(D)</i>, que quer <b>[objetivo]</b> e que agora é a hora <i>(M)</i>. É exatamente pra isso que a B2 existe <i>(F)</i> — a gente te dá um norte e um método. Vou te reservar uma <b>Sessão Estratégica gratuita de ~1h com o [Closer]</b>, que faz um raio-x da sua vida financeira e te mostra o caminho. <b>Prefere amanhã 10h ou 16h?</b>"</div>
      <p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Sessão Estratégica Agendada"</b> no CRM, o sistema cria as tarefas anti-falta (confirmar hoje + lembrar antes).</p>
      <span class="go">↓ Feche o loop no WhatsApp (passo 6).</span></div>
 
-   <div class="step" data-n="6"><h3>Confirme no WhatsApp (a passagem pro Planejador)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Manda na hora: (1) confirmação com dia/hora + nome do Planejador; (2) o que é a Sessão + 1 prova social. Peça pra ele vir com noção dos gastos do mês.</p>
-     <div class="script">"Fechado, <b>[nome]</b>! Tá confirmado <b>[data] às [hora]</b> com o [Planejador] 🧭. Na Sessão a gente faz um raio-x gratuito da sua vida financeira e já te mostra um norte. Se puder, chega com uma noção dos seus gastos do mês — deixa mais preciso. Qualquer coisa, é só chamar!"</div>
+   <div class="step" data-n="6"><h3>Confirme no WhatsApp (a passagem pro Closer)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Manda na hora: (1) confirmação com dia/hora + nome do Closer; (2) o que é a Sessão + 1 prova social. Peça pra ele vir com noção dos gastos do mês.</p>
+     <div class="script">"Fechado, <b>[nome]</b>! Tá confirmado <b>[data] às [hora]</b> com o [Closer] 🧭. Na Sessão a gente faz um raio-x gratuito da sua vida financeira e já te mostra um norte. Se puder, chega com uma noção dos seus gastos do mês — deixa mais preciso. Qualquer coisa, é só chamar!"</div>
      <span class="go">↓ Se surgir objeção em qualquer passo, use o passo 7.</span></div>
 
    <div class="step" data-n="7"><h3>Quebra de objeções (acolhe → reformula → devolve pergunta)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">As mesmas objeções valem pro Closer/Planejador.</p>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">As mesmas objeções valem pro Closer/Closer.</p>
      ${objB2Html()}</div>
 
    <div class="step" data-n="8"><h3>Se NÃO atendeu → cadência</h3>
@@ -5310,12 +5310,12 @@ function scSDR_B2(){
      <span class="go">Abra: Prospecção & Cadências →</span></div>
  </div></div>
 
- <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:15px">✅ O que passar para o Planejador (antes da Sessão)</h2>
-   <p class="mut" style="font-size:12px;margin:0 0 6px">Esta é a <b>passagem do lead</b>: tudo que o SDR anotou e que o Planejador precisa saber pra conduzir a Sessão sem o paciente repetir nada.</p>
+ <div class="card mt" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:15px">✅ O que passar para o Closer (antes da Sessão)</h2>
+   <p class="mut" style="font-size:12px;margin:0 0 6px">Esta é a <b>passagem do lead</b>: tudo que o SDR anotou e que o Closer precisa saber pra conduzir a Sessão sem o paciente repetir nada.</p>
    <p class="mut" style="font-size:13px;margin:0">[ ] dor/objetivo anotados no CRM · [ ] momento da jornada (dívida/organização/investir) · [ ] faixa de renda percebida · [ ] tem reserva? · [ ] quem decide (traz cônjuge?) · [ ] data/hora confirmada + WhatsApp enviado · [ ] rotina anti-falta criada · [ ] temperatura e perfil preenchidos.</p></div>`;
 }
 function scCLO_B2(){return `
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO PLANEJADOR — Sessão Estratégica (R0)</h2><span class="pill pri">Diagnosticar, mostrar o Norte & FECHAR o plano</span></div>
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — Sessão Estratégica (R0)</h2><span class="pill pri">Diagnosticar, mostrar o Norte & FECHAR o plano</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">O SDR te entrega o lead aquecido. Você conduz a <b>R0</b>: escuta, monta o <b>mapa de necessidades</b>, mostra a <b>jornada</b>, apresenta por valor, ancora o plano e <b>fecha</b> — com elegância, colocando o cliente na parede na hora certa. Você é o GUIA.</p></div>
 
  <div class="card mt"><div class="rot">
@@ -5361,7 +5361,7 @@ function scCLO_B2(){return `
      <p class="mut" style="font-size:12.5px;margin:6px 0 0">Silêncio absoluto após a pergunta — quem falar primeiro, perde. Ao ouvir o sim, conduza <b>na hora ao pagamento</b> (link/cartão) e agende a R1. Não deixe esfriar.</p>
      <span class="go">↓ Registre GANHO no CRM e acione o CS. Não fechou na hora? Passo 8.</span></div>
 
-   <div class="step" data-n="8"><h3>Não fechou na hora → cadência do Planejador</h3>
+   <div class="step" data-n="8"><h3>Não fechou na hora → cadência do Closer</h3>
      <p class="mut" style="font-size:13px;margin:0">Resumo do diagnóstico + proposta em até 2h · retorno D1 · prova social D2 · fechamento assistido D4 · última chamada D7. Sem resposta → devolve pro SDR nutrir e reabordar em 30 dias. (aba Prospecção & Cadências → ${lx("closerRole")})</p></div>
  </div></div>`;
 }
