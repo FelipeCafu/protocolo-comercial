@@ -628,6 +628,11 @@ const USERS={
   planejadora:{pass:"1234", role:"closer",tenant:"b2if",name:"Beatriz Souza (Planejadora)",initials:"BS",sellerId:"bia"},
   sdrb2:      {pass:"1234", role:"sdr",   tenant:"b2if",name:"Marina Alves (SDR)",       initials:"MA",sellerId:"marina"},
   csb2:       {pass:"1234", role:"cs",    tenant:"b2if",name:"Camila Duarte (CS)",       initials:"CD",sellerId:"camila"},
+  /* B2 — time oficial (27/09/2026): Jorge+Pedro gestores (só gestão), Bruna SDR, Melissa Planejadora */
+  "jorge.b2":  {pass:"jorgeb2",   role:"gestor",tenant:"b2if",name:"Jorge (Gestor)",        initials:"JO"},
+  "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
+  "bruna.b2":  {pass:"brunab2",   role:"sdr",   tenant:"b2if",name:"Bruna (SDR)",           initials:"BR",sellerId:"bruna"},
+  "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Planejadora)", initials:"ME",sellerId:"melissa"},
   /* ===== ICBARI — Clínica (cirurgia digestiva/bariátrica) ===== */
   icbari:       {pass:"1234",           role:"gestor", tenant:"icbari",name:"ICBARI (Clínica)",         initials:"IC"},
   "pedro.icb":  {pass:"pedroicbari",    role:"gestor", tenant:"icbari",name:"Dr. Pedro (Gestor)",       initials:"DP"},
@@ -1627,10 +1632,9 @@ function seedB2(){
     beneficios:["Tudo do Plano Norte","Política de Investimentos (IPS) + Asset Allocation","Análise e rebalanceamento de carteira","Planejamento de aposentadoria (número da independência)","Gestão de riscos/seguros + planejamento tributário","Planejamento sucessório + revisões trimestrais"]}
   ]);
   DB.set(t,"sellers",[
-   {id:"marina",nome:"Marina Alves",papel:"SDR",meta:45,realizado:33,foto:"MA"},
-   {id:"camila",nome:"Camila Duarte",papel:"CS",meta:35,realizado:31,foto:"CD"},
-   {id:"rafael",nome:"Rafael Nunes",papel:"Planejador",meta:14,realizado:11,foto:"RN"},
-   {id:"bia",nome:"Beatriz Souza",papel:"Planejador",meta:14,realizado:12,foto:"BS"}
+   {id:"bruna",nome:"Bruna",papel:"SDR",meta:45,realizado:0,foto:"BR"},
+   {id:"melissa",nome:"Melissa",papel:"Planejador",meta:14,realizado:0,foto:"ME"},
+   {id:"camila",nome:"CS / Pós-venda (a definir)",papel:"CS",meta:35,realizado:0,foto:"CS"}
   ]);
   const now=Date.now(),d=864e5,h=36e5;
   const L=o=>({id:DB.uid(),owner:"marina",temp:"morno",criadoEm:now-2*d,movedAt:now-1*d,score:70,funnelId:"prospeccao",...o});
@@ -1990,8 +1994,8 @@ const NAV_B2=[
  {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
  {g:"Jornada Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
- {id:"scripts",ic:"💬",t:"Playbook de Vendas"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
- {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
+ {id:"scripts",ic:"💬",t:"Script & Roteiro"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
  {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
@@ -2033,12 +2037,17 @@ const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
+/* B2 — vendedores (SDR/Planejador/CS): Meu Dia/Placar + comercial completo do seu papel */
+const NAV_SELLER_B2=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
+ {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão",roles:["cs"]}];
 function activeNav(){
   if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
   if(dualRole()&&VIEW_AS==='gestor')return NAV_GESTOR_DUAL; /* Daher/Cláudia vendo como gestor (enxuto) */
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
+  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="b2if")return NAV_SELLER_B2;
   if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;
   if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
@@ -2049,7 +2058,7 @@ function openTenant(tenant){
   document.getElementById("tbMark").innerHTML=BRANDS[tenant].mark(28);
   document.getElementById("tbName").textContent=BRANDS[tenant].name;
   document.getElementById("searchWrap").style.visibility="visible";
-  document.getElementById("bellBtn").classList.toggle("hidden",!isAdmin());
+  document.getElementById("bellBtn").classList.remove("hidden"); /* sininho pra TODOS (atividades atrasadas/hoje) */
   document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
   renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs"].includes(SESSION.role)?"meudia":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
@@ -4609,7 +4618,7 @@ function vRoteiro(){
  if(!allowed.length)allowed=['sdr','closer'];
  if(allowed.indexOf(ROTEIRO_TAB)<0)ROTEIRO_TAB=allowed[0];
  var data=roteiroData(),tab=ROTEIRO_TAB,arr=roteiroArr(tab);
- var apDir=T()==="icbari"?"apresentacoes/icbari/":"apresentacoes/";
+ var apDir=T()==="icbari"?"apresentacoes/icbari/":(T()==="b2if"?"apresentacoes/b2/":"apresentacoes/");
  function fmtR(t){return rSub(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1<\/b>').replace(/\n/g,'<br>');}
  var cards=arr.map(function(x){
   return '<div class="card" style="margin-bottom:12px">'
@@ -4627,8 +4636,8 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>':'')
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
-  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
-  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
+  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
+  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ '+(T()==="b2if"?"Planejador":"Closer")+' — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
   +'</div>'
   +((["icbari","lideres","b2if"].includes(T())&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
   +cards;
