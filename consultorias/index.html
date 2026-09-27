@@ -2328,7 +2328,7 @@ function vExec(){
 /* ===== CRM & FUNIS ===== */
 function vCRM(){
   var allF=DB.getObj(T(),"funnels",FUNNELS);
-  var _pap={sdr:"SDR",closer:"Closer",cs:"CS"}[effRole()];
+  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS"}[effRole()];/* B2: closer = "Planejador" */
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
