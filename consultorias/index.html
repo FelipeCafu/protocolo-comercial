@@ -1392,7 +1392,15 @@ function scSDR_ICB(){
 }
 
 function scCLO_ICB(){return `
- <div class="card" style="border-left:3px solid var(--brand-warn)"><h2 style="margin:0 0 8px;font-size:15px">🔁 Dupla checagem (BANT) — reconfirme a qualificação do SDR</h2>
+ <div class="card" style="border:2px solid var(--brand-bad);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-bad) 12%,transparent),transparent)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 PASSO 0 — Reconfira o ICP antes de continuar (siga / não siga)</h2><span class="pill bad">Sem ICP, não conduza</span></div>
+   <p style="font-size:13px;line-height:1.6;margin:10px 0 0">Antes de qualquer coisa, valide se o paciente é <b>ICP de verdade</b> (o SDR já anotou; você confirma). Se não for, <b>não gaste a consulta</b> — acolha, oriente e encerre.</p>
+   <div class="grid mt" style="grid-template-columns:1fr 1fr;gap:8px">
+     <div class="card" style="padding:10px 12px"><b style="font-size:12.5px">1) Plano de saúde</b><p class="mut" style="font-size:12px;margin:5px 0 0">Cobertura integral (Bradesco, Unimed, INAS, SulAmérica, Porto Seguro, Postal Saúde, CBMDF, PMDF) ou particular. <b style="color:var(--brand-bad)">🚫 Hapvida = NÃO atende → encerre.</b> Baixo retorno (Amil/Quality/Unity/MedSênior) = honorário particular.</p></div>
+     <div class="card" style="padding:10px 12px"><b style="font-size:12.5px">2) Critério clínico</b><p class="mut" style="font-size:12px;margin:5px 0 0">Bariátrica: <b>IMC ≥ 35</b> · Vesícula/Hérnia/Refluxo: <b>exame prévio</b> · Diástase: IMC &lt; 30 documentada.</p></div>
+   </div>
+   <p style="font-size:12.5px;margin:10px 0 0"><b style="color:var(--brand-bad)">❌ Fora do ICP</b> (ex.: Hapvida, ou sem o critério clínico): não siga pra apresentação/valor. Encerre com respeito e registre no CRM. &nbsp; <b style="color:var(--brand-ok)">✅ É ICP:</b> siga pra reconfirmação abaixo.</p>
+ </div>
+ <div class="card mt" style="border-left:3px solid var(--brand-warn)"><h2 style="margin:0 0 8px;font-size:15px">🔁 Dupla checagem (BANT) — reconfirme a qualificação do SDR</h2>
    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
      <div><b>B · Investimento</b><p class="mut" style="font-size:12px;margin:3px 0 0">"É por convênio ou particular? Já pensou em parcelar?"</p></div>
      <div><b>A · Autoridade</b><p class="mut" style="font-size:12px;margin:3px 0 0">"A decisão é sua? Quer envolver alguém?"</p></div>
@@ -5092,7 +5100,17 @@ function scSDR(){
    <p class="mut" style="font-size:13px;margin:0">[ ] dor anotada no CRM · [ ] porte/segmento · [ ] plano provável (Master/Premium) · [ ] quem decide · [ ] data/hora confirmada + convite/WhatsApp enviado · [ ] rotina anti-falta criada · [ ] temperatura e score preenchidos.</p></div>`;
 }
 function scCLO(){return `
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — siga de cima para baixo</h2><span class="pill pri">Conduzir a reunião & FECHAR</span></div>
+ <div class="card" style="border:2px solid var(--brand-bad);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-bad) 12%,transparent),transparent)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 PASSO 0 — Reconfira o ICP antes de continuar (siga / não siga)</h2><span class="pill bad">Sem ICP, não conduza</span></div>
+   <p style="font-size:13px;line-height:1.6;margin:10px 0 0">Antes de conduzir a reunião, valide se é <b>ICP de verdade</b> (o SDR já anotou; você confirma):</p>
+   <ul class="mut" style="font-size:12.5px;line-height:1.8;margin:8px 0 0;padding-left:18px">
+     <li>É <b>dono/sócio que decide</b> (e o sócio decisor está na reunião, se houver)?</li>
+     <li>Fatura por volta de <b>R$300k/ano ou mais</b>?</li>
+     <li>Está em <b>Brasília e entorno</b>?</li>
+     <li>Quer <b>crescer e ampliar rede</b> (e topa participar da comunidade)?</li>
+   </ul>
+   <p style="font-size:12.5px;margin:10px 0 0"><b style="color:var(--brand-bad)">❌ Fora do ICP</b> (não decide, sem porte, só quer "curso barato"): não conduza a reunião de venda. Agradeça, oriente e encerre/redirecione. &nbsp; <b style="color:var(--brand-ok)">✅ É ICP:</b> siga.</p>
+ </div>
+ <div class="card mt" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — siga de cima para baixo</h2><span class="pill pri">Conduzir a reunião & FECHAR</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">O SDR te entrega o lead aquecido. Você <b>diagnostica ao vivo, apresenta por valor, ancora o preço, quebra objeções e fecha</b> — com elegância, mas colocando o cliente na parede na hora certa. É um fluxo só.</p></div>
 
  <div class="card mt"><div class="rot">
@@ -5322,7 +5340,17 @@ function scSDR_B2(){
    <p class="mut" style="font-size:13px;margin:0">[ ] dor/objetivo anotados no CRM · [ ] momento da jornada (dívida/organização/investir) · [ ] faixa de renda percebida · [ ] tem reserva? · [ ] quem decide (traz cônjuge?) · [ ] data/hora confirmada + WhatsApp enviado · [ ] rotina anti-falta criada · [ ] temperatura e perfil preenchidos.</p></div>`;
 }
 function scCLO_B2(){return `
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — Sessão Estratégica (R0)</h2><span class="pill pri">Diagnosticar, mostrar o Norte & FECHAR o plano</span></div>
+ <div class="card" style="border:2px solid var(--brand-bad);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-bad) 12%,transparent),transparent)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 PASSO 0 — Reconfira o ICP antes de continuar (siga / não siga)</h2><span class="pill bad">Sem ICP, não conduza</span></div>
+   <p style="font-size:13px;line-height:1.6;margin:10px 0 0">Antes de conduzir a Sessão, valide se é <b>ICP de verdade</b> (o SDR já anotou; você confirma):</p>
+   <ul class="mut" style="font-size:12.5px;line-height:1.8;margin:8px 0 0;padding-left:18px">
+     <li>Tem <b>renda</b> pra sustentar o acompanhamento?</li>
+     <li>Tem uma <b>dor financeira real</b> (dívida, desorganização, quer investir com plano)?</li>
+     <li>É <b>quem decide</b> (ou traz o cônjuge que decide junto)?</li>
+     <li>Quer <b>método e um guia</b>, não só uma dica solta?</li>
+   </ul>
+   <p style="font-size:12.5px;margin:10px 0 0"><b style="color:var(--brand-bad)">❌ Fora do ICP</b> (sem renda pro plano, sem dor real, não decide): não conduza a Sessão de venda. Oriente e encerre. &nbsp; <b style="color:var(--brand-ok)">✅ É ICP:</b> siga.</p>
+ </div>
+ <div class="card mt" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🤝 ROTEIRO DO CLOSER — Sessão Estratégica (R0)</h2><span class="pill pri">Diagnosticar, mostrar o Norte & FECHAR o plano</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">O SDR te entrega o lead aquecido. Você conduz a <b>R0</b>: escuta, monta o <b>mapa de necessidades</b>, mostra a <b>jornada</b>, apresenta por valor, ancora o plano e <b>fecha</b> — com elegância, colocando o cliente na parede na hora certa. Você é o GUIA.</p></div>
 
  <div class="card mt"><div class="rot">
