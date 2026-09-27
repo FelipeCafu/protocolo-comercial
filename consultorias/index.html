@@ -714,11 +714,9 @@ const FUNNELS=[
    Ambiente completo + Jornada do Paciente (pós-venda/CS)
    ============================================================ */
 const FUNNELS_ICB=[
- {id:"prospeccao",name:"Prospecção",papel:"SDR",stages:[
+ {id:"sdr",name:"Funil do SDR",papel:"SDR",stages:[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
-   {id:"contato",name:"Contato Realizado",sla:24},{id:"mql",name:"Qualificado (MQL)",sla:24}]},
- {id:"sdr",name:"Qualificação (SDR)",papel:"SDR",stages:[
-   {id:"qualif",name:"Em Qualificação",sla:48},{id:"spin",name:"SPIN aplicado",sla:24},
+   {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
    {id:"agendou",name:"Consulta Agendada",sla:24},{id:"noshow",name:"No-show / Remarcar",sla:12}]},
  {id:"closer",name:"Consulta & Fechamento (Closer)",papel:"Closer",stages:[
    {id:"reuniao",name:"Consulta Realizada",sla:24},{id:"apresent",name:"Plano Cirúrgico Apresentado",sla:48},
@@ -1605,11 +1603,9 @@ function seed(){
   localStorage.setItem("pc.lideres.seeded","v4");
 }
 const FUNNELS_B2=[
- {id:"prospeccao",name:"Prospecção",papel:"SDR",stages:[
+ {id:"sdr",name:"Funil do SDR",papel:"SDR",stages:[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
-   {id:"contato",name:"Contato Realizado",sla:24},{id:"mql",name:"Qualificado (MQL)",sla:24}]},
- {id:"sdr",name:"Qualificação (SDR)",papel:"SDR",stages:[
-   {id:"qualif",name:"Em Qualificação",sla:48},{id:"spin",name:"SPIN aplicado",sla:24},
+   {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
    {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"No-show / Remarcar",sla:12}]},
  {id:"closer",name:"Planejamento (Planejador)",papel:"Planejador",stages:[
    {id:"reuniao",name:"Sessão Realizada (R0)",sla:24},{id:"apresent",name:"Diagnóstico Apresentado",sla:48},
@@ -1984,8 +1980,8 @@ const NAV=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
- {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial",ten:"lideres"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
+ {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
  {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
@@ -2011,11 +2007,11 @@ const NAV_CEO=[
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 /* Líderes — vendedores (SDR/Closer/CS) acessam também CRM, Base, Prospecção, Scripts, Roteiro e Academia */
 const NAV_SELLER_LID=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & Recompra",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência",roles:["cs"]}];
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & Recompra",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência",roles:["cs"]}];
 /* Daher/Cláudia vendo COMO GESTOR: só visão de gestão (sem CRM/Base/Prospecção/Scripts/Roteiro — isso veem como closer) */
 const NAV_GESTOR_DUAL=[{g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},
  {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos"}];
 /* ICBARI — nav do gestor (tudo do padrão + Jornada do Paciente e Modelos de Cirurgia) */
@@ -2023,20 +2019,20 @@ const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
- {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro & Apresentações"},
+ {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 /* ICBARI — CS/pós-venda: Meu Dia/Placar + Jornada + acesso comercial (cada um vê o seu) */
 const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
 /* ICBARI — SDR/Closer: Meu Dia/Placar + comercial completo do seu papel */
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script de Vendas"},{id:"roteiro",ic:"🎤",t:"Roteiro Comercial"},
- {g:"Time"},{id:"academy",ic:"🎓",t:"Academia de Vendas"},{id:"treino",ic:"📝",t:"Treinamento & Prova"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
 function activeNav(){
   if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
   if(dualRole()&&VIEW_AS==='gestor')return NAV_GESTOR_DUAL; /* Daher/Cláudia vendo como gestor (enxuto) */
@@ -2071,8 +2067,9 @@ function renderSidebar(){
     let badge="";
     if(n.id==="crm")badge=`<span class="badge">${DB.get(CURRENT_TENANT,"leads").length}</span>`;
     if(n.id==="tarefas"){const c=taskCount();if(c)badge=`<span class="badge">${c}</span>`;}
-    if(n.id==="treino"&&!quizPassedToday()&&["sdr","closer","cs"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
-    html+=`<div class="nav-item ${CURRENT_VIEW===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
+    if(n.id==="academy"&&!quizPassedToday()&&["sdr","closer","cs"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
+    var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
+    html+=`<div class="nav-item ${_av===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
   });
   document.getElementById("sidebar").innerHTML=html;
 }
@@ -2086,6 +2083,7 @@ function go(view){
     jornada:vJornada,cirmodelos:vCirModelos,importtrafego:vImportTrafego,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
+  try{updateBell();}catch(e){}
 }
 const M=()=>document.getElementById("main");
 const T=()=>CURRENT_TENANT;
@@ -2335,10 +2333,10 @@ function renderKanban(){
     return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>slaMs(s);const as=actStatus(l.id);
-        const cls=as==="late"?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
+        const cls=(as==="late"||slaLate)?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
         const sc=leadScore(l).score;const scc=sc>=70?'var(--brand-ok)':sc>=45?'var(--brand-primary-2)':'var(--brand-muted)';
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
-          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div class="co">${l.fantasia||l.razaoSocial||""}</div>
+          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div class="co">${esc(l.procedimento||l.plano||"")}</div>
           <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small>${slaLate?'<span class="pill bad" style="padding:1px 6px">SLA</span>':''}<span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
       </div></div>`;}).join("");
   bindDrag();
@@ -2425,17 +2423,14 @@ function leadDetail(id){
          <label class="fl mt">Etapa</label>
          <select class="in" onchange="moveLeadStage('${l.id}',this.value);leadDetail('${l.id}')">${stages.map(s=>`<option value="${s.id}" ${l.estagio===s.id?'selected':''}>${s.name}</option>`).join("")}</select>
          <label class="fl mt8">Dono / responsável</label>
-         <select class="in" onchange="DB.update(T(),'leads','${l.id}',{owner:this.value});toast('Responsável atualizado')">${sellers.map(s=>`<option value="${s.id}" ${l.owner===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>
+         <select class="in" onchange="assignOwner('${l.id}',this.value);leadDetail('${l.id}')">${sellers.map(s=>`<option value="${s.id}" ${l.owner===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>
        </div>
-       <div class="card mt"><h2 style="margin:0 0 10px;font-size:14px">🏢 Organização</h2>
-         <label class="fl">Razão social</label><input class="in" id="ld_razao" value="${l.razaoSocial||''}">
-         <label class="fl mt8">Nome fantasia</label><input class="in" id="ld_fant" value="${l.fantasia||''}">
-         <label class="fl mt8">Setor</label><input class="in" id="ld_setor" value="${l.setor||''}">
-         <h2 style="margin:16px 0 10px;font-size:14px">👤 Pessoa de contato</h2>
+       <div class="card mt"><h2 style="margin:0 0 10px;font-size:14px">👤 Dados do ${lx('cliente')}</h2>
          <label class="fl">Nome</label><input class="in" id="ld_cnome" value="${(l.contato||{}).nome||l.nome||''}">
          <div class="row mt8"><div><label class="fl">Telefone</label><input class="in" id="ld_ctel" value="${(l.contato||{}).tel||''}"></div>
            <div><label class="fl">E-mail</label><input class="in" id="ld_cemail" value="${(l.contato||{}).email||''}"></div></div>
-         <label class="fl mt8">Valor / plano (R$)</label><input class="in" id="ld_valor" type="number" value="${l.valor||0}">
+         ${T()==="icbari"?`<div class="row mt8"><div><label class="fl">Procedimento que quer fazer</label><input class="in" id="ld_proc" value="${esc(l.procedimento||'')}"></div><div><label class="fl">Plano de saúde</label><input class="in" id="ld_plano" value="${esc(l.plano||'')}"></div></div>
+         <label class="fl mt8">Valor do procedimento (R$)</label><input class="in" id="ld_valor" type="number" value="${l.valor||0}">`:`<label class="fl mt8">Valor (R$)</label><input class="in" id="ld_valor" type="number" value="${l.valor||0}">`}
          <button class="btn sm mt" onclick="saveLeadDetail('${l.id}')">💾 Salvar cadastro</button>
          <button class="btn ghost sm mt" onclick="delLead('${l.id}')">Excluir lead</button>
        </div>
@@ -2459,9 +2454,9 @@ function leadDetail(id){
    </div>`;
 }
 function ldActivityForm(l){
-  const types=[["call","📞"],["visita","📍"],["wa","🟢"],["reuniao","🤝"],["email","✉️"],["msg","💬"],["insta","📸"],["alarme","⏰"]];
+  const types=[["call","📞","Ligação"],["visita","📍","Visita"],["wa","🟢","WhatsApp"],["reuniao","🤝","Reunião"],["email","✉️","E-mail"],["msg","💬","Mensagem"],["insta","📸","Instagram"],["alarme","⏰","Lembrete"]];
   return `<input class="in" id="ac_titulo" placeholder="Título (ex.: Ligar pra retomar / Visita ao comprador)">
-    <div class="atypes">${types.map(([id,ic])=>`<div class="atype ${LD_ATYPE===id?'on':''}" onclick="LD_ATYPE='${id}';document.querySelectorAll('.atype').forEach(e=>e.classList.remove('on'));this.classList.add('on')" title="${id}">${ic}</div>`).join("")}</div>
+    <div class="atypes">${types.map(([id,ic,nm])=>`<div class="atype ${LD_ATYPE===id?'on':''}" onclick="LD_ATYPE='${id}';document.querySelectorAll('.atype').forEach(e=>e.classList.remove('on'));this.classList.add('on')" title="${nm}" style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px"><span style="font-size:18px">${ic}</span><span style="font-size:10.5px;line-height:1">${nm}</span></div>`).join("")}</div>
     <div class="row"><div><label class="fl">Data</label><input class="in" id="ac_data" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div><label class="fl">Hora</label><input class="in" id="ac_hora" type="time"></div></div>
     <label class="fl mt8">Observação (opcional) — @marque alguém</label><textarea class="in" id="ac_obs" rows="2"></textarea>
@@ -2542,9 +2537,11 @@ function addNote(id){const txt=document.getElementById("nt_txt").value.trim();if
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"Anotação: "+txt,ts:Date.now()});toast("Anotação salva");LD_TAB="atividade";leadDetail(id);}
 function checkin(id){DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"📍 Check-in de visita (GPS capturado)",ts:Date.now()});toast("Check-in registrado com GPS");leadDetail(id);}
 function saveLeadDetail(id){
-  const g=x=>document.getElementById(x).value;
-  DB.update(T(),"leads",id,{razaoSocial:g("ld_razao"),fantasia:g("ld_fant"),setor:g("ld_setor"),valor:+g("ld_valor"),
-    contato:{nome:g("ld_cnome"),tel:g("ld_ctel"),email:g("ld_cemail")}});
+  const g=x=>{var e=document.getElementById(x);return e?e.value:undefined;};
+  var patch={valor:+g("ld_valor")||0,contato:{nome:g("ld_cnome"),tel:g("ld_ctel"),email:g("ld_cemail")}};
+  if(document.getElementById("ld_proc"))patch.procedimento=g("ld_proc");
+  if(document.getElementById("ld_plano"))patch.plano=g("ld_plano");
+  DB.update(T(),"leads",id,patch);
   toast("Cadastro salvo");
 }
 function winLead(id){moveLeadStage(id,'ganho');DB.update(T(),"leads",id,{funnelId:'closer'});toast("🎉 Lead marcado como GANHO ("+lx('cliente')+")!");leadDetail(id);}
@@ -2600,6 +2597,17 @@ function transferLead(id){const sellers=DB.get(T(),"sellers");
    <select class="in" id="tr_funnel">${DB.getObj(T(),"funnels",FUNNELS).map(f=>`<option value="${f.id}">${f.name}</option>`).join("")}</select>
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button>
      <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`);}
+function funnelForPapel(papel){var fs=DB.getObj(T(),"funnels",FUNNELS);var p=(papel||"").toLowerCase();
+  var f=fs.find(function(x){return (x.papel||"").toLowerCase()===p;});
+  if(!f&&(p.indexOf("plan")>=0))f=fs.find(function(x){return (x.papel||"").toLowerCase()==="closer";});
+  return f||null;}
+function assignOwner(id,ownerId){var sel=DB.get(T(),"sellers").find(function(s){return s.id===ownerId;})||{};
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var patch={owner:ownerId};
+  var f=funnelForPapel(sel.papel);
+  if(f&&l.funnelId!==f.id){patch.funnelId=f.id;patch.estagio=(f.stages[0]||{}).id;patch.movedAt=Date.now();}
+  DB.update(T(),"leads",id,patch);
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Responsável → "+(sel.nome||ownerId)+((f&&patch.funnelId)?(" · movido p/ o funil "+f.name):""),ts:Date.now()});
+  toast("Responsável atualizado"+(patch.funnelId?(" · movido p/ o funil de "+(sel.papel||"")):""));}
 function doTransfer(id){const owner=document.getElementById("tr_owner").value,fid=document.getElementById("tr_funnel").value;
   const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid);
   DB.update(T(),"leads",id,{owner,funnelId:fid,estagio:f.stages[0].id,movedAt:Date.now()});
@@ -2621,16 +2629,17 @@ function leadModal(){
   const funSel=`<select class="in" id="f_funnel">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select>`;
   const ownSel=`<select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}">${esc(s.nome)}</option>`).join("")}</select>`;
   const tempSel=`<select class="in" id="f_temp"><option>quente</option><option selected>morno</option><option>frio</option></select>`;
+  const planoSaude=`<select class="in" id="f_plano"><option>Bradesco</option><option>Unimed</option><option>SulAmérica</option><option>Porto Seguro</option><option>INAS</option><option>Postal Saúde</option><option>CBMDF</option><option>PMDF</option><option>Amil</option><option>Quality</option><option>Unity</option><option>MedSênior</option><option>Hapvida</option><option selected>Particular</option><option>Outro</option></select>`;
   openModal(`<h3>Novo lead</h3>
    ${isIcb?`
    <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div></div>
    <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><select class="in" id="f_origem"><option>Instagram</option><option>Google</option><option>Facebook</option><option>WhatsApp</option><option>Indicação</option><option>Tráfego pago</option><option>Outro</option></select></div></div>
-   <div class="row mt"><div><label class="fl">Procedimento / Cirurgia</label><select class="in" id="f_proc">${cirs.map(c=>`<option>${esc(c.nome)}</option>`).join("")}<option>Outro / A definir</option></select></div><div><label class="fl">Funil</label>${funSel}</div></div>
+   <div class="row mt"><div><label class="fl">Procedimento que quer fazer</label><select class="in" id="f_proc">${cirs.map(c=>`<option>${esc(c.nome)}</option>`).join("")}<option>Outro / A definir</option></select></div><div><label class="fl">Plano de saúde</label>${planoSaude}</div></div>
+   <div class="row mt"><div><label class="fl">Valor do procedimento (R$)</label><input class="in" id="f_valor" type="number" placeholder="ex.: 15000"></div><div><label class="fl">Funil</label>${funSel}</div></div>
    <div class="row mt"><div><label class="fl">Temp.</label>${tempSel}</div><div><label class="fl">Responsável</label>${ownSel}</div></div>
    `:`
-   <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Nome fantasia</label><input class="in" id="f_fant"></div></div>
-   <div class="row mt"><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div><div><label class="fl">E-mail</label><input class="in" id="f_email"></div></div>
-   <div class="row mt"><div><label class="fl">Setor</label><input class="in" id="f_setor"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
+   <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div></div>
+   <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
    <div class="row mt"><div><label class="fl">Funil</label>${funSel}</div>
      ${T()==="lideres"?`<div><label class="fl">Plano provável</label><select class="in" id="f_plano"><option>Evolução</option><option selected>Referência</option><option>Legado</option><option>A definir</option></select></div>
      <div><label class="fl">Probabilidade</label><select class="in" id="f_prob"><option>Baixa</option><option selected>Média</option><option>Alta</option></select></div>`:`<div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>`}
@@ -2647,8 +2656,7 @@ function saveNewLead(){
   const _plano=document.getElementById("f_plano")?g("f_plano"):"";
   const _prob=document.getElementById("f_prob")?g("f_prob"):"";
   const _proc=document.getElementById("f_proc")?g("f_proc"):"";
-  const setor=_proc||g("f_setor");
-  DB.push(T(),"leads",{id,nome,fantasia:g("f_fant"),razaoSocial:g("f_fant"),setor:setor,procedimento:_proc,origem:g("f_origem"),
+  DB.push(T(),"leads",{id,nome,procedimento:_proc,origem:g("f_origem"),
     funnelId:fid,estagio:f.stages[0].id,valor:_val,plano:_plano,prob:_prob,temp:g("f_temp")||"morno",owner:g("f_owner"),score:50,
     contato:{nome,tel:g("f_tel"),email:g("f_email")},criadoEm:Date.now(),movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado",ts:Date.now()});
@@ -4166,9 +4174,9 @@ const ACAD_AGENDA=[
  ["03:00","10 min","✅ Módulo 7 — Compromisso","Sua meta de amanhã, assinada. Onde consultar quando travar.","m7"]
 ];
 function acadHeader(){
- return `<div class="view-title"><h1>Academia de Vendas</h1><span class="pill pri">Aprendizado contínuo</span></div>
- <p class="view-sub">Onde o time aprende: a <b>trilha de vídeos</b> do seu papel, a <b>matriz de objeções</b> pra treinar as respostas e os seus <b>compromissos</b> de evolução.</p>
- <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
+ return `<div class="view-title"><h1>Academia & Treino</h1><span class="pill pri">Aprendizado contínuo</span></div>
+ <p class="view-sub">Onde o time aprende: a <b>trilha de vídeos</b> do seu papel, a <b>matriz de objeções</b>, os seus <b>compromissos</b> de evolução e o <b>treinamento & prova</b> do dia.</p>
+ <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"],["treino","📝 Treinamento & Prova"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
 }
 function acadAgenda(){
  return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Roteiro do treinamento</h2>
@@ -4567,6 +4575,7 @@ function openRoteiro(id){try{ROTEIRO_LEAD=DB.get(T(),"leads").find(function(x){r
 function rSub(t){if(!t)return t;var L=ROTEIRO_LEAD||{};var c=L.contato||{};var first=(SESSION.name||'').split(' ')[0];
  var map={'NOME':c.nome||L.nome||L.fantasia||'','SDR':first,'CLOSER':first,'EVENTO':L.origem||'','SÓCIO':L.socio||'','SOCIO':L.socio||'','DOR':L.dor||'','X':L.faturamento||(L.valor?money(L.valor):'')};
  return String(t).replace(/\{([^}]+)\}/g,function(m,k){var v=map[k.toUpperCase()];return (v!==undefined&&v!=='')?v:m;});}
+function srToggle(active){return '<div class="flex" style="gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="btn '+(active==="scripts"?"gold":"ghost")+' sm" onclick="go(\'scripts\')">📖 Script de Vendas</button><button class="btn '+(active==="roteiro"?"gold":"ghost")+' sm" onclick="go(\'roteiro\')">🎤 Roteiro Comercial</button></div>';}
 function roteiroData(){return (T()==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")?ROTEIRO_ICBARI:ROTEIRO_LIDERES;}
 /* array de slides do roteiro, considerando a ORIGEM do lead (ICBARI · SDR) */
 function roteiroArr(tab){if(T()==="icbari"&&tab==="sdr"&&typeof ROTEIRO_ICB_SDR==="function")return ROTEIRO_ICB_SDR(ICB_ORIG);return roteiroData()[tab]||[];}
@@ -4587,7 +4596,7 @@ function vRoteiro(){
    +(x.av?'<div class="mut" style="font-size:12.5px;margin-top:3px"><b style="color:var(--brand-bad)">Evite:</b> '+x.av+'</div>':'')
    +'</div>';
  }).join('');
- M().innerHTML='<div class="view-title"><h1>Roteiro Comercial</h1><span class="pill pri">'+allowed.map(function(r){return r==='sdr'?'SDR':'Closer';}).join(' + ')+'</span></div>'
+ M().innerHTML=srToggle('roteiro')+'<div class="view-title"><h1>Roteiro Comercial</h1><span class="pill pri">'+allowed.map(function(r){return r==='sdr'?'SDR':'Closer';}).join(' + ')+'</span></div>'
   +'<p class="view-sub">O mesmo roteiro das apresentações comerciais — estude aqui ou dentro do deck. Aperte <b>S</b> no deck para o roteiro do apresentador. Use <b>📋 copiar</b> pra colar no WhatsApp.</p>'
   +(ROTEIRO_LEAD?('<div class="card" style="background:rgba(31,200,202,.08);border:1px solid rgba(31,200,202,.4);padding:10px 14px;margin-bottom:12px"><span style="font-size:13px">🎯 Personalizado para <b>'+esc((ROTEIRO_LEAD.contato||{}).nome||ROTEIRO_LEAD.nome||'este lead')+'</b> — o nome e o evento já entram no texto.</span> <button class="btn ghost xs" style="margin-left:8px" onclick="ROTEIRO_LEAD=null;vRoteiro()">usar genérico</button></div>'):'')
   +'<div class="flex" style="gap:8px;margin-bottom:14px;flex-wrap:wrap">'
@@ -4606,9 +4615,16 @@ function acadAddObj(){
  const o=(document.getElementById("mxObj").value||"").trim();
  if(!o)return alert("Escreva a objeção que o cliente disse.");
  const resp=(document.getElementById("mxResp").value||"").trim();
+ const semResp=!resp;
  const m=objMatrix();
- m.unshift({id:DB.uid(),obj:o,resp:resp,by:SESSION.name,needsHelp:false,ts:Date.now()});
- saveObjMatrix(m);vAcademy();
+ m.unshift({id:DB.uid(),obj:o,resp:resp,by:SESSION.name,needsHelp:semResp,ts:Date.now()});
+ saveObjMatrix(m);
+ if(semResp){ /* deixou em branco = não sabe responder → avisa o Felipe */
+   DB.push(T(),"alerts",{id:DB.uid(),tipo:"objecao",colaborador:SESSION.name,ts:Date.now(),txt:(SESSION.name||"Colaborador")+' não soube responder a objeção: "'+o+'"'});
+   if(typeof updateBell==="function")updateBell();
+   toast("Registrado! Você deixou em branco, então o Felipe foi avisado e vai responder essa objeção pra você.");
+ } else { toast("Objeção adicionada à matriz ✓"); }
+ vAcademy();
 }
 function acadDelObj(id){ if(!confirm("Remover esta objeção da matriz?"))return; saveObjMatrix(objMatrix().filter(x=>x.id!==id));vAcademy(); }
 function acadEditObj(id,campo,el){
@@ -4626,13 +4642,13 @@ function acadObjecoes(){
  const m=objMatrix();
  return `
  <div class="card"><h2 style="margin:0 0 4px;font-size:15px">🛡️ Matriz de Objeções</h2>
- <p class="mut" style="font-size:13px;margin:0">A frase que o cliente diz e como responder. Se não souber quebrar, peça ajuda que o Felipe entra pra te ajudar. <b>Salva na nuvem</b> — todo o time vê e usa.</p></div>
+ <p class="mut" style="font-size:13px;margin:0">A frase que o cliente diz e como responder. <b>Se você não souber responder, deixe a resposta em branco e salve</b> — o Felipe é avisado na hora e responde essa objeção pra você. <b>Salva na nuvem</b>, todo o time vê e usa.</p></div>
  <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Registrar uma objeção que você ouviu</h3>
   <div><label class="mut" style="font-size:12px">A frase que o cliente diz (a objeção)</label><input id="mxObj" placeholder='Ex.: "Tá caro", "Preciso pensar", "Vou ver com meu sócio"' style="width:100%"></div>
-  <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como responder (se já souber; senão deixe em branco e peça ajuda no card)</label>
-   <textarea id="mxResp" rows="2" placeholder="Escreva a resposta que funciona…" style="width:100%"></textarea></div>
-  <div class="flex" style="margin-top:10px;align-items:center;gap:10px"><button class="btn gold sm" onclick="acadAddObj()">Adicionar à matriz</button>
-   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span><div style="flex:1"></div><button class="btn ghost sm" onclick="acadPDF()">📄 Gerar PDF</button></div>
+  <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como você responde? <b>Se souber, escreva.</b> Se não souber, deixe em branco — o Felipe é avisado e responde pra você.</label>
+   <textarea id="mxResp" rows="2" placeholder="Se souber, escreva a resposta que funciona. Se não, deixe em branco." style="width:100%"></textarea></div>
+  <div class="flex" style="margin-top:10px;align-items:center;gap:10px"><button class="btn gold sm" onclick="acadAddObj()">Salvar objeção</button>
+   <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span></div>
  </div>
  ${m.map(o=>`<div class="card" style="padding:14px 16px">
    <div class="flex" style="align-items:center;gap:8px;margin-bottom:6px">
@@ -4676,8 +4692,9 @@ function acadCompromisso(){
  </div>`:""}`;
 }
 function vAcademy(){
- /* ICBARI usa a mesma Academia enxuta (Trilha de Vídeos + Matriz de Objeções + Compromissos) */
- if(["videos","objecoes","compromisso"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
+ /* Academia enxuta unificada: Trilha de Vídeos + Matriz de Objeções + Compromissos + Treinamento & Prova */
+ if(["videos","objecoes","compromisso","treino"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
+ if(ACAD_TAB==="treino"){M().innerHTML=acadHeader()+treinoInner();treinoInitQuiz();return;}
  M().innerHTML=acadHeader()+({videos:acadVideos,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadVideos)();
 }
 function acadVideos(){
@@ -4706,6 +4723,14 @@ function leadScore(l){
 }
 function waText(l){var c=(l&&l.contato)||{};var raw=(c.nome||l.nome||'').replace(/^\s*(dr|dra|sr|sra|prof)\.?\s+/i,'');var nome=(raw.split(' ')[0])||'';var vend=((SESSION.name||'').split(' ')[0])||'';var marca=(BRANDS[T()]&&BRANDS[T()].name)||'';return encodeURIComponent('Olá '+nome+'! Aqui é '+vend+(marca?', do '+marca:'')+'. Tudo bem? Você tem um minutinho pra eu me apresentar?');}
 function waLink(l){var d=(((l&&l.contato)||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';if(!(d.length>=12&&d.slice(0,2)==='55'))d='55'+d;return 'https://wa.me/'+d+'?text='+waText(l);}
+function compromissoCard(){
+ var c=DB.getObj(T(),"trainCommit",{})[SESSION.name]||{};
+ var hoje=new Date().toISOString().slice(0,10);var ok=c.dia===hoje;
+ if(ok){var foco=[c.f1,c.f2,c.f3].filter(Boolean);
+  return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(46,204,113,.4);background:linear-gradient(160deg,rgba(46,204,113,.08),transparent)"><div class="flex between wrap" style="align-items:center;gap:8px"><b style="font-size:14px">✅ Seu compromisso de hoje</b><span class="mut" style="font-size:12px">'+(c.lig||0)+' ligações · '+esc(c.hora||'')+'</span></div>'+(foco.length?'<div class="mut" style="font-size:12px;margin:8px 0 2px">O que vou treinar em mim:</div><ul class="mut" style="font-size:12.5px;margin:0;padding-left:18px;line-height:1.7">'+foco.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>':'')+'</div>';
+ }
+ return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(201,162,75,.5)"><div class="flex between wrap" style="align-items:center;gap:8px"><div><b style="font-size:14px">✍️ Assine seu compromisso de hoje</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">Quantas ligações fará, o horário de prospecção e as 3 coisas que vai treinar em você.</p></div><button class="btn sm" onclick="ACAD_TAB=\'compromisso\';go(\'academy\')">Assinar →</button></div></div>';
+}
 function vMeuDia(){
   const me=SESSION.sellerId||SESSION.name;
   const leads=DB.get(T(),"leads").filter(l=>l.owner===me&&!l.deleted);
@@ -4719,7 +4744,7 @@ function vMeuDia(){
   const hot=openLeads.map(l=>({l,s:leadScore(l).score})).sort((a,b)=>b.s-a.s).map(o=>o.l);
   function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=waLink(l);
     return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
-      <div style="flex:1"><b style="font-size:14.5px">${l.fantasia||l.nome}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
+      <div style="flex:1"><b style="font-size:14.5px">${esc(l.nome)}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
       <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${S.reasons.join(' · ')||stageName(l.estagio)}</span></div>
       <div style="font-weight:800">${money(l.valor)}</div></div>
       <div class="flex" style="gap:7px;margin-top:9px;flex-wrap:wrap">
@@ -4736,6 +4761,7 @@ function vMeuDia(){
    <p class="view-sub">Sua fila do dia — de cima pra baixo. O sistema já te diz o que fazer agora.</p>
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar — a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
+   ${compromissoCard()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação treinando o Script de Vendas do seu papel.</p></div><button class="btn sm" onclick="go('scripts')">Treinar agora →</button></div></div>
    ${(function(){var ok=quizPassedToday();return '<div class="card" style="margin-bottom:14px;border:1px solid '+(ok?'rgba(46,204,113,.4)':'rgba(201,162,75,.5)')+'"><div class="flex between wrap" style="align-items:center;gap:8px"><div><b style="font-size:14px">📝 Prova do dia</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+(ok?'Você já fez a prova de hoje ✓':'Faça a prova rápida — antes dos vídeos e das tarefas.')+'</p></div>'+(ok?'<span class="pill ok">feita</span>':'<button class="btn sm" onclick="go(\'treino\')">Fazer a prova →</button>')+'</div></div>';})()}
    ${trainCard()}
@@ -4752,7 +4778,9 @@ function trainMarkDone(id){var me=SESSION.sellerId||SESSION.name;var arr=DB.get(
 var TRAIN_MIN_SEC=3600; /* mínimo 1h de treino por dia */
 function trainMinFmt(sec){return Math.max(1,Math.round((sec||0)/60))+' min';}
 function trainDurSec(v){return (v&&v.d)?v.d:2400;} /* estimativa 40min quando a aula não tem duração exata */
-function trainTodayVideos(){var list=trainList(),done=trainDoneSet();var pend=list.filter(function(v){return !done.has(v.id);});var out=[],acc=0;for(var i=0;i<pend.length;i++){out.push(pend[i]);acc+=trainDurSec(pend[i]);if(acc>=TRAIN_MIN_SEC)break;}return out;}
+function trainTodayVideos(){var list=trainList(),done=trainDoneSet();var pend=list.filter(function(v){return !done.has(v.id);});
+ if(T()==="icbari")return pend.slice(0,1); /* ICBARI: 1 vídeo por dia (eles têm outras atividades) */
+ var out=[],acc=0;for(var i=0;i<pend.length;i++){out.push(pend[i]);acc+=trainDurSec(pend[i]);if(acc>=TRAIN_MIN_SEC)break;}return out;}
 function trainOpen(id){window.open('https://drive.google.com/file/d/'+id+'/view','_blank');}
 function trainMark(id){trainMarkDone(id);toast("Aula marcada como assistida ✓");if(CURRENT_VIEW==='meudia')vMeuDia();else if(CURRENT_VIEW==='academy')vAcademy();}
 function trainCard(){
@@ -4762,7 +4790,7 @@ function trainCard(){
   var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">'+esc(v.c||'Full Sales')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+' · abre no Google Drive</small></div><button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost sm" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
   return '<div class="card" style="margin-bottom:14px;background:linear-gradient(160deg,rgba(31,200,202,.08),transparent)"><div class="flex between wrap" style="align-items:center"><b style="font-size:14px">🎓 Treinamento de hoje · '+trainRoleKey().toUpperCase()+'</b><small class="mut">'+ndone+'/'+total+' aulas · '+pct+'%</small></div>'
    +'<div style="height:7px;background:rgba(255,255,255,.08);border-radius:6px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
-   +'<p class="mut" style="font-size:12px;margin:8px 0 0">Meta: <b>mínimo 1h de treino por dia</b>. Suas aulas de hoje somam ~<b>'+trainMinFmt(todaySec)+'</b> — assista e marque cada uma como feita pra avançar.</p>'
+   +'<p class="mut" style="font-size:12px;margin:8px 0 0">'+(T()==="icbari"?'Meta: <b>1 vídeo por dia</b>. Seu vídeo de hoje: ~<b>'+trainMinFmt(todaySec)+'</b>':'Meta: <b>mínimo 1h de treino por dia</b>. Suas aulas de hoje somam ~<b>'+trainMinFmt(todaySec)+'</b>')+' — assista e marque como feito pra avançar.</p>'
    +rows
    +'<div class="mt8"><button class="btn ghost sm" onclick="trainAll()">Ver trilha completa ('+total+' aulas)</button></div></div>';
 }
@@ -4842,7 +4870,7 @@ function vScripts(){
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=tabs[0][0];
   const SC=T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:(T()==="icbari"?{visao:scICP_ICB,sdr:scSDR_ICB,bot:scBOT_ICB,closer:scCLO_ICB,cs:scCS_ICB}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS});
   M().innerHTML=`
-   <div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(effRole())}</span>`}</div>
+   ${srToggle('scripts')}<div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(effRole())}</span>`}</div>
    <p class="view-sub">${isAdmin()?`Playbook completo da ${BRANDS[T()].name}: ICP, produtos e como conduzir cada etapa.`:"Você acessa o conhecimento da empresa e o playbook do seu papel."}</p>
    <div class="card" style="border:1px solid rgba(201,162,75,.5);background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:26px">🎤</div><div style="flex:1;min-width:200px"><b style="font-size:15px">Roteiro Comercial completo (SDR + Closer)</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">O mesmo roteiro das apresentações — palavra por palavra: ancoragem, silêncios, quebras de objeção e fechamento.</p></div><button class="btn gold sm" onclick="go('roteiro')">Abrir roteiro completo →</button></div></div><div class="flex wrap" style="margin-bottom:14px">${tabs.map(([id,t])=>`<span class="chip ${SCRIPT_TAB===id?'on':''}" onclick="SCRIPT_TAB='${id}';vScripts()">${t}</span>`).join("")}</div>
    <div>${(SC[SCRIPT_TAB]||SC.visao)()}</div>`;
@@ -5258,26 +5286,53 @@ function isFriday(){return new Date().getDay()===5;}
 function pickQuestions(n){const bank=DB.getObj(T(),"quizBank",quizBank()).slice();
   for(let i=bank.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
   return bank.slice(0,n);}
-function vTreino(){
+/* Aula / apostila de estudo — de onde saem as respostas da prova (o conteúdo está no Script & Roteiro). */
+function treinoAula(){
+ if(T()==="icbari")return `
+   <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📚 Aula de estudo — o que cai na prova</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">As perguntas da prova saem <b>daqui</b>. Estude estes pontos (o conteúdo completo, palavra por palavra, está no <b>Script & Roteiro</b>).</p>
+     <div style="font-size:13px;line-height:1.7">
+       <p style="margin:0 0 6px"><b>1) Empresa & missão:</b> ICBARI = Instituto de Cirurgia Bariátrica, Digestiva e Especialidades. Missão: transformar vidas <b>além da balança</b>, com jornada integrada e acompanhamento multidisciplinar (nutri, psico, endócrino). "Aqui ninguém opera e abandona."</p>
+       <p style="margin:0 0 6px"><b>2) A conversão em etapas:</b> contato → <b>consulta</b> → <b>exames</b> → <b>cirurgia</b> → pós-op (1, 2 e 3 meses). O SDR vende a CONSULTA (nunca o preço da cirurgia). A clínica marca todos os exames e a cirurgia.</p>
+       <p style="margin:0 0 6px"><b>3) ICP e planos:</b> Perfil A = plano de <b>cobertura integral</b> (Bradesco, Unimed, INAS, SulAmérica, Porto Seguro, Postal Saúde, CBMDF, PMDF) + critério clínico da linha. <b>Baixo retorno</b> (não paga honorário): Amil, Quality, Unity, MedSênior. <b>NÃO atende: Hapvida</b> (não agenda). O plano decide antes do IMC.</p>
+       <p style="margin:0 0 6px"><b>4) Critério clínico:</b> bariátrica IMC ≥ 35 · vesícula/hérnia/refluxo com exame prévio · diástase IMC < 30 documentada.</p>
+       <p style="margin:0 0 6px"><b>5) Técnica cirúrgica:</b> videolaparoscopia e robótica (menos dor, recuperação mais rápida, cicatrizes menores).</p>
+       <p style="margin:0 0 6px"><b>6) Técnicas de venda:</b> SPIN (Situação, Problema, Implicação, Necessidade), BANT (investimento, autoridade, necessidade, tempo), abertura por origem (anúncio/indicação/retorno-frio).</p>
+       <p style="margin:0"><b>7) Objeções:</b> preço, medo da cirurgia, "vou pensar", convênio, família — sempre acolher, reenquadrar e voltar pra consulta.</p>
+     </div>
+     <button class="btn gold sm mt" onclick="go('scripts')">Abrir o Script & Roteiro completo →</button></div>`;
+ return `
+   <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📚 Aula de estudo — o que cai na prova</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">As perguntas saem daqui. O conteúdo completo está no <b>Script & Roteiro</b>.</p>
+     <ul class="mut" style="font-size:13px;line-height:1.9;padding-left:18px;margin:0">
+       <li><b>Empresa/ICP:</b> missão, personas, público</li>
+       <li><b>Produtos:</b> ${prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
+       <li><b>Diferenciais:</b> ${T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, fee-based":"Sociedade dos 12, O MAPA, networking, High Table"}</li>
+       <li><b>SPIN + BANT</b> · cadência por papel · objeções e fechamento</li></ul>
+     <button class="btn gold sm mt" onclick="go('scripts')">Abrir o Script & Roteiro →</button></div>`;
+}
+function treinoInner(){
   const passed=quizPassedToday();const perf=DB.getObj(T(),"quizHistory",{})[SESSION.name]||[];
-  const sexta=isFriday();
-  M().innerHTML=`
-   <div class="view-title"><h1>Treinamento & Prova ${sexta?'<span class="pill warn">SEXTA · Prova Semanal</span>':'do Dia'}</h1>${passed?'<span class="pill ok">✔ Liberado hoje</span>':'<span class="pill warn">Pendente</span>'}</div>
-   <p class="view-sub">Perguntas <b>aleatórias</b> sobre a empresa, produtos e técnicas. ${sexta?'Prova semanal maior (10 questões).':'Prova diária (4 questões).'} Acerto mínimo 80%. Errou → volta ao treinamento e o gestor é avisado.</p>
-   <div class="grid" style="grid-template-columns:1.4fr 1fr">
+  return `<div class="grid" style="grid-template-columns:1.4fr 1fr">
      <div class="card" id="quizCard"></div>
      <div>
-       <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📚 Base de estudo</h2>
-         <ul class="mut" style="font-size:13px;line-height:1.9;padding-left:18px;margin:0">
-           <li><b>Empresa/ICP:</b> missão, personas, público</li><li><b>Produtos:</b> ${T()==="icbari"?"Consulta de avaliação e Procedimento cirúrgico (vídeo/robótica)":prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
-           <li><b>Diferenciais:</b> ${T()==="icbari"?"jornada conduzida (consulta → exames → cirurgia), marcação dos exames, vídeo/robótica, pós-op 1/2/3 meses":(T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, fee-based":"Sociedade dos 12, O MAPA, networking, High Table")}</li>
-           <li><b>SPIN</b> + Bot de qualificação</li><li><b>Cadência</b> por papel · <b>Objeções</b> e fechamento</li></ul>
-         <button class="btn gold sm mt" onclick="go('scripts')">Abrir o playbook →</button></div>
+       ${treinoAula()}
        <div class="card mt"><h2 style="margin:0 0 8px;font-size:15px">📈 Seu histórico</h2>
          ${perf.length?perf.slice(0,7).map(h=>`<div class="flex between" style="font-size:12.5px;margin:6px 0"><span class="mut">${h.data} ${h.tipo==='semanal'?'· semanal':''}</span><b class="${h.pct>=80?'up':'down'}">${h.pct}%</b></div>`).join(""):'<small class="mut">Sem tentativas.</small>'}</div>
      </div></div>`;
-  if(passed){document.getElementById("quizCard").innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:40px">✅</div><h2 style="margin:8px 0">Prova concluída hoje!</h2><p class="mut">Acesso liberado. Bora vender.</p><button class="btn sm" onclick="startQuiz()">Refazer para treinar</button></div>`;}
+}
+function treinoInitQuiz(){
+  const passed=quizPassedToday();
+  if(passed){var qc=document.getElementById("quizCard");if(qc)qc.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:40px">✅</div><h2 style="margin:8px 0">Prova concluída hoje!</h2><p class="mut">Acesso liberado. Bora vender.</p><button class="btn sm" onclick="startQuiz()">Refazer para treinar</button></div>`;}
   else startQuiz();
+}
+function vTreino(){
+  const sexta=isFriday(),passed=quizPassedToday();
+  M().innerHTML=`
+   <div class="view-title"><h1>Treinamento & Prova ${sexta?'<span class="pill warn">SEXTA · Prova Semanal</span>':'do Dia'}</h1>${passed?'<span class="pill ok">✔ Liberado hoje</span>':'<span class="pill warn">Pendente</span>'}</div>
+   <p class="view-sub">Perguntas <b>aleatórias</b> sobre a empresa, produtos e técnicas. ${sexta?'Prova semanal maior (10 questões).':'Prova diária (4 questões).'} Acerto mínimo 80%. Estude na <b>Aula</b> ao lado. Errou → volta ao treinamento e o gestor é avisado.</p>
+   ${treinoInner()}`;
+  treinoInitQuiz();
 }
 function startQuiz(){quizState={idx:0,answers:[],set:pickQuestions(isFriday()?10:4),sel:null};renderQuiz();}
 function renderQuiz(){
@@ -5310,10 +5365,26 @@ function afterQuiz(){
       ${ok?`<button class="btn sm" onclick="renderSidebar();go('painel')">Começar a operar →</button>`:`<button class="btn sm" onclick="vTreino()">Refazer prova</button>`}</div></div>`;
   renderSidebar();
 }
-function updateBell(){const n=DB.get(T(),"alerts").length;const dot=document.getElementById("bellDot");if(!dot)return;dot.textContent=n;dot.classList.toggle("hidden",n===0);}
-function showAlerts(){const a=DB.get(T(),"alerts");
-  openModal(`<h3>🔔 Alertas do gestor</h3>${a.length?a.map(x=>`<div class="script" style="border-left-color:var(--brand-warn)"><b>⚠️ Treinamento</b><br>${x.txt}<br><small class="mut">${relTime(x.ts)} atrás</small></div>`).join(""):'<p class="mut">Nenhum alerta. 🎉</p>'}
-   ${a.length?`<button class="btn ghost sm mt" onclick="DB.set(T(),'alerts',[]);updateBell();closeModal();toast('Alertas limpos')">Limpar alertas</button>`:""}`);}
+function myActNotifs(){
+ var me=SESSION.sellerId||SESSION.name;var today=new Date().toISOString().slice(0,10);
+ var acts=DB.get(T(),"activities").filter(function(a){return !a.done&&(isAdmin()||a.owner===me);});
+ var leadById={};DB.get(T(),"leads").forEach(function(l){leadById[l.id]=l;});
+ var over=acts.filter(function(a){return a.data&&a.data<today;}).map(function(a){return {a:a,l:leadById[a.leadId]};});
+ var td=acts.filter(function(a){return a.data===today;}).map(function(a){return {a:a,l:leadById[a.leadId]};});
+ return {over:over,today:td};
+}
+function updateBell(){var dot=document.getElementById("bellDot");if(!dot)return;
+ var n=myActNotifs();var cnt=n.over.length+n.today.length+(isAdmin()?DB.get(T(),"alerts").length:0);
+ dot.textContent=cnt;dot.classList.toggle("hidden",cnt===0);}
+function showAlerts(){
+  var n=myActNotifs();var a=isAdmin()?DB.get(T(),"alerts"):[];
+  function row(x,late){var l=x.l||{};return '<div class="script" style="border-left-color:'+(late?'var(--brand-bad)':'var(--brand-ok)')+'"><b>'+(late?'🔴 Atrasada':'🟢 Para hoje')+'</b> · '+esc(x.a.titulo||x.a.tipo||'Atividade')+'<br><small class="mut">'+esc(l.nome||'(lead)')+' · '+esc(x.a.data||'')+'</small></div>';}
+  openModal('<h3>🔔 Notificações</h3>'
+   +(n.over.length?n.over.map(function(x){return row(x,true);}).join(''):'')
+   +(n.today.length?n.today.map(function(x){return row(x,false);}).join(''):'')
+   +(a.length?a.map(function(x){return '<div class="script" style="border-left-color:var(--brand-warn)"><b>⚠️ Treinamento</b><br>'+x.txt+'<br><small class="mut">'+relTime(x.ts)+' atrás</small></div>';}).join(''):'')
+   +((!n.over.length&&!n.today.length&&!a.length)?'<p class="mut">Nada pendente. 🎉</p>':'')
+   +'<div class="flex mt" style="gap:8px"><button class="btn sm" onclick="closeModal();go(\'tarefas\')">Abrir Tarefas / Agenda</button>'+(a.length?'<button class="btn ghost sm" onclick="DB.set(T(),\'alerts\',[]);updateBell();closeModal();toast(\'Alertas limpos\')">Limpar alertas do gestor</button>':'')+'</div>');}
 
 /* ===== PERFORMANCE / METAS / FIDELIDADE / RECORRÊNCIA ===== */
 function vPerf(){
@@ -5356,8 +5427,8 @@ function vMetas(){
        else{const rev=x.realizado*_ticket;com=Math.round(rev*(g.comissaoCloserPct||0)/100);base=x.realizado+" fechados";}
        return `<tr><td><b>${x.nome}</b></td><td>${x.papel}</td><td class="mut">${base}</td><td><b style="color:var(--brand-ok)">${money(com)}</b></td></tr>`;}).join("")}
      </tbody></table></div>
-   <div class="card mt"><h2 style="font-size:15px;margin:0 0 4px">🎖️ Meta de cada pessoa</h2>
-     <p class="mut" style="font-size:12.5px;margin:0 0 10px">Defina a meta e o realizado de cada vendedor. É isto que alimenta a Performance e o Placar de cada um.</p>
+   ${isAdmin()?`<div class="card mt"><h2 style="font-size:15px;margin:0 0 4px">🎖️ Meta de cada pessoa</h2>
+     <p class="mut" style="font-size:12.5px;margin:0 0 10px">Defina a meta e o realizado de cada vendedor. É isto que alimenta a Performance e o Placar de cada um. <b>Só gestores editam.</b></p>
      <table><thead><tr><th>Pessoa</th><th>Papel</th><th>Meta</th><th>Realizado</th></tr></thead><tbody>
      ${s.map(function(x){return `<tr><td><b>${esc(x.nome)}</b></td><td class="mut">${x.papel}</td>
        <td><input class="in" type="number" style="width:90px" id="sm_${x.id}" value="${x.meta||0}"></td>
@@ -5372,7 +5443,7 @@ function vMetas(){
        <div><label class="fl">Comissão SDR</label><input class="in" type="number" id="g_sdr" value="${g.comissaoSDR||''}"></div>
        <div><label class="fl">% ${lx('closerRole')}</label><input class="in" type="number" id="g_clo" value="${g.comissaoCloserPct||''}"></div>
        <div><label class="fl">Comissão CS</label><input class="in" type="number" id="g_cs" value="${g.comissaoCS||80}"></div></div>
-     <button class="btn sm mt" onclick="saveGoals()">Salvar</button></div>`;
+     <button class="btn sm mt" onclick="saveGoals()">Salvar</button></div>`:`<div class="card mt"><p class="mut" style="font-size:12.5px;margin:0">🎯 Sua meta é definida pelo gestor. Acompanhe seu progresso no <b>Meu Placar</b> e na <b>Performance</b>.</p></div>`}`;
 }
 function saveGoals(){DB.set(T(),"goals",{fatMeta:+g_fat.value,fatReal:+g_real.value,projecao:+g_proj.value,metaMembros:+g_mem.value,comissaoSDR:+g_sdr.value,comissaoCloserPct:+g_clo.value,comissaoCS:+g_cs.value});toast("Metas salvas");vMetas();}
 function saveSellerMetas(){var s=DB.get(T(),"sellers");s.forEach(function(x){var m=document.getElementById("sm_"+x.id),r=document.getElementById("sr_"+x.id);if(m)x.meta=+m.value||0;if(r)x.realizado=+r.value||0;});DB.set(T(),"sellers",s);toast("Metas do time salvas");vMetas();}
