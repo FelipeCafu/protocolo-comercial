@@ -4233,8 +4233,8 @@ const ACAD_AGENDA=[
 ];
 function acadHeader(){
  return `<div class="view-title"><h1>Academia & Treino</h1><span class="pill pri">Aprendizado contínuo</span></div>
- <p class="view-sub">Onde o time aprende: a <b>trilha de vídeos</b> do seu papel, a <b>matriz de objeções</b>, os seus <b>compromissos</b> de evolução e o <b>treinamento & prova</b> do dia.</p>
- <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"],["treino","📝 Treinamento & Prova"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
+ <p class="view-sub">Onde o time aprende: a <b>trilha de vídeos</b> do seu papel, a <b>matriz de objeções</b>, os seus <b>compromissos</b>, o <b>material de estudo</b> e o <b>treinamento & prova</b> do dia.</p>
+ <div class="flex wrap" style="margin-bottom:14px">${[["videos","🎬 Trilha de Vídeos"],["objecoes","🛡️ Matriz de Objeções"],["compromisso","✅ Compromissos"],["material","📚 Material de Estudo"],["treino","📝 Treinamento & Prova"]].map(([id,t])=>`<span class="chip ${ACAD_TAB===id?'on':''}" onclick="ACAD_TAB='${id}';vAcademy()">${t}</span>`).join("")}</div>`;
 }
 function acadAgenda(){
  return `<div class="card"><h2 style="margin:0 0 4px;font-size:15px">Roteiro do treinamento</h2>
@@ -4799,9 +4799,10 @@ function acadCompromisso(){
  </div>`:""}`;
 }
 function vAcademy(){
- /* Academia enxuta unificada: Trilha de Vídeos + Matriz de Objeções + Compromissos + Treinamento & Prova */
- if(["videos","objecoes","compromisso","treino"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
+ /* Academia enxuta unificada: Vídeos + Objeções + Compromissos + Material de Estudo + Treinamento & Prova */
+ if(["videos","objecoes","compromisso","material","treino"].indexOf(ACAD_TAB)<0)ACAD_TAB="videos";
  if(ACAD_TAB==="treino"){M().innerHTML=acadHeader()+treinoInner();treinoInitQuiz();return;}
+ if(ACAD_TAB==="material"){M().innerHTML=acadHeader()+treinoApostila();return;}
  M().innerHTML=acadHeader()+({videos:acadVideos,objecoes:acadObjecoes,compromisso:acadCompromisso}[ACAD_TAB]||acadVideos)();
 }
 function acadVideos(){
@@ -5438,9 +5439,23 @@ function scCS_B2(){return `
 /* ===== TREINAMENTO ===== */
 let quizState={idx:0,answers:[],set:[]};
 function isFriday(){return new Date().getDay()===5;}
-function pickQuestions(n){const bank=DB.getObj(T(),"quizBank",quizBank()).slice();
+function quizBankDefault(){return T()==="icbari"?quizBankIcb():(T()==="b2if"?quizBankB2():quizBank());}
+function quizBankFor(){return DB.getObj(T(),"quizBank",quizBankDefault());}
+function pickQuestions(n){const bank=quizBankFor().slice();
   for(let i=bank.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
   return bank.slice(0,n);}
+/* Apostila de estudo gerada do próprio banco de provas — contém TODAS as respostas que caem. */
+function treinoApostila(){
+  var bank=quizBankFor();var tags={};bank.forEach(function(q){(tags[q.tag]=tags[q.tag]||[]).push(q);});
+  var lbl={empresa:"🏢 A empresa & o ICP",produto:"📦 Produtos, planos e valores",spin:"🧭 SPIN & condução",bant:"✅ Qualificação (BANT/PDMAF)",objecao:"🛡️ Quebra de objeções",objeção:"🛡️ Quebra de objeções",jornada:"🗺️ Jornada do cliente",cadencia:"📞 Prospecção & cadência",cadência:"📞 Prospecção & cadência",processo:"⚙️ Processo & CRM",tecnica:"🎯 Técnica de vendas",perfil:"🎯 Perfil do lead / ICP",clinica:"🏥 A clínica"};
+  var out='<div class="card" style="border-left:3px solid var(--brand-ok)"><h2 style="margin:0 0 6px;font-size:16px">📚 Material de estudo (apostila)</h2><p class="mut" style="font-size:13px;margin:0">Estude por aqui: são <b>exatamente</b> os temas e as respostas que caem na prova. Cada ponto é uma pergunta da prova com a <b>resposta certa</b>. Quem estuda isto, passa. O conteúdo completo (o que falar) está no <b>Script & Roteiro</b>.</p>'+
+    '<div class="flex" style="gap:8px;margin-top:10px"><button class="btn ghost sm" onclick="go(\'scripts\')">Abrir Script & Roteiro →</button><span class="mut" style="font-size:12px;align-self:center">'+bank.length+' pontos de estudo</span></div></div>';
+  Object.keys(tags).forEach(function(tg){
+    out+='<div class="card"><h3 style="margin:0 0 10px;font-size:14px">'+(lbl[tg]||('📌 '+tg))+' <span class="mut" style="font-weight:400">· '+tags[tg].length+'</span></h3><ol style="font-size:13px;line-height:1.6;margin:0;padding-left:20px">'+
+      tags[tg].map(function(q){return '<li style="margin-bottom:9px">'+esc(q.q)+'<br><span style="color:var(--brand-ok);font-weight:600">✔ '+esc(q.a[q.c])+'</span></li>';}).join('')+'</ol></div>';
+  });
+  return out;
+}
 /* Aula / apostila de estudo — de onde saem as respostas da prova (o conteúdo está no Script & Roteiro). */
 function treinoAula(){
  if(T()==="icbari")return `
@@ -5455,7 +5470,7 @@ function treinoAula(){
        <p style="margin:0 0 6px"><b>6) Técnicas de venda:</b> SPIN (Situação, Problema, Implicação, Necessidade), BANT (investimento, autoridade, necessidade, tempo), abertura por origem (anúncio/indicação/retorno-frio).</p>
        <p style="margin:0"><b>7) Objeções:</b> preço, medo da cirurgia, "vou pensar", convênio, família — sempre acolher, reenquadrar e voltar pra consulta.</p>
      </div>
-     <button class="btn gold sm mt" onclick="go('scripts')">Abrir o Script & Roteiro completo →</button></div>`;
+     <div class="flex" style="gap:8px;margin-top:12px"><button class="btn gold sm" onclick="ACAD_TAB='material';go('academy')">📚 Material de estudo completo →</button><button class="btn ghost sm" onclick="go('scripts')">Script & Roteiro →</button></div></div>`;
  return `
    <div class="card"><h2 style="margin:0 0 8px;font-size:15px">📚 Aula de estudo — o que cai na prova</h2>
      <p class="mut" style="font-size:12.5px;margin:0 0 10px">As perguntas saem daqui. O conteúdo completo está no <b>Script & Roteiro</b>.</p>
@@ -5464,7 +5479,7 @@ function treinoAula(){
        <li><b>Produtos:</b> ${prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
        <li><b>Diferenciais:</b> ${T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, sem comissão de produto (sem conflito de interesse)":"Sociedade dos 12, O MAPA, networking, High Table"}</li>
        <li><b>SPIN + BANT</b> · cadência por papel · objeções e fechamento</li></ul>
-     <button class="btn gold sm mt" onclick="go('scripts')">Abrir o Script & Roteiro →</button></div>`;
+     <div class="flex" style="gap:8px;margin-top:12px"><button class="btn gold sm" onclick="ACAD_TAB='material';go('academy')">📚 Material de estudo completo →</button><button class="btn ghost sm" onclick="go('scripts')">Script & Roteiro →</button></div></div>`;
 }
 function treinoInner(){
   const passed=quizPassedToday();const perf=DB.getObj(T(),"quizHistory",{})[SESSION.name]||[];
