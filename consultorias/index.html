@@ -633,6 +633,7 @@ const USERS={
   "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
   "bruna.b2":  {pass:"brunab2",   role:"sdr",   tenant:"b2if",name:"Bruna (SDR)",           initials:"BR",sellerId:"bruna"},
   "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Closer)", initials:"ME",sellerId:"melissab2"},
+  "planejador.b2":{pass:"velo2026", role:"planejador",tenant:"b2if",name:"Planejador (a definir)",initials:"PL",sellerId:"planb2"},
   /* ===== ICBARI — Clínica (cirurgia digestiva/bariátrica) ===== */
   icbari:       {pass:"1234",           role:"gestor", tenant:"icbari",name:"ICBARI (Clínica)",         initials:"IC"},
   "pedro.icb":  {pass:"pedroicbari",    role:"gestor", tenant:"icbari",name:"Dr. Pedro (Gestor)",       initials:"DP"},
@@ -672,7 +673,7 @@ function previewAs(role){
   var b=document.getElementById('bellBtn');if(b)b.classList.remove('hidden');
   var un=document.getElementById('uName');if(un)un.textContent=SESSION.name;
   renderSidebar();try{updateBell();}catch(e){}
-  go(["sdr","closer","cs"].includes(SESSION.role)?'meudia':'painel');
+  go(["sdr","closer","cs","planejador"].includes(SESSION.role)?'meudia':'painel');
 }
 const DB={
   key(t,c){return `pc.${t}.${c}`},
@@ -1636,10 +1637,13 @@ const FUNNELS_B2=[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
    {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
    {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"Falta / Remarcar",sla:12}]},
- {id:"closer",name:"Planejamento (Closer)",papel:"Closer",stages:[
+ {id:"closer",name:"Fechamento (Closer)",papel:"Closer",stages:[
    {id:"reuniao",name:"Sessão Realizada (R0)",sla:24},{id:"apresent",name:"Diagnóstico Apresentado",sla:48},
    {id:"proposta",name:"Proposta do Plano",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
    {id:"ganho",name:"Cliente (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
+ {id:"planejador",name:"Planejamento (Planejador)",papel:"Planejador",stages:[
+   {id:"recebido",name:"Recebido do Closer",sla:24},{id:"planejando",name:"Em planejamento",sla:48},
+   {id:"entregue",name:"Plano entregue",sla:48},{id:"concluido",name:"Concluído",sla:0}]},
  {id:"cs",name:"Onboarding & Acompanhamento (CS)",papel:"CS",stages:[
    {id:"onboarding",name:"Onboarding (R1–R4)",sla:48},{id:"ativado",name:"Ativado",sla:0},
    {id:"recorrente",name:"Recorrente",sla:0},{id:"risco",name:"Em Risco",sla:24},{id:"churn",name:"Churn",sla:0}]}
@@ -1658,6 +1662,7 @@ function seedB2(){
   DB.set(t,"sellers",[
    {id:"bruna",nome:"Bruna",papel:"SDR",meta:45,realizado:0,foto:"BR"},
    {id:"melissab2",nome:"Melissa",papel:"Closer",meta:14,realizado:0,foto:"ME"},
+   {id:"planb2",nome:"Planejador (a definir)",papel:"Planejador",meta:0,realizado:0,foto:"PL"},
    {id:"camila",nome:"CS / Pós-venda (a definir)",papel:"CS",meta:35,realizado:0,foto:"CS"}
   ]);
   const now=Date.now(),d=864e5,h=36e5;
@@ -1742,7 +1747,8 @@ function cadencesB2(){
   {dia:60,toques:[{h:"11:00",canal:"ligação",cond:"Check-in 60 dias + NPS",texto:"Revisar hábitos, medir NPS e identificar upsell (Essencial → Wealth)."}]},
   {dia:12,toques:[{h:"—",canal:"msg",cond:"Recorrente",texto:"A partir daqui: acompanhamento mensal (Café Consigo) + revisão de metas."}]}
  ];
- return {sdr,closer,cs};
+ const planejador=[{dia:0,toques:[{h:"—",canal:"msg",cond:"A definir",texto:"O fluxo do Planejador ainda vai ser definido. Por enquanto, acompanhe os planos em execução pelo CRM (funil Planejamento)."}]}];
+ return {sdr,closer,planejador,cs};
 }
 function quizBankB2(){return [
  {tag:"empresa",q:"O que a B2 Inteligência Financeira faz?",a:["Vende ações e cripto","Guia o cliente numa jornada de planejamento financeiro pessoal (do endividamento à liberdade)","É um banco","Dá dicas de day trade"],c:1},
@@ -2071,9 +2077,9 @@ function activeNav(){
   if(dualRole()&&VIEW_AS==='gestor')return NAV_GESTOR_DUAL; /* Daher/Cláudia vendo como gestor (enxuto) */
   if(SESSION&&SESSION.role==="cs"&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB_CS;
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
-  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
-  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role)&&CURRENT_TENANT==="b2if")return NAV_SELLER_B2;
-  if(SESSION&&["sdr","closer","cs"].includes(SESSION.role))return NAV_SELLER;
+  if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
+  if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role)&&CURRENT_TENANT==="b2if")return NAV_SELLER_B2;
+  if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role))return NAV_SELLER;
   if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
 }
@@ -2086,7 +2092,7 @@ function openTenant(tenant){
   document.getElementById("searchWrap").style.visibility="visible";
   document.getElementById("bellBtn").classList.remove("hidden"); /* sininho pra TODOS (atividades atrasadas/hoje) */
   document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
-  renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs"].includes(SESSION.role)?"meudia":"painel"));
+  renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs","planejador"].includes(SESSION.role)?"meudia":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
 }
 const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
@@ -2095,8 +2101,9 @@ function renderSidebar(){
   if(SESSION.role==="consultor")html+=`<div class="nav-item" onclick="openConsultoria()"><span class="ic">←</span> Todas as empresas</div>`;
   if(canPreview()){
     var _cur=previewingRole()||'self';
-    var _cl=(CURRENT_TENANT==='b2if')?'Closer':'Closer';
-    var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 '+_cl],['cs','💚 CS']];
+    var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 Closer']];
+    if(CURRENT_TENANT==='b2if')_opts.push(['planejador','🧭 Planejador']);
+    _opts.push(['cs','💚 CS']);
     html+='<div style="padding:9px 9px 7px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));margin-bottom:6px"><div class="mut" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px">👁️ Ver como</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_opts.map(function(o){return '<button class="btn '+(_cur===o[0]?'':'ghost')+' xs" style="padding:5px 8px;font-size:11px" onclick="previewAs(\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div>'+(_cur!=='self'?'<div class="mut" style="font-size:10.5px;margin:6px 2px 0">Você está vendo como <b>'+roleLabel(_cur==='gestor'?'gestor':_cur)+'</b>. Clique em <b>Eu</b> pra voltar.</div>':'')+'</div>';
   }
   activeNav().forEach(n=>{
@@ -2107,7 +2114,7 @@ function renderSidebar(){
     let badge="";
     if(n.id==="crm")badge=`<span class="badge">${DB.get(CURRENT_TENANT,"leads").length}</span>`;
     if(n.id==="tarefas"){const c=taskCount();if(c)badge=`<span class="badge">${c}</span>`;}
-    if(n.id==="academy"&&!quizPassedToday()&&["sdr","closer","cs"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
+    if(n.id==="academy"&&!quizPassedToday()&&["sdr","closer","cs","planejador"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
     var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
     html+=`<div class="nav-item ${_av===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
   });
@@ -2152,7 +2159,7 @@ function firstSteps(){
   return"";
   if(!["consultor","gestor"].includes(SESSION.role))return"";
   const t=CURRENT_TENANT;if(!t)return"";
-  const team=(typeof accList==='function'?accList():[]).filter(a=>a.tenant===t&&["sdr","closer","cs"].includes(a.role));
+  const team=(typeof accList==='function'?accList():[]).filter(a=>a.tenant===t&&["sdr","closer","cs","planejador"].includes(a.role));
   const leads=DB.get(t,"leads");
   const s1=team.length>0,s2=leads.length>0;
   if(s1&&s2)return"";
@@ -2328,7 +2335,7 @@ function vExec(){
 /* ===== CRM & FUNIS ===== */
 function vCRM(){
   var allF=DB.getObj(T(),"funnels",FUNNELS);
-  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS"}[effRole()];/* B2: closer = "Closer" */
+  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
@@ -3118,7 +3125,7 @@ function delFunnel(fid){const fs=DB.getObj(T(),"funnels",FUNNELS);if(fs.length<=
 const ATYPE_IC={ligação:"📞",visita:"📍",wa:"🟢",reuniao:"🤝",email:"✉️",msg:"💬",insta:"📸",alarme:"⏰"};
 function myActivities(){
   let acts=DB.get(T(),"activities").filter(a=>!a.done);
-  if(["sdr","closer","cs"].includes(SESSION.role)&&SESSION.sellerId)acts=acts.filter(a=>a.owner===SESSION.sellerId);
+  if(["sdr","closer","cs","planejador"].includes(SESSION.role)&&SESSION.sellerId)acts=acts.filter(a=>a.owner===SESSION.sellerId);
   return acts;
 }
 function taskCount(){const t=new Date().toISOString().slice(0,10);return myActivities().filter(a=>a.data<=t).length;}
@@ -3153,7 +3160,7 @@ function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();
 function cadCopy(di,ti){var c=(DB.getObj(T(),"cadences",defaultCadences())[CAD_ROLE]||[]);var t=(((c[di]||{}).toques||[])[ti]||{});if(t.texto){try{navigator.clipboard.writeText(t.texto);toast('Mensagem copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}}
 function vProspec(){
   const cads=DB.getObj(T(),"cadences",defaultCadences());
-  const allRoles=[["sdr","🎯 SDR"],["closer","🤝 "+lx('closerRole')],["cs","💚 CS"]];
+  const allRoles=[["sdr","🎯 SDR"],["closer","🤝 "+lx('closerRole')],["planejador","🧭 Planejador"],["cs","💚 CS"]];
   const roles=isAdmin()?allRoles:allRoles.filter(r=>r[0]===effRole());
   if(!roles.find(r=>r[0]===CAD_ROLE))CAD_ROLE=roles[0][0];
   const cad=cads[CAD_ROLE]||[];
