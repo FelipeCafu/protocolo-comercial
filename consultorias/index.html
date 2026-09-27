@@ -3171,7 +3171,7 @@ function saveTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());c[
 
 /* ===== SCRIPTS (restrição por papel) ===== */
 function scriptTabsFor(){
-  const noBot=T()==="lideres"||T()==="icbari"; /* Líderes e ICBARI não usam bot (perguntas do bot foram pro script) */
+  const noBot=true; /* nenhuma empresa usa mais bot (as perguntas do bot foram pro script) */
   const all=[["visao","🧭 ICP & Empresa"],["sdr","🎯 SDR — Qualificação"]];
   if(!noBot)all.push(["bot","🤖 Bot de Qualificação"]);
   all.push(["closer","🤝 "+lx("closerRole")+" — Fechamento"],["cs","💚 CS — Pós-venda"]);
@@ -4577,8 +4577,32 @@ function rSub(t){if(!t)return t;var L=ROTEIRO_LEAD||{};var c=L.contato||{};var f
  return String(t).replace(/\{([^}]+)\}/g,function(m,k){var v=map[k.toUpperCase()];return (v!==undefined&&v!=='')?v:m;});}
 function srToggle(active){return '<div class="flex" style="gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="btn '+(active==="scripts"?"gold":"ghost")+' sm" onclick="go(\'scripts\')">📖 Script de Vendas</button><button class="btn '+(active==="roteiro"?"gold":"ghost")+' sm" onclick="go(\'roteiro\')">🎤 Roteiro Comercial</button></div>';}
 function roteiroData(){return (T()==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")?ROTEIRO_ICBARI:ROTEIRO_LIDERES;}
-/* array de slides do roteiro, considerando a ORIGEM do lead (ICBARI · SDR) */
-function roteiroArr(tab){if(T()==="icbari"&&tab==="sdr"&&typeof ROTEIRO_ICB_SDR==="function")return ROTEIRO_ICB_SDR(ICB_ORIG);return roteiroData()[tab]||[];}
+/* array de slides do roteiro, considerando a ORIGEM do lead */
+var ROT_ORIG_AB={
+ lideres:{
+  anuncio:'**Abertura (anúncio / inbound):**\n"Olá {NOME}, tudo bem? Aqui é {SDR}, do Líderes do Brasil. Vi que você se interessou pela gente. **Prometo ser rápido, mais rápido que o tempo de você desligar.** Deixa eu te conhecer melhor, posso?"',
+  indicacao:'**Abertura (indicação):**\n"Olá {NOME}, tudo bem? Aqui é {SDR}, do Líderes do Brasil. Quem me falou de você foi o {INDICADOR}, disse que você manda muito bem. Prometo ser rápido. Deixa eu te conhecer melhor, posso?"',
+  retorno:'**Reconectar (retorno / repescagem — lead frio):**\n"Olá {NOME}, aqui é {SDR}, do Líderes do Brasil. A gente já tinha se cruzado num evento/conversa um tempo atrás. Tô te ligando com carinho só pra saber **como está o seu negócio hoje**. Tem um minutinho?"\n\n**Descobrir o que travou:** "Na época a gente não avançou. Só pra te entender: o que fez você segurar, foi o momento, a agenda, ou faltou eu te mostrar o valor da comunidade?"'
+ },
+ b2if:{
+  anuncio:'**Abertura (anúncio / inbound):**\n"Olá {NOME}, tudo bem? Aqui é {SDR}, da B2 Inteligência Financeira. Vi que você se interessou pela gente. Prometo ser rápido. Deixa eu te entender pra já te dar um norte, posso?"',
+  indicacao:'**Abertura (indicação):**\n"Olá {NOME}! Aqui é {SDR}, da B2. Quem me passou seu contato foi o {INDICADOR}, falou que você ia curtir organizar melhor a vida financeira. Prometo ser rápido. Deixa eu te entender?"',
+  retorno:'**Reconectar (retorno / repescagem — lead frio):**\n"Olá {NOME}, aqui é {SDR}, da B2 Inteligência Financeira. A gente já tinha se falado um tempo atrás. Tô te ligando só pra saber **como está a sua vida financeira hoje**. Tem um minutinho?"\n\n**Descobrir o que travou:** "Na época a gente não fez a Sessão. O que fez você segurar, foi o momento, a agenda, ou faltou eu explicar direito como funciona?"'
+ }
+};
+function roteiroWithOrigin(base){
+ var O=ICB_ORIG||"anuncio";var map=ROT_ORIG_AB[T()];if(!map)return base;
+ var arr=base.map(function(s){return Object.assign({},s);});
+ var idx=arr.findIndex(function(s){return /Abertura|Introdu/i.test(s.t||"");});if(idx<0)idx=(arr.length>1?1:0);
+ if(arr[idx]){arr[idx]=Object.assign({},arr[idx],{s:map[O]||map.anuncio, title:(O==="retorno"?"Reconectar (lead frio)":arr[idx].title)});}
+ return arr;
+}
+function roteiroArr(tab){
+ if(T()==="icbari"&&tab==="sdr"&&typeof ROTEIRO_ICB_SDR==="function")return ROTEIRO_ICB_SDR(ICB_ORIG);
+ var base=roteiroData()[tab]||[];
+ if((T()==="lideres"||T()==="b2if")&&tab==="sdr")return roteiroWithOrigin(base);
+ return base;
+}
 function roteiroCopy(n){var arr=roteiroArr(ROTEIRO_TAB);var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
 function vRoteiro(){
  var allowed=isAdmin()?['sdr','closer']:myRoles().filter(function(r){return r==='sdr'||r==='closer';});
@@ -4606,7 +4630,7 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
   +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
   +'</div>'
-  +((T()==="icbari"&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
+  +((["icbari","lideres","b2if"].includes(T())&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
   +cards;
 }
 function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
@@ -4906,19 +4930,29 @@ function scBOT(){return `
  <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
    <p class="mut" style="font-size:13px">Score <b>≥ 60</b> → agenda direto com Closer (lead quente). <b>30–59</b> → SDR nutre e qualifica. <b>&lt; 30 ou não-dono</b> → nutrição/conteúdo + pedir indicação. Tudo cai no CRM com temperatura e score.</p></div>`;
 }
-function scSDR(){return `
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Qualificar & agendar — NÃO fechar</span></div>
+function scSDR(){
+ var O=ICB_ORIG||"anuncio";
+ var AB={
+  anuncio:{h:"Abertura — 📩 Anúncio / Inbound",nota:"Chegou por anúncio, conteúdo ou inscrição num evento. Já emende na pergunta, sem pedir 'pode falar?'.",
+    linhas:['"Oi <b>[nome]</b>, aqui é o/a [SDR] do Líderes do Brasil. Vi que você se interessou pela gente ([anúncio / baixou material / se inscreveu no encontro]). Prometo ser rápido, nem um cafezinho de tempo. Deixa eu já te entender melhor…"']},
+  indicacao:{h:"Abertura — 🤝 Indicação (a mais quente)",nota:"Use o nome de quem indicou, é a que mais converte. Já emende na pergunta.",
+    linhas:['"Oi <b>[nome]</b>! Aqui é o/a [SDR] do Líderes do Brasil. Quem me falou de você foi o <b>[indicador]</b>, disse que você manda muito bem no <b>[ramo]</b>. Prometo ser rápido, nem um cafezinho de tempo. Deixa eu já te entender melhor…"']},
+  retorno:{h:"Reconectar — 📞 Retorno / Repescagem (frio)",nota:"Lead frio: já conversou com a gente ou demonstrou interesse e não avançou. Reabra leve, sem cobrar.",
+    linhas:['<b>Reconectar:</b> "Oi <b>[nome]</b>, aqui é o/a [SDR] do Líderes do Brasil. A gente já tinha se falado (ou você demonstrou interesse num encontro nosso) um tempo atrás. Tô te ligando com carinho só pra saber como está o seu negócio hoje. Tem um minutinho?"',
+      '<b>Descobrir o que travou:</b> "Na época a gente não chegou a marcar a reunião. Só pra te entender: o que fez você segurar? Foi o momento, a agenda, ou faltou eu te mostrar direito o valor da comunidade?"',
+      '<b>Reacender:</b> "Muita coisa evoluiu na comunidade (mais donos, mais negócios fechados). Que tal a gente retomar do ponto onde você parou?"']}
+ }[O];
+ var step1='<div class="step" data-n="1"><h3>'+AB.h+'</h3><p class="mut" style="font-size:12.5px;margin:0 0 8px">'+AB.nota+'</p>'+AB.linhas.map(function(l){return '<div class="script">'+l+'</div>';}).join("")+'<span class="go">↓ EMENDE DIRETO NO PASSO 2 (não espere "pode falar?")</span></div>';
+ return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 SCRIPT DO SDR — siga de cima para baixo</h2><span class="pill pri">Qualificar & agendar — NÃO fechar</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>conduz com perguntas</b> (fale 30%, ouça 70%), vende a <b>REUNIÃO</b> (nunca o preço) e <b>anota tudo no CRM</b>. É um fluxo só: cada passo emenda no próximo, sem pular etapas.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conexões/dia</div></div><div><div style="font-size:19px;font-weight:800">2-3</div><div class="eyebrow mut">reuniões/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
 
+ ${icbOrigChips(O)}
+
  <div class="card mt"><div class="rot">
 
-   <div class="step" data-n="1"><h3>Abertura (leve, sem pedir permissão)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Escolha pela origem. Prometa que é rápido e <b>já emende</b> na pergunta — não fique perguntando "pode falar?".</p>
-     <div class="script"><b>🤝 Indicação (a mais quente):</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] do Líderes do Brasil. Quem me falou de você foi o <b>[indicador]</b> — disse que você manda muito bem no <b>[ramo]</b>. Prometo ser rápido, nem um cafezinho de tempo. Deixa eu já te entender melhor…"</div>
-     <div class="script"><b>📩 Inbound:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] do Líderes do Brasil. Vi que você [baixou X / se inscreveu no encontro] — então já aproveito e te explico rapidinho, sem enrolação. Me conta uma coisa…"</div>
-     <div class="script"><b>❄️ Outbound frio:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] do Líderes do Brasil, a maior comunidade de empresários de Brasília. Vou ser bem direto pra respeitar seu tempo — deixa eu te fazer uma pergunta…"</div>
-     <span class="go">↓ EMENDE DIRETO NO PASSO 2 (não espere "pode falar?")</span></div>
+   ${step1}
 
    <div class="step" data-n="2"><h3>Pré-qualificação (perguntas encadeadas)</h3>
      <p class="mut" style="font-size:12.5px;margin:0 0 8px">Vá perguntando de leve, uma emendando na outra:</p>
@@ -5120,18 +5154,28 @@ function scBOT_B2(){return `
  <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
    <p class="mut" style="font-size:13px">Score <b>≥ 60</b> → agenda direto a Sessão Estratégica com o <b>Planejador</b> (lead quente). <b>30–59</b> → <b>SDR</b> nutre e qualifica. <b>&lt; 30</b> → nutrição/conteúdo (organização financeira) + reabordar. Tudo cai no CRM com temperatura, score e objetivo marcado.</p></div>`;
 }
-function scSDR_B2(){return `
- <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 ROTEIRO DO SDR — siga de cima para baixo</h2><span class="pill pri">Qualificar & agendar a Sessão Estratégica — NÃO fechar</span></div>
+function scSDR_B2(){
+ var O=ICB_ORIG||"anuncio";
+ var AB={
+  anuncio:{h:"Abertura — 📩 Anúncio / Inbound",nota:"Chegou por anúncio, quiz financeiro ou material. Já emende na pergunta.",
+    linhas:['"Oi <b>[nome]</b>, aqui é o/a [SDR] da B2 Inteligência Financeira. Vi que você se interessou pela gente ([anúncio / baixou material / respondeu o quiz financeiro]). Prometo ser rápido. Deixa eu te entender melhor pra já te dar um norte…"']},
+  indicacao:{h:"Abertura — 🤝 Indicação",nota:"Use o nome de quem indicou. Já emende na pergunta.",
+    linhas:['"Oi <b>[nome]</b>! Aqui é o/a [SDR] da B2 Inteligência Financeira. Quem me passou seu contato foi o <b>[indicador]</b>, falou que você ia curtir organizar melhor a vida financeira. Prometo ser rápido. Deixa eu te entender…"']},
+  retorno:{h:"Reconectar — 📞 Retorno / Repescagem (frio)",nota:"Lead frio: já falou com a gente ou demonstrou interesse e não avançou. Reabra leve, sem cobrar.",
+    linhas:['<b>Reconectar:</b> "Oi <b>[nome]</b>, aqui é o/a [SDR] da B2 Inteligência Financeira. A gente já tinha se falado (ou você demonstrou interesse) um tempo atrás. Tô te ligando com carinho só pra saber como está a sua vida financeira hoje. Tem um minutinho?"',
+      '<b>Descobrir o que travou:</b> "Na época a gente não chegou a fazer a Sessão. Só pra te entender: o que fez você segurar? Foi o momento, a agenda, ou faltou eu te mostrar direito como funciona?"',
+      '<b>Reacender:</b> "Se hoje o dinheiro ainda te preocupa, talvez seja a hora de finalmente organizar com método. Que tal a gente retomar do ponto onde parou?"']}
+ }[O];
+ var step1='<div class="step" data-n="1"><h3>'+AB.h+'</h3><p class="mut" style="font-size:12.5px;margin:0 0 8px">'+AB.nota+'</p>'+AB.linhas.map(function(l){return '<div class="script">'+l+'</div>';}).join("")+'<span class="go">↓ EMENDE DIRETO NO PASSO 2</span></div>';
+ return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 SCRIPT DO SDR — siga de cima para baixo</h2><span class="pill pri">Qualificar & agendar a Sessão Estratégica — NÃO fechar</span></div>
    <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>conduz com perguntas</b> (fale 30%, ouça 70%), vende a <b>SESSÃO ESTRATÉGICA gratuita</b> (nunca o plano/preço) e <b>anota tudo no CRM</b>. É um fluxo só: cada passo emenda no próximo.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conexões/dia</div></div><div><div style="font-size:19px;font-weight:800">2-3</div><div class="eyebrow mut">sessões agendadas/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">no-show alvo</div></div></div></div>
 
+ ${icbOrigChips(O)}
+
  <div class="card mt"><div class="rot">
-   <div class="step" data-n="1"><h3>Abertura (leve, sem pedir permissão)</h3>
-     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Escolha pela origem. Prometa que é rápido e <b>já emende</b> na pergunta.</p>
-     <div class="script"><b>🤝 Indicação:</b><br>"Oi <b>[nome]</b>! Aqui é o/a [SDR] da B2 Inteligência Financeira. Quem me passou seu contato foi o <b>[indicador]</b> — falou que você ia curtir organizar melhor a vida financeira. Prometo ser rápido. Deixa eu te entender…"</div>
-     <div class="script"><b>📩 Inbound:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] da B2. Vi que você [baixou X / respondeu nosso quiz financeiro] — então já aproveito e te explico rapidinho como a gente pode te dar um norte. Me conta uma coisa…"</div>
-     <div class="script"><b>❄️ Outbound frio:</b><br>"Oi <b>[nome]</b>, aqui é o/a [SDR] da B2 Inteligência Financeira. A gente ajuda pessoas a saírem do aperto e construírem liberdade financeira com método. Vou ser bem direto pra respeitar seu tempo…"</div>
-     <span class="go">↓ EMENDE DIRETO NO PASSO 2</span></div>
+   ${step1}
 
    <div class="step" data-n="2"><h3>Pré-qualificação (perguntas encadeadas)</h3>
      <p class="mut" style="font-size:12.5px;margin:0 0 8px">Vá perguntando de leve, uma emendando na outra:</p>
