@@ -650,6 +650,30 @@ function effRole(){return (dualRole()&&VIEW_AS==='closer')?'closer':((SESSION&&S
 const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role)&&!(dualRole()&&VIEW_AS==='closer');
 const myRoles=()=>(dualRole()&&VIEW_AS==='closer')?['closer']:((SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""]);
 function setViewAs(m){VIEW_AS=m;renderSidebar();go(m==='closer'?'meudia':'painel');}
+/* ===== "Ver como" — Felipe/gestor inspeciona o ambiente como Gestor/SDR/Closer/CS sem trocar senha ===== */
+let REAL_SESSION=null;
+function canPreview(){var s=REAL_SESSION||SESSION;return !!(s&&["consultor","gestor","ceo"].includes(s.role));}
+function previewingRole(){return REAL_SESSION?(SESSION.role):null;} /* null = você mesmo */
+function sellerHasPapel(id,pap){var s=DB.get(CURRENT_TENANT,"sellers").find(function(x){return x.id===id;});return !!(s&&(s.papel||'').toLowerCase()===pap);}
+function firstSellerOf(pap){var s=DB.get(CURRENT_TENANT,"sellers").find(function(x){return (x.papel||'').toLowerCase()===pap;});return s?s.id:null;}
+function previewAs(role){
+  var real=REAL_SESSION||SESSION;var nm=((real.name||'Você').split(' ')[0])||'Você';
+  if(role==='self'){SESSION=real;REAL_SESSION=null;}
+  else{
+    REAL_SESSION=real;
+    if(role==='gestor'){SESSION={tenant:CURRENT_TENANT,role:'gestor',roles:['gestor'],name:nm+' · ver como Gestor',initials:'VG'};}
+    else{
+      var papel=(role==='closer'&&CURRENT_TENANT==='b2if')?'planejador':role;
+      var sid=(real.sellerId&&sellerHasPapel(real.sellerId,papel))?real.sellerId:firstSellerOf(papel);
+      SESSION={tenant:CURRENT_TENANT,role:role,roles:[role],sellerId:sid,name:nm+' · ver como '+roleLabel(role),initials:'V'+((role[0]||'').toUpperCase())};
+    }
+  }
+  VIEW_AS='gestor';
+  var b=document.getElementById('bellBtn');if(b)b.classList.remove('hidden');
+  var un=document.getElementById('uName');if(un)un.textContent=SESSION.name;
+  renderSidebar();try{updateBell();}catch(e){}
+  go(["sdr","closer","cs"].includes(SESSION.role)?'meudia':'painel');
+}
 const DB={
   key(t,c){return `pc.${t}.${c}`},
   get(t,c){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??[]}catch(e){return []}},
@@ -1928,6 +1952,7 @@ function logout(){try{['pc_sso','pc_sso_user','pc_content'].forEach(k=>localStor
 function enterAs(tenant){openTenant(tenant);}
 
 function openConsultoria(){
+  if(REAL_SESSION){SESSION=REAL_SESSION;REAL_SESSION=null;} /* sai do "ver como" ao voltar pras empresas */
   CURRENT_TENANT=null;applyBrand("protocolo");
   document.getElementById("tbMark").innerHTML=`<img src="${PC_LOCKUP}" alt="O Protocolo Comercial" style="height:26px;width:auto;display:block">`;
   document.getElementById("tbName").textContent="";
@@ -2054,6 +2079,7 @@ function activeNav(){
 }
 function openTenant(tenant){
   VIEW_AS='gestor';
+  if(REAL_SESSION){SESSION=REAL_SESSION;REAL_SESSION=null;} /* ao entrar numa empresa, volta a ser você mesmo */
   CURRENT_TENANT=tenant;applyBrand(BRANDS[tenant].brand);
   document.getElementById("tbMark").innerHTML=BRANDS[tenant].mark(28);
   document.getElementById("tbName").textContent=BRANDS[tenant].name;
@@ -2067,7 +2093,12 @@ const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
 function renderSidebar(){
   let html="";
   if(SESSION.role==="consultor")html+=`<div class="nav-item" onclick="openConsultoria()"><span class="ic">←</span> Todas as empresas</div>`;
-  if(dualRole())html+=`<div style="padding:10px 10px 6px;display:flex;gap:6px"><button class="btn ${VIEW_AS==='gestor'?'':'ghost'} sm" style="flex:1;padding:7px 8px" onclick="setViewAs('gestor')">👔 Gestor</button><button class="btn ${VIEW_AS==='closer'?'':'ghost'} sm" style="flex:1;padding:7px 8px" onclick="setViewAs('closer')">🎯 Closer</button></div>`;
+  if(canPreview()){
+    var _cur=previewingRole()||'self';
+    var _cl=(CURRENT_TENANT==='b2if')?'Planejador':'Closer';
+    var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 '+_cl],['cs','💚 CS']];
+    html+='<div style="padding:9px 9px 7px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));margin-bottom:6px"><div class="mut" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px">👁️ Ver como</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_opts.map(function(o){return '<button class="btn '+(_cur===o[0]?'':'ghost')+' xs" style="padding:5px 8px;font-size:11px" onclick="previewAs(\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div>'+(_cur!=='self'?'<div class="mut" style="font-size:10.5px;margin:6px 2px 0">Você está vendo como <b>'+roleLabel(_cur==='gestor'?'gestor':_cur)+'</b>. Clique em <b>Eu</b> pra voltar.</div>':'')+'</div>';
+  }
   activeNav().forEach(n=>{
     if(n.g){html+=`<div class="sb-group">${n.g}</div>`;return;}
     if(n.url){html+=`<div class="nav-item" onclick="window.open('${n.url}','_blank')"><span class="ic">${n.ic}</span> ${n.t}<span style="margin-left:auto;opacity:.45;font-size:11px">↗</span></div>`;return;}
