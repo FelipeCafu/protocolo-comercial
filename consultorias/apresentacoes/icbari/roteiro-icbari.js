@@ -111,3 +111,86 @@ window.ROTEIRO_ICBARI={
    av:"Só acompanhar quem reclama."}
  ]
 };
+
+/* ===== Roteiro do SDR POR ORIGEM do lead (anúncio/tráfego · indicação · retorno/frio) =====
+   Espelha o Script de Vendas: o que a pessoa vai FALAR, palavra por palavra, sabendo o que fazer. */
+window.ROTEIRO_ICB_SDR=function(orig){
+ orig=orig||"anuncio";
+ var pre={title:"Antes de discar",t:"Pré-ligação · 30s",tec:"Preparação · espelhamento",
+  s:"**Respire, sorria, tom firme e acolhedor.** Você não está vendendo, está cuidando de uma pessoa que procurou ajuda para um problema de saúde.\nTenha à mão: **nome**, **por qual canal** a pessoa chegou e a **queixa/procedimento** de interesse.\n\n**ESPELHAMENTO (regra de ouro):** copie o ritmo da pessoa. Fala rápido, fale rápido; fala devagar, vá devagar.",
+  do:"Sorria (ouve-se no telefone). Uma pergunta de cada vez, ouça de verdade.",
+  av:"Ligar no automático, robotizado, ou tratar como venda comum."};
+
+ var qualificar={title:"Acolher e qualificar (as perguntas que qualificam)",t:"Qualificação · o coração do SDR",tec:"Situação + dor + ICP",
+  s:"**Acolha e mapeie (anote tudo, sem diagnosticar):**\n\"Me conta com suas palavras: **o que você está sentindo** / o que quer resolver?\" → \"Há **quanto tempo**? Está atrapalhando o seu dia a dia?\" → \"Você já tem **algum exame ou laudo** recente? Já passou por outro médico?\"\n\n**Perguntas que definem o perfil (ICP):**\n\"Você já tem **indicação de cirurgia** ou quer uma **avaliação**?\" → \"Vai ser por **convênio** ou **particular**?\" (se convênio: **qual plano?**) → \"Você é de **Brasília e entorno**?\"",
+  do:"Anote queixa, tempo, exames, plano e cidade. Com o plano você já sabe o perfil.",
+  av:"Dar diagnóstico. Prometer cobertura. ⚠️ Hapvida = não agenda, encerre com orientação."};
+
+ var spin={title:"Gerar clareza e urgência (SPIN clínico)",t:"Condução · 1 a 2 min",tec:"Situação → Problema → Implicação → Necessidade",
+  s:"**Reaja ao que ele disse, com empatia:**\n**Situação:** \"Entendi. E no dia a dia, isso te limita em quê, trabalho, sono, alimentação?\"\n**Problema:** \"O que mais te incomoda nisso hoje?\"\n**Implicação:** \"E deixar como está, sem avaliar, o que pode acontecer? Costuma melhorar sozinho esperando?\"\n**Necessidade:** \"Se um cirurgião avaliasse e a clínica cuidasse de todos os exames pra você, isso te ajudaria?\"",
+  do:"Uma pergunta, um silêncio. Deixe a pessoa concluir que precisa resolver.",
+  av:"Despejar as 4 perguntas seguidas. Empurrar cirurgia."};
+
+ var converter={title:"Converter para a consulta",t:"Transição · o objetivo do SDR",tec:"Agendar a avaliação",
+  s:"\"**{NOME}**, pelo que você me contou, o passo certo agora é uma **consulta de avaliação com o nosso cirurgião**. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento e explica a jornada. E aqui **a clínica marca todos os exames e a cirurgia pra você**. Prefere **amanhã 10h ou 16h**?\"\n\n**Se pedir preço da cirurgia:** \"O valor a gente fecha na consulta, porque depende da avaliação do médico. Antes disso, qualquer número seria chute e eu não quero te enganar.\"",
+  do:"Ofereça sempre 2 horários fechados. Confirme e-mail e WhatsApp.",
+  av:"\"Me avisa quando puder.\" Dar preço de cirurgia por telefone."};
+
+ var confirmar={title:"Confirmar e blindar o no-show",t:"Fechamento do agendamento",tec:"WhatsApp na hora",
+  s:"\"Fechado, **{NOME}**: **{DIA} às {HORA}** 🙌. Vou te mandar a confirmação aqui, me passa seu **melhor e-mail e WhatsApp**. Você recebe lembrete um dia antes e no dia. Se tiver exames antigos, leve com você. Qualquer coisa é só me chamar.\"",
+  do:"Capture contato, confirme e ative o lembrete anti-falta. Passe o contexto quente pro Closer.",
+  av:"Encerrar sem contato e sem próximo passo."};
+
+ var objecoes={title:"Objeção é pedido de clareza",t:"Objeções · sob demanda",tec:"Acolhe → reenquadra → agenda",
+  s:"**Sempre para vender a consulta (não a cirurgia):**\n\"Está caro\" → \"A consulta é o primeiro passo e é onde tudo fica claro; sem ela nem dá pra falar de valores.\"\n\"Tenho medo de cirurgia\" → \"É super normal. A consulta serve justamente pra tirar esse medo com informação, e nossas técnicas são minimamente invasivas.\"\n\"Vou pensar\" → \"Claro. Só pra eu te ajudar: o que mais pesa na sua decisão? Enquanto isso, deixo um horário reservado.\"\n\"Preciso ver com a família\" → \"Ótimo, traga quem você quiser na consulta.\"",
+  do:"Trate a objeção e volte para o agendamento. Acolha o medo.",
+  av:"Discutir. Prometer cobertura. Insistir sem empatia."};
+
+ var fechamento={title:"Confirmado e sem sumiço",t:"Handoff",tec:"Contexto quente pro Closer",
+  s:"Reforce a confirmação e **passe todo o contexto pro Closer/médico**: queixa, tempo, exames prévios, convênio (qual plano), perfil A–F. **Nada se perde no sistema.**\n\n\"Já deixei tudo certinho aqui, **{NOME}**. Te espero no dia. Vai dar tudo certo 💚\"",
+  do:"Deixe o CRM completo. O Closer recebe o paciente pronto.",
+  av:"Handoff sem anotação. Deixar o Closer recomeçar do zero."};
+
+ var flows={
+  anuncio:[pre,
+   {title:"Abertura (veio de anúncio / tráfego)",t:"Abertura · responda em minutos",tec:"Rapport · referência ao anúncio",
+    s:"\"Olá **{NOME}**, tudo bem? Aqui é **{SDR}**, da ICBARI. Vi que você buscou informação sobre **{PROCEDIMENTO}**. Posso te fazer umas perguntas rápidas pra entender seu caso e te orientar do jeito certo?\"",
+    do:"Responda em minutos, lead de tráfego esfria rápido. Fale o nome 2-3x.",
+    av:"Demorar horas. Ir direto ao preço ou à agenda."},
+   qualificar,spin,converter,confirmar,objecoes,fechamento],
+  indicacao:[pre,
+   {title:"Abertura (veio por indicação)",t:"Abertura · use a confiança",tec:"Rapport · quem indicou",
+    s:"\"Olá **{NOME}**, tudo bem? Aqui é **{SDR}**, da ICBARI. Quem me passou seu contato falou que você está querendo resolver **{QUEIXA}**. Que bom que chegou até a gente! Deixa eu te entender melhor pra já te direcionar.\"",
+    do:"Cite quem indicou se puder. Indicação já vem com confiança, mas ainda qualifique.",
+    av:"Pular a qualificação achando que já está fechado."},
+   qualificar,spin,converter,confirmar,objecoes,fechamento],
+  retorno:[pre,
+   {title:"Reconectar (leve, sem cobrar)",t:"Repescagem · lead frio",tec:"Reabrir com carinho",
+    s:"\"Oi **{NOME}**, aqui é **{SDR}**, da ICBARI. Você chegou a falar com a gente sobre **{PROCEDIMENTO}** um tempo atrás. Tô te ligando com carinho só pra saber **como você está com isso hoje**. Tem um minutinho?\"",
+    do:"Frio = já veio ou se interessou e não fechou. Reabra leve, curiosidade de verdade.",
+    av:"Cobrar (\"você sumiu\"). Pressionar. Recomeçar como se fosse lead novo."},
+   {title:"Descobrir o que travou (sem culpa)",t:"Repescagem · achar a objeção real",tec:"BANT reverso",
+    s:"\"Na época a gente não chegou a seguir com a sua avaliação. Só pra eu te entender e te ajudar melhor agora: **o que fez você segurar** naquele momento? Foi o **tempo**, o **valor**, algum **medo**, ou a dúvida com o **convênio**?\"",
+    do:"Pergunte leve e OUÇA. Aqui aparece a objeção verdadeira.",
+    av:"Fazer a pessoa se justificar. Emendar sem ouvir."},
+   {title:"Reacender a dor (SPIN de repescagem)",t:"Repescagem · trazer de volta",tec:"Implicação de adiar",
+    s:"**Situação/Problema:** \"E hoje, o **{QUEIXA}** continua te incomodando? Em quê ele atrapalha o seu dia a dia?\"\n**Implicação:** \"Já faz um tempo que você sabe que precisa resolver e ainda convive com isso. Se seguir mais um ano do mesmo jeito, o que pode acontecer?\"\n**Necessidade:** \"Se a gente cuidasse de tudo pra você agora, avaliação, exames e cirurgia marcados pela clínica, isso mudaria a sua decisão?\"",
+    do:"Amplie a consequência de continuar adiando, com empatia.",
+    av:"Culpar pela demora. Prometer resultado."},
+   {title:"Reoferecer a consulta (com a novidade)",t:"Repescagem · nova oferta",tec:"A clínica marca tudo",
+    s:"\"**{NOME}**, muita coisa evoluiu por aqui. Hoje a **clínica marca todos os exames e a própria cirurgia pra você**, e a consulta é justamente pra tirar suas dúvidas, sem compromisso. Que tal a gente **retomar do ponto onde você parou**? Tenho **{DIA} 10h ou {DIA} 16h**, qual encaixa melhor?\"",
+    do:"Traga uma novidade real. Ofereça 2 horários fechados.",
+    av:"Repetir a mesma oferta de antes sem nada novo."},
+   confirmar,
+   {title:"Objeções do lead frio",t:"Repescagem · objeções",tec:"Acolhe → reenquadra",
+    s:"\"Já pensei e deixei pra lá\" → \"Faz sentido, a vida corre. Mas se o {QUEIXA} ainda te incomoda, talvez seja a hora de resolver, agora com a gente marcando tudo.\"\n\"Não era o momento\" → \"Entendo. E hoje, como está o momento? Às vezes só faltou alguém organizar o caminho, e é isso que a gente faz.\"\n\"Achei caro\" → \"Obrigado pela sinceridade. Muita coisa mudou e a maioria parcela. Antes do valor, o passo é a consulta. Posso reservar um horário?\"\n\"Já resolvi em outro lugar\" → \"Que bom que cuidou disso! Se surgir outra necessidade digestiva, quero que lembre da ICBARI. Posso atualizar seu contato aqui?\"",
+    do:"Acolha, reenquadre e volte pro agendamento.",
+    av:"Discutir. Desistir na primeira objeção."},
+   fechamento]
+ };
+ var arr=(flows[orig]||flows.anuncio).map(function(s){return Object.assign({},s);});
+ arr.forEach(function(s,i){s.n=i+1;});
+ return arr;
+};
+/* default (compatibilidade): a aba SDR do roteiro começa no fluxo de anúncio */
+window.ROTEIRO_ICBARI.sdr=window.ROTEIRO_ICB_SDR("anuncio");

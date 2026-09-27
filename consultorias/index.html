@@ -4568,12 +4568,14 @@ function rSub(t){if(!t)return t;var L=ROTEIRO_LEAD||{};var c=L.contato||{};var f
  var map={'NOME':c.nome||L.nome||L.fantasia||'','SDR':first,'CLOSER':first,'EVENTO':L.origem||'','SÓCIO':L.socio||'','SOCIO':L.socio||'','DOR':L.dor||'','X':L.faturamento||(L.valor?money(L.valor):'')};
  return String(t).replace(/\{([^}]+)\}/g,function(m,k){var v=map[k.toUpperCase()];return (v!==undefined&&v!=='')?v:m;});}
 function roteiroData(){return (T()==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")?ROTEIRO_ICBARI:ROTEIRO_LIDERES;}
-function roteiroCopy(n){var arr=roteiroData()[ROTEIRO_TAB]||[];var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
+/* array de slides do roteiro, considerando a ORIGEM do lead (ICBARI · SDR) */
+function roteiroArr(tab){if(T()==="icbari"&&tab==="sdr"&&typeof ROTEIRO_ICB_SDR==="function")return ROTEIRO_ICB_SDR(ICB_ORIG);return roteiroData()[tab]||[];}
+function roteiroCopy(n){var arr=roteiroArr(ROTEIRO_TAB);var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
 function vRoteiro(){
  var allowed=isAdmin()?['sdr','closer']:myRoles().filter(function(r){return r==='sdr'||r==='closer';});
  if(!allowed.length)allowed=['sdr','closer'];
  if(allowed.indexOf(ROTEIRO_TAB)<0)ROTEIRO_TAB=allowed[0];
- var data=roteiroData(),tab=ROTEIRO_TAB,arr=data[tab]||[];
+ var data=roteiroData(),tab=ROTEIRO_TAB,arr=roteiroArr(tab);
  var apDir=T()==="icbari"?"apresentacoes/icbari/":"apresentacoes/";
  function fmtR(t){return rSub(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1<\/b>').replace(/\n/g,'<br>');}
  var cards=arr.map(function(x){
@@ -4594,7 +4596,9 @@ function vRoteiro(){
   +'<div style="flex:1"></div>'
   +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
   +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
-  +'</div>'+cards;
+  +'</div>'
+  +((T()==="icbari"&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
+  +cards;
 }
 function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
 function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
