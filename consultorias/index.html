@@ -627,7 +627,7 @@ const USERS={
   planejador1:{pass:"1234", role:"closer",tenant:"b2if",name:"Rafael Nunes (Planejador)",initials:"RN",sellerId:"rafael"},
   planejadora:{pass:"1234", role:"closer",tenant:"b2if",name:"Beatriz Souza (Planejadora)",initials:"BS",sellerId:"bia"},
   sdrb2:      {pass:"1234", role:"sdr",   tenant:"b2if",name:"Marina Alves (SDR)",       initials:"MA",sellerId:"marina"},
-  csb2:       {pass:"1234", role:"cs",    tenant:"b2if",name:"Camila Duarte (CS)",       initials:"CD",sellerId:"camila"},
+  csb2:       {pass:"velo2026", role:"cs", tenant:"b2if",name:"CS / Pós-venda (a definir)",initials:"CS",sellerId:"camila"},
   /* B2 — time oficial (27/09/2026): Jorge+Pedro gestores (só gestão), Bruna SDR, Melissa Planejadora */
   "jorge.b2":  {pass:"jorgeb2",   role:"gestor",tenant:"b2if",name:"Jorge (Gestor)",        initials:"JO"},
   "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
@@ -858,12 +858,12 @@ function cadencesIcb(){
     {h:"+3h",canal:"ligação",cond:"2ª ligação — bombardeio do 1º dia",texto:"Ligue de novo, em outro horário. Nos 2 primeiros dias a gente insiste bastante (sem ser chato): quem responde rápido é quem agenda. Não desista no 1º não-atendeu."},
     {h:"fim do dia",canal:"wa",cond:"Última mensagem do dia",texto:"'Não consegui falar com você hoje, amanhã te chamo de novo. Qualquer dúvida, é só responder aqui 💚'. Mantém o canal aberto sem pressionar."}]},
   {dia:1,toques:[
-    {h:"09:00",canal:"ligação",cond:"Ligação cedo (bombardeio continua)",texto:"Novo horário, tom leve. No D1 ainda insistimos forte, é onde a maioria das agendas acontece."},
-    {h:"12:00",canal:"wa",cond:"WhatsApp com prova social",texto:"Envie 1 prova real: print de avaliação 5 estrelas ou depoimento, e explique a jornada: 'aqui a clínica marca todos os seus exames pra você, é só vir'."},
-    {h:"17:00",canal:"ligação",cond:"2ª ligação do dia",texto:"Última tentativa forte do D1. A partir do D2 a gente espaça os contatos."}]},
+    {h:"09:00",canal:"ligação",cond:"Ligação cedo (a ligação agenda mais que texto)",texto:"Novo horário, tom leve. No 2º dia ainda insistimos forte, é onde a maioria das agendas acontece."},
+    {h:"12:00",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM material)",texto:"Só reconexão, sem enviar prova/conteúdo ainda: 'Oi [nome], continuo tentando falar com você pra te ajudar. Qual o melhor horário, de manhã ou à tarde? 💚'"},
+    {h:"17:00",canal:"ligação",cond:"2ª ligação do dia",texto:"Última tentativa forte do 2º dia. A partir do 3º dia a gente espaça e começa a agregar valor."}]},
   {dia:2,toques:[
     {h:"11:00",canal:"ligação",cond:"Ligação — quebra de padrão",texto:"'Vou ser bem rápido, só 1 pergunta sobre o seu caso...'. Curiosidade abre conversa."},
-    {h:"15:00",canal:"wa",cond:"Conteúdo de valor",texto:"Vídeo curto do Dr. Wander ou conteúdo sobre o procedimento. Gera autoridade e segurança, e lembra a pessoa de você."}]},
+    {h:"15:00",canal:"wa",cond:"Conteúdo de valor (a partir do 3º dia)",texto:"Agora sim: 1 prova real (print de avaliação 5 estrelas / depoimento) ou vídeo curto do Dr. Wander. Gera autoridade e lembra a pessoa de você."}]},
   {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Ligação",texto:"Retomar o conteúdo: 'viu o vídeo que te mandei? O que achou?'"},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Depoimento em vídeo de um paciente já operado (história de transformação)."}]},
   {dia:6,toques:[{h:"11:00",canal:"ligação",cond:"Tentativa forte",texto:"'Não quero te incomodar, mas queria muito te ajudar a resolver isso. Bora marcar sua avaliação?' (última quente)."}]},
   {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Convite leve para a consulta de avaliação, sem compromisso."}]},
@@ -5041,10 +5041,15 @@ function scSDR(){
      <div class="script"><b>Necessidade:</b> "Se você tivesse do seu lado um grupo de donos que já passou por isso, o que mudaria pra você?"</div>
      <span class="go">↓ Ele reconheceu a dor e quer mudar? Confirme o PDMAF (passo 4).</span></div>
 
-   <div class="step" data-n="4"><h3>Confirme o PDMAF (na cabeça, enquanto conversa)</h3>
-     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">
-       ${[["P","Perfil","dono/sócio, ICP"],["D","Dor","dor real reconhecida"],["M","Momento","aberto a mudar agora"],["A","Autoridade","decide/traz sócio"],["F","Fit","quer comunidade"]].map(([l,h,p])=>`<div class="card" style="padding:10px;text-align:center"><div class="stat-big" style="font-size:20px">${l}</div><b style="font-size:12px">${h}</b><p class="mut" style="font-size:11px;margin:4px 0 0">${p}</p></div>`).join("")}</div>
-     <span class="go">↓ Só agende com os 5 ok. Vá pro passo 5.</span></div>
+   <div class="step" data-n="4"><h3>Confirme o PDMAF (devolvendo em voz alta)</h3>
+     <p class="mut" style="font-size:12.5px;margin:0 0 8px">Repita o que você ouviu, em forma de pergunta, e <b>espere o "é isso"</b>. É assim que você confirma o perfil antes de agendar:</p>
+     <div class="script"><b>P · Perfil:</b> "Deixa eu ver se entendi: você é <b>dono/sócio</b> da [empresa] e toca isso há um tempo, certo?"</div>
+     <div class="script"><b>D · Dor:</b> "E o que mais te incomoda hoje é <b>[dor]</b> (decidir sozinho / bateu num teto / falta de rede), é isso?"</div>
+     <div class="script"><b>M · Momento:</b> "E é algo que você quer resolver <b>agora</b>, não daqui a um ano?"</div>
+     <div class="script"><b>A · Autoridade:</b> "A decisão é sua, ou tem um <b>sócio</b> que decide junto (que precisa estar na reunião)?"</div>
+     <div class="script"><b>F · Fit:</b> "E faz sentido pra você fazer parte de uma <b>comunidade de donos</b> que cresce junto, certo?"</div>
+     <p class="mut" style="font-size:12.5px;margin:6px 0 0">Se faltar alguma peça, pergunte de novo antes de agendar.</p>
+     <span class="go">↓ Confirmou as 5? Vá pro passo 5.</span></div>
 
    <div class="step" data-n="5"><h3>Ponte + Agendamento (retome tudo que ele disse)</h3>
      <div class="script">"<b>[nome]</b>, deixa eu te falar por que faz TANTO sentido: você é <b>dono</b> <i>(P)</i>, me disse que sofre com <b>[dor]</b> <i>(D)</i> e que agora é a hora de resolver <i>(M)</i>. É exatamente pra isso que o Líderes existe <i>(F)</i> — uma comunidade de donos que decide junto e faz negócio entre si. Vou te reservar <b>30 min com o [Closer]</b>, que te mostra como isso se aplica à sua empresa. <b>Prefere amanhã 10h ou 16h?</b>"</div>
