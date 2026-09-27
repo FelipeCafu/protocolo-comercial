@@ -177,22 +177,22 @@ var SDR_STEP1={
  retorno:{layout:'step',tag:'Passo 1 · Reconectar',n:'1',title:'Reabra com carinho, sem cobrar',obj:'Lead frio: já falou com a gente e não avançou. Reabra leve.',roteiro:['<b>Reconectar:</b> "Oi [nome], aqui é a [você], da B2 Inteligência Financeira. A gente já tinha se falado um tempo atrás. Tô te ligando só pra saber como está a sua vida financeira hoje."','<b>Descobrir o que travou:</b> "Na época a gente não fez a Sessão. O que fez você segurar: o momento, a agenda, ou faltou eu explicar direito?"','<i>Reacender:</i> "Se o dinheiro ainda te preocupa, talvez seja a hora. Bora retomar do ponto onde paramos?"'],prox:'Ouça o que travou e reofereça a Sessão.'}
 };
 var CLOSER_STEP1={
- anuncio:{layout:'step',tag:'Passo 1 · Antes de apresentar',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Comece pela pessoa, depois confirme com perguntas se é ICP. Se não for (sem renda pro plano, sem dor real, não decide), oriente e encerre.',roteiro:[
+ anuncio:{layout:'step',tag:'Passo 1 · Antes de apresentar',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Comece pela pessoa, depois confirme com perguntas se é ICP. Se não for, oriente e encerre.',roteiro:[
    '<b>Rapport:</b> "Olá [nome], tudo bem? Como você está? Que bom te receber! Pra gente aproveitar essa conversa, vou te entender a fundo pra montar um raio-x da sua vida financeira e te dar um norte. Pode ser?"',
    '<b>Decisão:</b> "A decisão sobre o dinheiro é sua, ou tem alguém que decide junto (cônjuge)?"',
    '<b>Renda:</b> "Hoje a sua renda mensal fica mais ou menos em qual faixa?"',
    '<b>Dor:</b> "O que mais te aperta: dívida, não sobrar, ou vontade de investir com plano?"',
    '<b>Fit:</b> "Você quer um método e acompanhamento, ou só uma dica pontual?"'
  ],prox:'✅ É ICP: siga a Sessão. ❌ Não é: oriente e encerre.'},
- indicacao:{layout:'step',tag:'Passo 1 · Veio por indicação',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Veio por indicação, já vem com confiança. Cite quem indicou e acolha, mas ainda confirme o ICP.',roteiro:[
-   '<b>Rapport (indicação):</b> "Olá [nome]! Prazer! Quem te indicou falou que você ia curtir organizar melhor a vida financeira, então já começo dizendo: você está no caminho certo. Pra aproveitar essa conversa, vou te entender a fundo e montar um raio-x. Pode ser?"',
+ indicacao:{layout:'step',tag:'Passo 1 · Veio por indicação',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Veio por indicação. Diga o NOME de quem indicou e pergunte se a pessoa lembra dele, isso traz segurança. Depois confirme o ICP.',roteiro:[
+   '<b>Rapport (indicação):</b> "Olá [nome], prazer! Quem me pediu pra falar com você foi [quem indicou]. Você lembra dele? Conhece? (deixe responder) Que bom, então você chega pela mão de quem confia no nosso trabalho. Pra aproveitar essa conversa, vou te entender a fundo. Pode ser?"',
    '<b>Decisão:</b> "A decisão sobre o dinheiro é sua, ou tem alguém que decide junto (cônjuge)?"',
    '<b>Renda:</b> "Hoje a sua renda mensal fica mais ou menos em qual faixa?"',
    '<b>Dor:</b> "O que mais te aperta: dívida, não sobrar, ou vontade de investir com plano?"',
    '<b>Fit:</b> "Você quer um método e acompanhamento, ou só uma dica pontual?"'
  ],prox:'✅ É ICP: siga a Sessão. ❌ Não é: oriente e encerre.'},
- retorno:{layout:'step',tag:'Passo 1 · Retorno / Repescagem',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Já falou com a gente antes. Reabra sem cobrar, descubra o que travou e reconfirme o ICP (pode ter mudado).',roteiro:[
-   '<b>Reabra com carinho:</b> "Olá [nome]! Que bom te falar de novo! A gente já tinha conversado um tempo atrás e muita coisa evoluiu aqui na B2. Sem cobrança, hoje quero entender como está a sua vida financeira e te dar um norte. Pode ser?"',
+ retorno:{layout:'step',tag:'Passo 1 · Retorno / Repescagem',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Repescagem = a gente liga pro cliente (nao ele que veio). Reabra dizendo que VOCE retomou o contato, descubra o que travou e reconfirme o ICP.',roteiro:[
+   '<b>Reabra (VOCÊ retomou o contato):</b> "Olá [nome], que bom falar com você de novo! A gente já tinha conversado um tempo atrás e eu quis te retornar porque muita coisa evoluiu aqui na B2. Sem cobrança, hoje quero entender como está a sua vida financeira. Tem um minutinho?"',
    '<b>O que travou:</b> "Na época a gente não seguiu. Só pra eu te ajudar: foi o momento, o valor, ou faltou eu te mostrar o valor do acompanhamento?" (ouça)',
    '<b>Decisão:</b> "A decisão sobre o dinheiro é sua, ou tem alguém que decide junto (cônjuge)?"',
    '<b>Renda:</b> "Hoje a sua renda mensal fica mais ou menos em qual faixa?"',
@@ -203,7 +203,7 @@ var CLOSER_STEP1={
 var SLIDES=[];
 function buildSlides(){
  if(TRACK==='sdr'){SLIDES=SDR_SLIDES.slice();if(SDR_STEP1[ORIGIN])SLIDES[1]=SDR_STEP1[ORIGIN];}
- else{SLIDES=CLOSER_SLIDES.slice();if(typeof CLOSER_STEP1!=='undefined'&&CLOSER_STEP1[ORIGIN])SLIDES[1]=CLOSER_STEP1[ORIGIN];if(SLIDES[0]){var c=Object.assign({},SLIDES[0]);c.foot=ORIG_META[ORIGIN].label+' · '+(SLIDES[0].foot||'B2');if(ORIGIN==='retorno')c.sub='Você já buscou a gente antes. Agora é a hora de organizar de vez, com um método e um guia do seu lado.';SLIDES[0]=c;}}
+ else{SLIDES=CLOSER_SLIDES.slice();if(typeof CLOSER_STEP1!=='undefined'&&CLOSER_STEP1[ORIGIN])SLIDES[1]=CLOSER_STEP1[ORIGIN];if(SLIDES[0]){var c=Object.assign({},SLIDES[0]);c.foot=ORIG_META[ORIGIN].label+' · '+(SLIDES[0].foot||'B2');if(ORIGIN==='retorno')c.sub='A gente voltou pra te ajudar a organizar de vez, com um método e um guia do seu lado.';SLIDES[0]=c;}}
 }
 buildSlides();
 function initDots(){dotsEl.innerHTML=SLIDES.map(function(_,k){return '<span class="dot" onclick="goTo('+k+')"></span>';}).join('');dots=[].slice.call(document.querySelectorAll('.dot'));}

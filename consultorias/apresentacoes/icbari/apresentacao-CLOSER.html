@@ -235,25 +235,25 @@ var SDR_STEP1={
  ],prox:'Ouça o que travou, reacenda a dor e reofereça a consulta.'}
 };
 var CLOSER_STEP1={
- anuncio:{layout:'step',tag:'Passo 1 · Antes de apresentar',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Comece pela pessoa (relacionamento), depois confirme com perguntas se é ICP. Se não for (Hapvida ou fora do critério), não conduza a apresentação: acolha, oriente e encerre.',roteiro:[
+ anuncio:{layout:'step',tag:'Passo 1 · Antes de apresentar',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Comece pela pessoa, depois confirme com perguntas se é ICP. Se não for, oriente e encerre.',roteiro:[
    '<b>Rapport:</b> "Olá [nome], tudo bem? Como você está se sentindo? Que bom te receber! Pra gente aproveitar essa consulta, vou te entender a fundo pra achar o melhor caminho pro seu caso. Pode ser?"',
-   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende → encerre.',
-   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?" (vesícula/hérnia/refluxo)',
+   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende, encerre.',
+   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?"',
    '<b>Quadro:</b> "Seu peso e altura hoje?" (bariátrica: IMC ≥ 35)',
    '<b>Decisão:</b> "A decisão é sua? É pra resolver agora?"'
  ],prox:'✅ É ICP: siga a apresentação. ❌ Não é: acolha, oriente e encerre.'},
- indicacao:{layout:'step',tag:'Passo 1 · Veio por indicação',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Veio por indicação, já chega com confiança. Cite quem indicou e acolha, mas ainda confirme o ICP.',roteiro:[
-   '<b>Rapport (indicação):</b> "Olá [nome]! Que bom te receber! Quem te indicou falou super bem de você, você chegou no lugar certo. Pra aproveitar a consulta, vou te entender a fundo pra achar o melhor caminho pro seu caso. Pode ser?"',
-   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende → encerre.',
-   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?" (vesícula/hérnia/refluxo)',
+ indicacao:{layout:'step',tag:'Passo 1 · Veio por indicação',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Veio por indicação. Diga o NOME de quem indicou e pergunte se a pessoa lembra dele, isso traz segurança. Depois confirme o ICP.',roteiro:[
+   '<b>Rapport (indicação):</b> "Olá [nome], prazer! Quem me pediu pra falar com você foi [quem indicou]. Você lembra dele? Conhece? (deixe responder) Que bom, então você chega pela mão de quem confia na gente. Pra aproveitar a consulta, vou te entender a fundo. Pode ser?"',
+   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende, encerre.',
+   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?"',
    '<b>Quadro:</b> "Seu peso e altura hoje?" (bariátrica: IMC ≥ 35)',
    '<b>Decisão:</b> "A decisão é sua? É pra resolver agora?"'
  ],prox:'✅ É ICP: siga a apresentação. ❌ Não é: acolha, oriente e encerre.'},
- retorno:{layout:'step',tag:'Passo 1 · Retorno / Repescagem',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Paciente que já buscou a gente. Reabra sem cobrar, descubra o que travou antes e reconfirme o ICP (pode ter mudado).',roteiro:[
-   '<b>Reabra com carinho:</b> "Olá [nome]! Que bom te ver de novo por aqui! Você já tinha buscado a gente sobre [procedimento] um tempo atrás e fico feliz que voltou. Sem cobrança, hoje é pra entender o seu momento. Pode ser?"',
-   '<b>O que travou:</b> "Da última vez você acabou não seguindo, e tudo bem. Só pra eu te ajudar melhor: foi o tempo, o valor, algum medo ou o convênio?" (ouça sem julgar)',
-   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende → encerre.',
-   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?" (vesícula/hérnia/refluxo)',
+ retorno:{layout:'step',tag:'Passo 1 · Retorno / Repescagem',n:'✓',title:'Rapport primeiro, depois confirme o ICP',obj:'Repescagem = a gente liga pro cliente (nao ele que veio). Reabra dizendo que VOCE retomou o contato, descubra o que travou e reconfirme o ICP.',roteiro:[
+   '<b>Reabra (VOCÊ retomou o contato):</b> "Olá [nome], tudo bem? A gente já tinha conversado um tempo atrás e eu quis te retornar porque muita coisa evoluiu aqui na ICBARI. Sem cobrança, hoje só quero saber como você está com isso hoje. Tem um minutinho?"',
+   '<b>O que travou:</b> "Da última vez a gente não seguiu, e tudo bem. Só pra eu te ajudar: foi o tempo, o valor, algum medo ou o convênio?" (ouça)',
+   '<b>Plano:</b> "Você vai usar convênio ou particular? Qual é o seu plano?" 🚫 Hapvida = a clínica não atende, encerre.',
+   '<b>Exame:</b> "Você já tem algum exame recente (ultrassom, laudo)?"',
    '<b>Quadro:</b> "Seu peso e altura hoje?" (bariátrica: IMC ≥ 35)',
    '<b>Decisão:</b> "A decisão é sua? É pra resolver agora?"'
  ],prox:'✅ É ICP: siga a apresentação. ❌ Não é: acolha, oriente e encerre.'}
@@ -261,7 +261,7 @@ var CLOSER_STEP1={
 var SLIDES=[];
 function buildSlides(){
  if(TRACK==='sdr'){SLIDES=SDR_SLIDES.slice();if(SDR_STEP1[ORIGIN])SLIDES[1]=SDR_STEP1[ORIGIN];}
- else{SLIDES=CLOSER_SLIDES.slice();if(typeof CLOSER_STEP1!=='undefined'&&CLOSER_STEP1[ORIGIN])SLIDES[1]=CLOSER_STEP1[ORIGIN];if(SLIDES[0]){var c=Object.assign({},SLIDES[0]);c.foot=ORIG_META[ORIGIN].label+' · '+(SLIDES[0].foot||'ICBARI');if(ORIGIN==='retorno')c.sub='Você já buscou a gente antes. Agora é a hora de resolver de vez, com a clínica cuidando de tudo pra você.';SLIDES[0]=c;}}
+ else{SLIDES=CLOSER_SLIDES.slice();if(typeof CLOSER_STEP1!=='undefined'&&CLOSER_STEP1[ORIGIN])SLIDES[1]=CLOSER_STEP1[ORIGIN];if(SLIDES[0]){var c=Object.assign({},SLIDES[0]);c.foot=ORIG_META[ORIGIN].label+' · '+(SLIDES[0].foot||'ICBARI');if(ORIGIN==='retorno')c.sub='A gente voltou pra te ajudar a resolver isso de vez, com a clínica cuidando de tudo pra você.';SLIDES[0]=c;}}
 }
 buildSlides();
 function initDots(){dotsEl.innerHTML=SLIDES.map(function(_,k){return '<span class="dot" onclick="goTo('+k+')"></span>';}).join('');dots=[].slice.call(document.querySelectorAll('.dot'));}

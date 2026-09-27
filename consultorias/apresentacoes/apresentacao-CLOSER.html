@@ -758,8 +758,8 @@ applyMode();
   var O=(new URLSearchParams(location.search)).get('o')||'anuncio';
   var LEAD={
    anuncio:'<b>Comece pela pessoa:</b> "Olá [nome], tudo bem? Como você está? Pra gente aproveitar esse tempo, vou te entender a fundo pra ver como o Líderes te ajuda. Pode ser?" Aí sim, confirme com perguntas se é ICP:',
-   indicacao:'<b>Comece pela indicação (já vem com confiança):</b> "Olá [nome], prazer! O [indicador] falou muito bem de você, disse que voce manda bem no seu ramo, então já digo: você tem tudo a ver com a nossa mesa. Pra aproveitar esse tempo, vou te entender a fundo. Pode ser?" Aí sim, confirme o ICP:',
-   retorno:'<b>Reabra com carinho (já conversou com a gente antes):</b> "Olá [nome], que bom te falar de novo! A gente já tinha se cruzado um tempo atrás e muita coisa evoluiu na comunidade. Sem cobrança, hoje quero entender como está o seu negócio e te mostrar o que mudou. Pode ser?" Confirme o ICP de novo:'
+   indicacao:'<b>Comece pela indicação, usando o nome (traz segurança):</b> "Olá [nome], prazer! Quem me pediu pra falar com você foi o [indicador]. Você lembra dele? Conhece? (deixe responder) Ele falou muito bem de você, então já digo: você tem tudo a ver com a nossa mesa. Pra aproveitar esse tempo, vou te entender a fundo. Pode ser?" Aí sim, confirme o ICP:',
+   retorno:'<b>Reabra (VOCÊ retomou o contato, repescagem é a gente que liga):</b> "Olá [nome], que bom falar com você de novo! A gente já tinha se cruzado um tempo atrás e eu quis te retornar porque muita coisa evoluiu na comunidade. Sem cobrança, hoje quero entender como está o seu negócio e te mostrar o que mudou. Tem um minuto?" Depois ache o que travou antes e confirme o ICP de novo:'
   };
   if(LEAD[O]&&O!=='anuncio'){
    var secs=document.querySelectorAll('section.slide');
