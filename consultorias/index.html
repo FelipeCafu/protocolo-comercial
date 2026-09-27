@@ -4594,8 +4594,8 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR — Qualificação</button>':'')
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer — Fechamento</button>':'')
   +'<div style="flex:1"></div>'
-  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
-  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
+  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR — Repescagem</button>':''):'')
+  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-CLOSER.html'+(T()==="icbari"?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ Closer — Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer — Repescagem</button>':''):'')
   +'</div>'
   +((T()==="icbari"&&tab==="sdr")?icbOrigChips(ICB_ORIG):'')
   +cards;

@@ -208,7 +208,35 @@ var CLOSER_SLIDES=[
  {layout:'offer',kicker:'O próximo passo',title:'Vamos <span class="grad">começar</span>?',sub:'O primeiro passo é iniciar a avaliação e os exames. A partir daí, a nossa equipe cuida de cada etapa com você, até o dia da sua cirurgia.',triggers:[{b:'Comece hoje',t:'A gente já abre o seu plano e marca o primeiro passo.'},{b:'Facilidade no pagamento',t:'Parcelamento em até 12x e apoio com o seu convênio.'},{b:'Sempre com você',t:'Acompanhamento no pós em 1, 2 e 3 meses.'}]},
  {layout:'close',title:'Bem-vindo à sua<br><span class="grad">nova vida</span>.',sub:'E parabéns pela decisão. A gente transforma vidas com você, não para você.'}
 ];
-var SLIDES=TRACK==='sdr'?SDR_SLIDES:CLOSER_SLIDES;
+/* ===== Origem do lead (anúncio/tráfego · indicação · retorno/frio) ===== */
+var ORIGIN=(new URLSearchParams(location.search)).get('o')||'anuncio';
+if(['anuncio','indicacao','retorno'].indexOf(ORIGIN)<0)ORIGIN='anuncio';
+var ORIG_META={anuncio:{ic:'📩',label:'Anúncio / Tráfego'},indicacao:{ic:'🤝',label:'Indicação'},retorno:{ic:'📞',label:'Retorno / Repescagem'}};
+var SDR_STEP1={
+ anuncio:{layout:'step',tag:'Passo 1 · Abertura',n:'1',title:'Abra e prenda em 10 segundos',obj:'Lead de anúncio/tráfego: responda rápido e vá direto ao ponto, com acolhimento. Nada de "posso falar?" ou "você é daqui?".',roteiro:[
+   '<b>Abertura:</b> "Oi [nome]! Aqui é a [você], da ICBARI. Vi que você buscou sobre [procedimento]. Vou te ajudar a entender como funciona e o melhor caminho pro seu caso."',
+   '<i>Gancho:</i> "Posso te fazer umas perguntas rápidas? São dois minutos."'
+ ],prox:'Emende direto na primeira pergunta, sem esperar resposta ao "posso?".'},
+ indicacao:{layout:'step',tag:'Passo 1 · Abertura',n:'1',title:'Use a confiança da indicação',obj:'Veio por indicação, já chega com confiança. Cite quem indicou e acolha, mas ainda qualifique.',roteiro:[
+   '<b>Abertura:</b> "Oi [nome]! Aqui é a [você], da ICBARI. Quem me passou seu contato disse que você quer resolver [queixa]. Que bom que chegou até a gente! Deixa eu te entender melhor pra já te direcionar."',
+   '<i>Gancho:</i> "Posso te fazer umas perguntas rápidas? São dois minutos."'
+ ],prox:'Mesmo com indicação, qualifique. Emende na primeira pergunta.'},
+ retorno:{layout:'step',tag:'Passo 1 · Reconectar',n:'1',title:'Reabra com carinho, sem cobrar',obj:'Lead frio: já veio na clínica ou se interessou e não fechou. Reabra leve, sem cobrança, com curiosidade de verdade.',roteiro:[
+   '<b>Reconectar:</b> "Oi [nome], aqui é a [você], da ICBARI. Você chegou a falar com a gente sobre [procedimento] um tempo atrás. Tô te ligando com carinho só pra saber como você está com isso hoje."',
+   '<b>Descobrir o que travou:</b> "Na época a gente não seguiu com a avaliação. Só pra te entender: o que fez você segurar? Foi o tempo, o valor, um medo, ou o convênio?"',
+   '<i>Novidade:</i> "Hoje a clínica marca todos os exames e a cirurgia pra você. Que tal retomar do ponto onde você parou?"'
+ ],prox:'Ouça o que travou, reacenda a dor e reofereça a consulta.'}
+};
+var SLIDES=[];
+function buildSlides(){
+ if(TRACK==='sdr'){SLIDES=SDR_SLIDES.slice();if(SDR_STEP1[ORIGIN])SLIDES[1]=SDR_STEP1[ORIGIN];}
+ else{SLIDES=CLOSER_SLIDES.slice();if(SLIDES[0]){var c=Object.assign({},SLIDES[0]);c.foot=ORIG_META[ORIGIN].label+' · '+(SLIDES[0].foot||'ICBARI');if(ORIGIN==='retorno')c.sub='Você já buscou a gente antes. Agora é a hora de resolver de vez, com a clínica cuidando de tudo pra você.';SLIDES[0]=c;}}
+}
+buildSlides();
+function initDots(){dotsEl.innerHTML=SLIDES.map(function(_,k){return '<span class="dot" onclick="goTo('+k+')"></span>';}).join('');dots=[].slice.call(document.querySelectorAll('.dot'));}
+function renderOrigBar(){var el=document.getElementById('origbar');if(!el){el=document.createElement('div');el.id='origbar';el.style.cssText='position:fixed;left:16px;bottom:56px;display:flex;gap:6px;z-index:60;background:rgba(0,0,0,.28);padding:6px;border-radius:12px;backdrop-filter:blur(6px)';document.body.appendChild(el);}
+ el.innerHTML='<span style="font-size:11px;opacity:.7;align-self:center;padding:0 4px">Origem do lead:</span>'+['anuncio','indicacao','retorno'].map(function(o){return '<button onclick="setOrigin(\''+o+'\')" style="font-size:11.5px;border:none;cursor:pointer;border-radius:8px;padding:5px 9px;'+(ORIGIN===o?'background:#2A9D8F;color:#04201c;font-weight:700':'background:rgba(255,255,255,.08);color:#fff')+'">'+ORIG_META[o].ic+' '+ORIG_META[o].label+'</button>';}).join('');}
+function setOrigin(o){if(['anuncio','indicacao','retorno'].indexOf(o)<0)return;ORIGIN=o;var u=new URL(location.href);u.searchParams.set('o',o);history.replaceState(null,'',u);buildSlides();initDots();if(i>=SLIDES.length)i=SLIDES.length-1;render();renderOrigBar();}
 
 function R(s){var L=s.layout;
  if(L==='cover')return `<div class="center"><img src="icb-lockup.png" class="anim d1" style="height:72px;margin-bottom:6px" alt="ICBARI"><div class="anim d2 kick">${s.kicker}</div><h1 class="big anim d3">${s.title}</h1><p class="lead anim d4 mt24">${s.sub}</p><div class="anim d5 mt30 pill">${arrow()} ${s.foot}</div></div>`;
@@ -235,14 +263,13 @@ function R(s){var L=s.layout;
 }
 function toggleObjMore(btn){var m=document.getElementById('objMore');if(!m)return;var open=m.style.display!=='none';m.style.display=open?'none':'block';btn.textContent=open?btn.dataset.closed:btn.dataset.open;}
 function arrow(){return '<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--gold2);stroke-width:1.8;fill:none;vertical-align:middle"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';}
-var i=0,dotsEl=document.getElementById('dots');
-dotsEl.innerHTML=SLIDES.map(function(_,k){return '<span class="dot" onclick="goTo('+k+')"></span>';}).join('');
-var dots=[].slice.call(document.querySelectorAll('.dot'));
+var i=0,dotsEl=document.getElementById('dots'),dots=[];
+initDots();
 function render(){document.getElementById('stage').innerHTML='<div class="slide on">'+R(SLIDES[i])+'</div>';document.getElementById('count').textContent=String(i+1).padStart(2,'0')+' / '+String(SLIDES.length).padStart(2,'0');document.getElementById('bar').style.width=(i/(SLIDES.length-1)*100)+'%';dots.forEach(function(d,k){d.classList.toggle('on',k===i);});}
 function next(){if(i<SLIDES.length-1){i++;render();}}function prev(){if(i>0){i--;render();}}function goTo(k){i=k;render();}
 document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){next();e.preventDefault();}else if(e.key==='ArrowLeft'||e.key==='PageUp'){prev();e.preventDefault();}else if(e.key==='Home'){goTo(0);}else if(e.key==='End'){goTo(SLIDES.length-1);}});
-document.getElementById('stage').addEventListener('click',function(e){if(e.target.closest('a,button'))return;var r=window.innerWidth;if(e.clientX<r*0.26)prev();else next();});
-render();
+document.getElementById('stage').addEventListener('click',function(e){if(e.target.closest('a,button,#origbar'))return;var r=window.innerWidth;if(e.clientX<r*0.26)prev();else next();});
+render();renderOrigBar();
 </script>
 </body>
 </html>
