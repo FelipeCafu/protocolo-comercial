@@ -751,6 +751,30 @@ addEventListener('keydown',function(e){var k=e.key.toLowerCase();if(k==='t'){tog
 applyMode();
 
 
+
+/* ===== Origem do lead (anuncio/indicacao/retorno): troca o rapport ===== */
+(function(){
+ try{
+  var O=(new URLSearchParams(location.search)).get('o')||'anuncio';
+  var LEAD={
+   anuncio:'<b>Comece pela pessoa:</b> "Olá [nome], tudo bem? Como você está? Pra gente aproveitar esse tempo, vou te entender a fundo pra ver como o Líderes te ajuda. Pode ser?" Aí sim, confirme com perguntas se é ICP:',
+   indicacao:'<b>Comece pela indicação (já vem com confiança):</b> "Olá [nome], prazer! O [indicador] falou muito bem de você, disse que voce manda bem no seu ramo, então já digo: você tem tudo a ver com a nossa mesa. Pra aproveitar esse tempo, vou te entender a fundo. Pode ser?" Aí sim, confirme o ICP:',
+   retorno:'<b>Reabra com carinho (já conversou com a gente antes):</b> "Olá [nome], que bom te falar de novo! A gente já tinha se cruzado um tempo atrás e muita coisa evoluiu na comunidade. Sem cobrança, hoje quero entender como está o seu negócio e te mostrar o que mudou. Pode ser?" Confirme o ICP de novo:'
+  };
+  if(LEAD[O]&&O!=='anuncio'){
+   var secs=document.querySelectorAll('section.slide');
+   for(var k=0;k<secs.length;k++){
+    var h=secs[k].querySelector('h2');
+    if(h&&/rapport/i.test(h.textContent)){
+     var lead=secs[k].querySelector('.lead');
+     if(lead)lead.innerHTML=LEAD[O];
+     break;
+    }
+   }
+  }
+ }catch(e){}
+})();
+
 window.MIRROR=/mirror/.test(location.hash+location.search);
 if(window.MIRROR){document.body.classList.add('mirror');addEventListener('storage',function(e){if(e.key==='pc_lid_slide')show(+e.newValue||0);});}
 show(window.MIRROR?(+(localStorage.getItem('pc_lid_slide')||0)):0);
