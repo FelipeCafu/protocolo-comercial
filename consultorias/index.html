@@ -1225,7 +1225,7 @@ function scICP_ICB(){
 
 function scBOT_ICB(){return `
  <div class="card"><h2 style="margin:0 0 6px;font-size:15px">🤖 Bot de Qualificação (WhatsApp) — fluxo</h2>
-   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica o paciente antes de passar pro SDR humano. Cada resposta ajuda a priorizar (lead scoring), sem dar diagnóstico.</p></div>
+   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica o paciente antes de passar pro SDR humano. Cada resposta ajuda a priorizar (pontuação do lead), sem dar diagnóstico.</p></div>
  <div class="card mt"><div class="script"><b>Bot:</b> Olá! Aqui é a ICBARI 👋 Cirurgia do aparelho digestivo, bariátrica e metabólica. Posso te fazer 4 perguntinhas rápidas pra te direcionar? (1) Qual assunto você procura: <b>bariátrica · hérnia · vesícula · refluxo · diástase · outro</b>? <i>[marca o procedimento de interesse]</i></div>
    <div class="script"><b>Bot:</b> (2) Você já tem <b>indicação de cirurgia</b> ou quer uma <b>avaliação</b>? <i>[indicação=+30 / avaliação=+15]</i></div>
    <div class="script"><b>Bot:</b> (3) Vai ser por <b>convênio</b> ou <b>particular</b>? <i>[convênio → marca o plano / particular=+10]</i></div>
@@ -4639,24 +4639,24 @@ const ROTEIRO_B2={
   {n:1,title:"Antes de discar (guia da ligação)",t:"Slide 1 · Pré-ligação",tec:"Preparação · espelhamento",s:`**(Capa do guia.)** Respire, sorria, tom firme e acolhedor. Você não está vendendo, está **ajudando a organizar a vida financeira**. Tenha à mão: nome, canal e o que a pessoa demonstrou querer.
 
 **ESPELHAMENTO:** copie o ritmo da pessoa. Uma pergunta de cada vez, ouça de verdade.`,do:"Sorria (ouve-se no telefone).",av:"Ligar no automático, robotizado."},
-  {n:2,title:"Abertura — abra e prenda em 10s",t:"Abertura · responda rápido",tec:"Rapport pela origem",s:`**Abertura (pela origem do lead):**
+  {n:2,title:"Abertura, abra e prenda em 10s",t:"Abertura · responda rápido",tec:"Rapport pela origem",s:`**Abertura (pela origem do lead):**
 "Olá {NOME}, tudo bem? Aqui é {SDR}, da B2 Inteligência Financeira. Vi que você se interessou pela gente. Prometo ser rápido. Deixa eu te entender pra já te dar um norte, posso?"
 
 <i>(Use a barra de origem: anúncio/indicação/retorno mudam a 1ª frase.)</i>`,do:"Fale o nome, já emende na 1ª pergunta.",av:"Ir direto ao preço/agenda."},
   {n:3,title:"Descubra o que tira o sono financeiro",t:"Slide 3 · A dor",tec:"Escuta + validação",s:`"Como você sente a sua vida financeira hoje: **no aperto, equilibrada, ou já sobrando pra investir**?" → ouça.
 "E o que mais te incomoda no seu dinheiro hoje?" → valide: "é bem comum, e você fez certo em buscar organização."`,do:"Uma pergunta de cada vez. Ouça de verdade.",av:"Emendar perguntas sem ouvir."},
-  {n:4,title:"Mostre o custo de continuar assim",t:"Slide 4 · Implicação",tec:"Urgência saudável",s:`"E se seguir mais um ano do mesmo jeito, o que isso te **custa** — juros, oportunidade, um sonho adiado?"
+  {n:4,title:"Mostre o custo de continuar assim",t:"Slide 4 · Implicação",tec:"Urgência saudável",s:`"E se seguir mais um ano do mesmo jeito, o que isso te **custa**, juros, oportunidade, um sonho adiado?"
 "Você sente que **ganha bem mas não sobra**?" → deixe ele perceber que precisa agir.`,do:"Amplie a consequência de adiar, sem pressão.",av:"Prometer resultado."},
-  {n:5,title:"As últimas perguntas (qualifica o ICP)",t:"Slide 5 · Qualificação",tec:"Perfil + quem decide",s:`Anote no CRM: "Sua **renda mensal** fica em qual faixa, mais ou menos?" · "Seu foco é **sair de dívida, organizar e guardar, ou investir**?" · "A **decisão** é sua, ou tem alguém junto (cônjuge)?"`,do:"Anote renda, foco e quem decide — o Closer usa tudo.",av:"Constranger com a pergunta de renda."},
-  {n:6,title:"Use o método como autoridade",t:"Slide 6 · Autoridade",tec:"Método, sem achismo",s:`"A B2 tem **método, não achismo**: a Sessão faz um raio-x gratuito, a gente organiza (fluxo, reserva, dívidas), monta a carteira e acompanha mês a mês. E **não ganha comissão de produto** — trabalha do seu lado."`,do:"Passe segurança pelo método e pela isenção.",av:"Falar de produto específico."},
-  {n:7,title:"Ofereça o próximo passo: a Sessão",t:"Slide 7 · Converter",tec:"Agendar a Sessão gratuita",s:`"Pelo que você me contou, o passo certo é uma **Sessão Estratégica gratuita** com o nosso Closer/planejador — um raio-x da sua vida financeira, sem compromisso. Prefere **amanhã 10h ou 16h**?"
+  {n:5,title:"As últimas perguntas (qualifica o ICP)",t:"Slide 5 · Qualificação",tec:"Perfil + quem decide",s:`Anote no CRM: "Sua **renda mensal** fica em qual faixa, mais ou menos?" · "Seu foco é **sair de dívida, organizar e guardar, ou investir**?" · "A **decisão** é sua, ou tem alguém junto (cônjuge)?"`,do:"Anote renda, foco e quem decide, o Closer usa tudo.",av:"Constranger com a pergunta de renda."},
+  {n:6,title:"Use o método como autoridade",t:"Slide 6 · Autoridade",tec:"Método, sem achismo",s:`"A B2 tem **método, não achismo**: a Sessão faz um raio-x gratuito, a gente organiza (fluxo, reserva, dívidas), monta a carteira e acompanha mês a mês. E **não ganha comissão de produto**, trabalha do seu lado."`,do:"Passe segurança pelo método e pela isenção.",av:"Falar de produto específico."},
+  {n:7,title:"Ofereça o próximo passo: a Sessão",t:"Slide 7 · Converter",tec:"Agendar a Sessão gratuita",s:`"Pelo que você me contou, o passo certo é uma **Sessão Estratégica gratuita** com o nosso Closer/planejador, um raio-x da sua vida financeira, sem compromisso. Prefere **amanhã 10h ou 16h**?"
 **Se pedir preço:** "O valor a gente vê na Sessão, depende do seu perfil. A Sessão é gratuita."`,do:"Ofereça 2 horários. Confirme e-mail e WhatsApp.",av:"Dar preço por telefone."},
   {n:8,title:"Se aparecer resistência (objeções)",t:"Slide 8 · Objeções",tec:"Acolhe → reenquadra → agenda",s:`Use a matriz de objeções (a mesma do Closer): "não tenho dinheiro sobrando", "eu mesmo me organizo", "já tenho gerente no banco", "sem tempo", "quanto custa", "é seguro?", "vou pensar". Sempre acolha e volte pra agendar a Sessão.`,do:"Trate a objeção e volte pro agendamento.",av:"Discutir. Prometer rendimento."},
   {n:9,title:"Feche o combinado e evite a falta",t:"Slide 9 · Confirmação",tec:"WhatsApp + lembrete",s:`"Fechado, {NOME}: **{DIA} às {HORA}** com o nosso Closer. Vou te mandar a confirmação, me passa seu **melhor e-mail e WhatsApp**. Se puder, chega com uma noção dos seus gastos do mês. Você recebe lembrete um dia antes e no dia."`,do:"Capture contato, confirme e ative o lembrete anti-falta. Passe o contexto pro Closer.",av:"Encerrar sem contato e sem próximo passo."},
-  {n:10,title:"Você não vende plano — abre a porta",t:"Slide 10 · Fecho",tec:"Mentalidade",s:`**(Slide de fecho do guia.)** Você não vende plano: você **abre a porta pra liberdade** da pessoa. Conduza com calma, na sequência, e agende a Sessão.`,do:"Saia da ligação com a Sessão marcada e o contexto no CRM.",av:"Desistir no 1º não."}
+  {n:10,title:"Você não vende plano, abre a porta",t:"Slide 10 · Fecho",tec:"Mentalidade",s:`**(Slide de fecho do guia.)** Você não vende plano: você **abre a porta pra liberdade** da pessoa. Conduza com calma, na sequência, e agende a Sessão.`,do:"Saia da ligação com a Sessão marcada e o contexto no CRM.",av:"Desistir no 1º não."}
  ],
  "closer":[
-  {n:1,title:"Capa — a decisão que liberta",t:"Slide 1 · Abertura",tec:"Deixe o clima entrar",s:`**(Tela de capa: "A decisão que liberta o seu futuro")**
+  {n:1,title:"Capa, a decisão que liberta",t:"Slide 1 · Abertura",tec:"Deixe o clima entrar",s:`**(Tela de capa: "A decisão que liberta o seu futuro")**
 Não comece falando. Deixe a capa respirar 2 segundos e abra pela pessoa:
 "Olá {NOME}, tudo bem? Como você está? <i>(ouça)</i> Que bom te receber. Você já deu o primeiro passo vindo aqui."`,do:"Sorria, tom calmo. A capa cria o tom da conversa.",av:"Já sair falando de produto/preço."},
   {n:2,title:"Rapport + confirme o ICP",t:"Slide 2 · Antes de apresentar",tec:"Relacionamento → ICP",s:`**Rapport + acordo:** "Pra gente aproveitar bem essa conversa, eu vou te **entender a fundo**, montar um **raio-x** da sua vida financeira e te dar um **norte**. Pra começar certo, **pode ser?**"
@@ -4665,36 +4665,36 @@ Não comece falando. Deixe a capa respirar 2 segundos e abra pela pessoa:
 
 **❌ Não é ICP:** oriente e encerre. **✅ É ICP:** siga.`,do:"Crie relação, depois confirme o ICP. Só siga se for ICP.",av:"Pular o rapport e ir direto confirmar dados."},
   {n:3,title:"Dinheiro é meio, liberdade é o destino",t:"Slide 3 · O que importa",tec:"Alinhar o porquê",s:`**(Slide: "Dinheiro é meio. Liberdade é o destino.")**
-"{NOME}, antes de qualquer número, quero que a gente combine uma coisa: dinheiro é **meio**. O destino é **liberdade** — dormir tranquilo, tirar o sonho do papel, cuidar de quem você ama sem aperto. É isso que a gente vai construir."
+"{NOME}, antes de qualquer número, quero que a gente combine uma coisa: dinheiro é **meio**. O destino é **liberdade**, dormir tranquilo, tirar o sonho do papel, cuidar de quem você ama sem aperto. É isso que a gente vai construir."
 
 **Micropacto:** "Faz sentido pra você?"`,do:"Conecte com o sonho dele. Deixe ele concordar.",av:"Falar de plano/preço aqui."},
   {n:4,title:"O que a desorganização cobra + raio-x",t:"Slide 4 · A dor",tec:"Mostrar a dor + diagnóstico ao vivo",s:`**(Slide das 3 dores: o dinheiro some · sem rede de proteção · sonhos adiados.)**
 Apresente as dores e **puxe o raio-x com os números dele**:
-"Me conta a sua história com dinheiro — como foi criado com isso? Hoje, **quanto entra e pra onde vai**? Tem **dívida**? Tem **reserva**?" → deixe falar, anote.
+"Me conta a sua história com dinheiro, como foi criado com isso? Hoje, **quanto entra e pra onde vai**? Tem **dívida**? Tem **reserva**?" → deixe falar, anote.
 "Olha só o que os seus próprios números estão dizendo…" → **deixe o diagnóstico falar.**`,do:"Aqui é o raio-x. Use os números reais dele. Ouça mais que fala.",av:"Palestrar sobre as dores sem ouvir a história dele."},
   {n:5,title:"Há quanto tempo você convive com isso?",t:"Slide 5 · Pergunta",tec:"Reflexão",s:`**(Slide-pergunta.)** Faça a pergunta e **cale-se**:
 "Há quanto tempo você convive com isso, sem resolver de verdade?" → deixe ele pensar e responder.`,do:"Silêncio depois da pergunta.",av:"Responder no lugar dele."},
   {n:6,title:"O que você já deixou de fazer?",t:"Slide 6 · Pergunta",tec:"Reflexão (custo emocional)",s:`**(Slide-pergunta.)** "O que você já **deixou de fazer** por causa do dinheiro? De viver, de realizar?" → ouça.`,do:"Conecte à emoção. Anote o que ele cita.",av:"Apressar."},
-  {n:7,title:"Quanto isso já te custou?",t:"Slide 7 · Pergunta",tec:"Reflexão (custo real)",s:`**(Slide-pergunta.)** "Quanto a desorganização já te **custou** — em juros, em oportunidade, em noites de sono?" → deixe o peso aparecer.`,do:"É a hora de ele sentir o custo de não agir.",av:"Amenizar a resposta dele."},
+  {n:7,title:"Quanto isso já te custou?",t:"Slide 7 · Pergunta",tec:"Reflexão (custo real)",s:`**(Slide-pergunta.)** "Quanto a desorganização já te **custou**, em juros, em oportunidade, em noites de sono?" → deixe o peso aparecer.`,do:"É a hora de ele sentir o custo de não agir.",av:"Amenizar a resposta dele."},
   {n:8,title:"O nosso método",t:"Slide 8 · Método",tec:"Mostrar o caminho",s:`**(Slide dos 4 pilares: Diagnóstico · Organização · Investir com plano · Acompanhamento.)**
 "Existe um jeito claro de sair disso: primeiro a gente **diagnostica** (já começamos), depois **organiza** (fluxo + reserva + dívidas), aí **investe com plano** e **acompanha** mês a mês. Você nunca decide sozinho."`,do:"Ligue cada pilar à dor que ELE citou no raio-x.",av:"Listar pilares soltos, sem conectar à dor dele."},
   {n:9,title:"Faz diferença ter um guia?",t:"Slide 9 · Pergunta",tec:"Micropacto",s:`**(Slide-pergunta.)** "Faz diferença ter um **guia** do seu lado, em vez de tentar sozinho de novo?" → pegue o sim.`,do:"Colha a concordância antes de mostrar a jornada.",av:"Seguir sem o sim."},
   {n:10,title:"Como vai ser (R0 → R4)",t:"Slide 10 · Jornada",tec:"Mostrar a jornada",s:`**(Slide da jornada.)** "O caminho é este: **R0** a Sessão de hoje (diagnóstico) → **organização e reserva** → **plano de dívidas** → **carteira de investimentos** → **acompanhamento** com revisões e o Café Consigo."
 
 **Micropacto:** "Ficou claro o caminho?"`,do:"Uma etapa de cada vez. Mostre que é conduzido.",av:"Correr pela jornada."},
-  {n:11,title:"A gente conduz a sua jornada",t:"Slide 11 · Condução",tec:"Tira o medo da execução",s:`**(Slide: "A gente conduz a sua jornada financeira" — checklist.)**
+  {n:11,title:"A gente conduz a sua jornada",t:"Slide 11 · Condução",tec:"Tira o medo da execução",s:`**(Slide: "A gente conduz a sua jornada financeira", checklist.)**
 "Você não vai ter que se virar sozinho: cada etapa entra no seu plano e eu **acompanho com você**, com revisões e lembretes. Você foca em viver, a gente cuida do método."`,do:"Reforce que é acompanhamento de verdade.",av:"Deixar a sensação de que ele vai fazer sozinho."},
   {n:12,title:"O que está incluído",t:"Slide 12 · Entregáveis",tec:"Ancorar o valor (antes do preço)",s:`**(Slide "O que está incluído".)** Liste com calma o que está incluso: diagnóstico completo, organização e reserva, plano de dívidas, política de investimentos e as revisões mensais.
-"Repara que **não é uma dica solta** — é acompanhamento com método, do começo ao fim."`,do:"Ancore o cuidado completo. É a base pro preço.",av:"Falar preço antes de mostrar tudo que está incluído."},
+"Repara que **não é uma dica solta**, é acompanhamento com método, do começo ao fim."`,do:"Ancore o cuidado completo. É a base pro preço.",av:"Falar preço antes de mostrar tudo que está incluído."},
   {n:13,title:"Não é promessa, é método",t:"Slide 13 · Prova",tec:"Credibilidade",s:`**(Slide de números/método: R0→R4 · acompanhamento · sem comissão de produto.)**
-"Isso não é achismo: é um método estruturado (R0 a R4), com acompanhamento, e a gente **não ganha comissão de produto** — trabalha do seu lado, sem conflito de interesse."`,do:"Use como prova de credibilidade e de isenção.",av:"Prometer rendimento."},
+"Isso não é achismo: é um método estruturado (R0 a R4), com acompanhamento, e a gente **não ganha comissão de produto**, trabalha do seu lado, sem conflito de interesse."`,do:"Use como prova de credibilidade e de isenção.",av:"Prometer rendimento."},
   {n:14,title:"Como seria sua vida sem o aperto?",t:"Slide 14 · Pergunta",tec:"Projeção do futuro",s:`**(Slide-pergunta.)** "Fecha os olhos: como seria a sua vida **sem** o aperto financeiro?" → deixe ele se ver lá.`,do:"Pinte o futuro com as palavras dele.",av:"Voltar ao racional cedo."},
   {n:15,title:"O que faria com uma reserva tranquila?",t:"Slide 15 · Pergunta",tec:"Desejo",s:`**(Slide-pergunta.)** "O que você faria com uma **reserva tranquila** no banco? Que decisão tomaria sem medo?" → ouça o desejo.`,do:"Amarre o desejo ao próximo passo (a oferta).",av:"Cortar a resposta."},
   {n:16,title:"Vamos começar? (o investimento)",t:"Slide 16 · Oferta",tec:"Ancorar valor → preço → fechar",s:`**(Slide "Vamos começar?".)** Ancore o cuidado completo, apresente o **investimento** com firmeza e **faça silêncio**.
 "Nesse acompanhamento está tudo: diagnóstico, organização, plano de dívidas, carteira e as revisões mensais. Se couber no seu planejamento, é isso que você quer resolver, certo?"
 
 Conduza ao próximo passo concreto: "Posso já **abrir o seu plano** e começar a organização essa semana?"`,do:"Diga o valor e cale-se. Isole o preço. Feche o próximo passo.",av:"Falar por cima do silêncio. Dar desconto cedo."},
-  {n:17,title:"Bem-vindo à sua liberdade",t:"Slide 17 · Boas-vindas",tec:"Comemore + repasse ao CS",s:`**(Slide de fechamento.)** "{NOME}, **parabéns pela decisão!** Você não comprou um plano — decidiu construir a sua **liberdade financeira**."
+  {n:17,title:"Bem-vindo à sua liberdade",t:"Slide 17 · Boas-vindas",tec:"Comemore + repasse ao CS",s:`**(Slide de fechamento.)** "{NOME}, **parabéns pela decisão!** Você não comprou um plano, decidiu construir a sua **liberdade financeira**."
 Abra o plano na hora, faça o **repasse pro CS/acompanhamento** e mande o 1º passo no WhatsApp.`,do:"Comemore de verdade. Inicie a jornada na hora.",av:"Encerrar frio. Deixar o pós no vácuo."}
  ]
 };
@@ -5044,7 +5044,7 @@ function scICP(){return `
 }
 function scBOT(){return `
  <div class="card"><h2 style="margin:0 0 6px;font-size:15px">🤖 Bot de Qualificação (WhatsApp) — fluxo</h2>
-   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica pelo ICP antes de passar pro SDR humano. Cada resposta pontua (lead scoring).</p></div>
+   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica pelo ICP antes de passar pro SDR humano. Cada resposta pontua o lead.</p></div>
  <div class="card mt"><div class="script"><b>Bot:</b> Olá! Aqui é o Líderes do Brasil 👋 A comunidade de empresários de Brasília. Posso te fazer 4 perguntinhas rápidas? (1) Você é <b>dono ou sócio</b> de uma empresa? <i>[Sim=+30 / Não→pede indicação]</i></div>
    <div class="script"><b>Bot:</b> (2) Qual seu <b>ramo</b>? <i>[livre]</i></div>
    <div class="script"><b>Bot:</b> (3) Faturamento aproximado por ano? <i>[até 300k=+10 / 300k–2M=+20 / 2M+=+30]</i></div>
@@ -5205,7 +5205,7 @@ function scCLO(){return `
 }
 function scCS(){return `
  <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">💚 ROTEIRO DO CS — siga de cima para baixo</h2><span class="pill pri">Ativar · Reter · Expandir · Advogar</span></div>
-   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">A venda começa depois do sim. Faça o membro <b>ter resultado</b>, <b>ficar</b> (baixar churn), <b>crescer</b> (Master→Premium) e <b>indicar</b>. É uma jornada só, do onboarding à indicação.</p>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">A venda começa depois do sim. Faça o membro <b>ter resultado</b>, <b>ficar</b> (baixar churn), <b>crescer</b> (Master→Premium) e <b>indicar</b>. É uma jornada só, das boas-vindas à indicação.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">≤5%</div><div class="eyebrow mut">churn alvo</div></div><div><div style="font-size:19px;font-weight:800">50+</div><div class="eyebrow mut">NPS alvo</div></div><div><div style="font-size:19px;font-weight:800">35%</div><div class="eyebrow mut">upsell</div></div></div></div>
 
  <div class="card mt"><div class="rot">
@@ -5283,7 +5283,7 @@ function scICP_B2(){return `
 }
 function scBOT_B2(){return `
  <div class="card"><h2 style="margin:0 0 6px;font-size:15px">🤖 Bot de Qualificação (WhatsApp) — fluxo</h2>
-   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica pelo ICP e pelo momento da jornada antes de passar pro SDR humano. Cada resposta pontua (lead scoring).</p></div>
+   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica pelo ICP e pelo momento da jornada antes de passar pro SDR humano. Cada resposta pontua o lead.</p></div>
  <div class="card mt"><div class="script"><b>Bot:</b> Oi! Aqui é a B2 Inteligência Financeira 🧭 A gente te dá um norte pra sua vida financeira. Posso te fazer 4 perguntas rápidas? (1) Hoje sua vida financeira está: <b>A)</b> no vermelho/endividada · <b>B)</b> equilibrada, mas sem investir · <b>C)</b> já invisto e quero otimizar. <i>[A=+15 dor / B=+20 / C=+25]</i></div>
    <div class="script"><b>Bot:</b> (2) Sua renda mensal (pessoal ou da família) está em qual faixa? <i>[até 5k=+5 / 5k–15k=+20 / 15k+=+30]</i></div>
    <div class="script"><b>Bot:</b> (3) Você já tem uma <b>reserva de emergência</b> (3–6 meses de gastos)? <i>[Não → marca dor / Sim=+10]</i></div>
@@ -5436,7 +5436,7 @@ function scCLO_B2(){return `
 }
 function scCS_B2(){return `
  <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">💚 ROTEIRO DO CS — siga de cima para baixo</h2><span class="pill pri">Ativar · Reter · Expandir · Advogar</span></div>
-   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">A venda começa depois do sim. Conduza o cliente pela <b>jornada R1 → R4</b>, faça ele <b>ter resultado</b>, <b>ficar</b> (baixar churn), <b>crescer</b> (Norte → Bússola) e <b>indicar</b>. É uma jornada só, do onboarding à indicação.</p>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">A venda começa depois do sim. Conduza o cliente pela <b>jornada R1 → R4</b>, faça ele <b>ter resultado</b>, <b>ficar</b> (baixar churn), <b>crescer</b> (Norte → Bússola) e <b>indicar</b>. É uma jornada só, das boas-vindas à indicação.</p>
    <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">≤5%</div><div class="eyebrow mut">churn alvo</div></div><div><div style="font-size:19px;font-weight:800">50+</div><div class="eyebrow mut">NPS alvo</div></div><div><div style="font-size:19px;font-weight:800">35%</div><div class="eyebrow mut">upsell</div></div></div></div>
 
  <div class="card mt"><div class="rot">

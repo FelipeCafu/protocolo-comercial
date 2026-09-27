@@ -112,7 +112,7 @@ window.ROTEIRO_ICBARI={
    do:"Números reais, ditos com firmeza.",
    av:"Exagerar. Inventar."},
   {n:16,title:"Gente de verdade, avaliando de verdade.",t:"Prova social · 1 min",tec:"Depoimentos reais do Google",
-   s:"**Mostre 1 ou 2 depoimentos reais (Google):**\n\"Fiz bariátrica com o Dr. Wander. A melhor decisão que tomei em 2025.\" — Sarah Moura\n\"Retirada da vesícula. Me senti segura, sem pressa e sem medo.\" — Pollyana Rosa\n\nSão **avaliações reais no Google**, mais de 120 com 5 estrelas.",
+   s:"**Mostre 1 ou 2 depoimentos reais (Google):**\n\"Fiz bariátrica com o Dr. Wander. A melhor decisão que tomei em 2025.\" (Sarah Moura)\n\"Retirada da vesícula. Me senti segura, sem pressa e sem medo.\" (Pollyana Rosa)\n\nSão **avaliações reais no Google**, mais de 120 com 5 estrelas.",
    do:"Escolha o depoimento do MESMO procedimento do paciente.",
    av:"Ler todos. Inventar depoimento."},
   {n:17,title:"O antes e o depois de quem passou por aqui.",t:"Prova · 30s",tec:"Antes e depois",
@@ -135,9 +135,9 @@ window.ROTEIRO_ICBARI={
    s:"**Antes do preço, o valor:**\n\"Nesse acompanhamento está **tudo**: a condução da jornada, a marcação dos exames e da cirurgia, a técnica moderna e o pós. É um **cuidado completo**.\"\n\n**Apresente o valor com firmeza e faça silêncio.** Se houver convênio: explique o que a clínica ajuda a solicitar, **sem prometer cobertura** (\"quem autoriza é o convênio, a gente prepara toda a documentação\").\n\n**Isolar o preço:** \"Se o investimento couber no seu planejamento, é isso que você quer resolver, certo?\"\n\n**Facilidades:** parcelamento em até **12x** e apoio com o convênio. Acompanhamento no pós em **1, 2 e 3 meses**.\n\n**Objeções (acolhe → reenquadra → encaminha):**\n\"Vou pensar\" → \"Faz sentido. Sua dúvida é sobre o **procedimento**, o **valor** ou o **momento**?\"\n\"Medo da cirurgia\" → \"É natural. Por isso a gente conduz passo a passo, com técnica minimamente invasiva. O que mais te assusta?\"\n\"Preciso ver o convênio\" → \"Perfeito, já deixo a documentação pronta. Enquanto isso, começamos os exames?\"\n\n**Encaminhar:** \"O primeiro passo concreto é **começar os exames**. Posso já iniciar sua jornada no sistema e a equipe marca o primeiro exame ainda essa semana?\"",
    do:"Ancore o valor, isole o preço e faça silêncio. Feche pelo próximo passo (iniciar exames).",
    av:"Jogar o preço sem ancorar. Prometer convênio. Desistir na primeira objeção."},
-  {n:22,title:"Bem-vindo à sua nova vida.",t:"Pós-fechamento",tec:"Iniciar a jornada · handoff CS",
+  {n:22,title:"Bem-vindo à sua nova vida.",t:"Pós-fechamento",tec:"Iniciar a jornada · passagem pro CS",
    s:"**Comemore e inicie de verdade:**\n\"{NOME}, **parabéns pela decisão!** A gente transforma vidas **com você**, não **por você**. Vamos começar!\"\n\nAbra a **Jornada do Paciente** no sistema (escolhendo o procedimento, os exames entram automaticamente) e passe o caso pro **CS/pós-venda**. \"Você vai receber tudo no **WhatsApp e no e-mail**.\"",
-   do:"Crie a jornada na hora e faça o handoff pro CS. Comemore com o paciente.",
+   do:"Crie a jornada na hora e faça a passagem pro CS. Comemore com o paciente.",
    av:"Encerrar frio. Deixar a jornada sem começar."}
  ],
  "jornada":[
@@ -214,7 +214,7 @@ window.ROTEIRO_ICB_SDR=function(orig){
   s:"**Sempre para vender a consulta (não a cirurgia):**\n\"Está caro\" → \"A consulta é o primeiro passo e é onde tudo fica claro; sem ela nem dá pra falar de valores.\"\n\"Tenho medo de cirurgia\" → \"É super normal. A consulta serve justamente pra tirar esse medo com informação, e nossas técnicas são minimamente invasivas.\"\n\"Vou pensar\" → \"Claro. Só pra eu te ajudar: o que mais pesa na sua decisão? Enquanto isso, deixo um horário reservado.\"\n\"Preciso ver com a família\" → \"Ótimo, traga quem você quiser na consulta.\"",
   do:"Acolha, reenquadre e volte pro agendamento.",
   av:"Discutir. Desistir na primeira objeção."};
- var s9={title:"Feche o combinado e evite a falta",t:"Fechamento do agendamento",tec:"WhatsApp na hora · anti no-show",
+ var s9={title:"Feche o combinado e evite a falta",t:"Fechamento do agendamento",tec:"WhatsApp na hora · anti-falta",
   s:"\"Fechado, **{NOME}**: **{DIA} às {HORA}** 🙌. Vou te mandar a confirmação aqui, me passa seu **melhor e-mail e WhatsApp**. Você recebe lembrete um dia antes e no dia. Se tiver exames antigos, leve com você. Qualquer coisa é só me chamar.\"",
   do:"Capture e-mail e WhatsApp. Ative o lembrete. Blinde a falta.",
   av:"Encerrar sem contato e sem confirmação."};
