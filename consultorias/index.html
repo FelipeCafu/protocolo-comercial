@@ -2399,14 +2399,24 @@ function vCRM(){
    <div class="kanban" id="kanban"></div>`;
   renderKanban();
 }
+/* Helpers de atividade com HORÁRIO: uma atividade vence pela data E pela hora (se passou da hora hoje, fica atrasada). */
+function _nowHM(){var n=new Date();return (''+n.getHours()).padStart(2,'0')+':'+(''+n.getMinutes()).padStart(2,'0');}
+function actLate(a){if(!a||a.done)return false;var today=new Date().toISOString().slice(0,10);
+  if(a.data<today)return true;
+  if(a.data===today&&a.hora)return _nowHM()>a.hora;
+  return false;}
+function actKey(a){return (a.data||'')+' '+(a.hora||'99:99');} /* ordenação por data+hora; sem hora vai pro fim do dia */
 function actStatus(leadId){
-  const acts=DB.get(T(),"activities").filter(a=>a.leadId===leadId&&!a.done);
+  const lead=DB.get(T(),"leads").find(l=>l.id===leadId)||{};
+  /* só conta atividade do DONO do lead (evita "atrasada fantasma" de atividade que ficou com outro dono) */
+  const acts=DB.get(T(),"activities").filter(a=>a.leadId===leadId&&!a.done&&(!a.owner||!lead.owner||a.owner===lead.owner));
   if(!acts.length)return"none";
   const today=new Date().toISOString().slice(0,10);
-  if(acts.some(a=>a.data<today))return"late";
+  if(acts.some(actLate))return"late";
   if(acts.some(a=>a.data===today))return"today";
   return"future";
 }
+function reassignActs(leadId,ownerId){var acts=DB.get(T(),"activities");var ch=false;acts.forEach(function(a){if(a.leadId===leadId&&!a.done&&a.owner!==ownerId){a.owner=ownerId;ch=true;}});if(ch)DB.set(T(),"activities",acts);}
 function renderKanban(){
   const funnels=DB.getObj(T(),"funnels",FUNNELS);
   const funnel=funnels.find(f=>f.id===CRM_FUNNEL)||funnels[0];
@@ -2438,7 +2448,11 @@ function bindDrag(){
     d.addEventListener("dragover",e=>{e.preventDefault();d.parentElement.classList.add("over");});
     d.addEventListener("dragleave",()=>d.parentElement.classList.remove("over"));
     d.addEventListener("drop",e=>{e.preventDefault();d.parentElement.classList.remove("over");
-      if(dragId){moveLeadStage(dragId,d.dataset.stage);renderKanban();}});});
+      if(dragId){var stg=d.dataset.stage;
+        if(stg==="perdido"){loseLead(dragId);}      /* pede motivo da perda */
+        else if(stg==="ganho"){winLead(dragId);}
+        else{moveLeadStage(dragId,stg);renderKanban();}
+      }});});
 }
 function slaMs(s){if(!s||!s.sla)return 0;return s.sla*((s.slaUnit==="d")?24:1)*36e5;}
 function slaLabel(s){if(!s||!s.sla)return "sem prazo";return s.sla+(s.slaUnit==="d"?(s.sla>1?" dias":" dia"):"h");}
@@ -2532,7 +2546,6 @@ function leadDetail(id){
            <div class="tab ${LD_TAB==='arquivo'?'on':''}" onclick="LD_TAB='arquivo';leadDetail('${l.id}')">📎 Arquivo/Doc</div></div>
          ${LD_TAB==='atividade'?ldActivityForm(l):LD_TAB==='anotacao'?ldNoteForm(l):ldFileForm(l)}
        </div>
-       ${T()==="icbari"?"":`<div class="card mt" style="text-align:center;cursor:pointer" onclick="checkin('${l.id}')">📍 <b>Check-in da visita (captura GPS)</b></div>`}
        <div class="card mt"><div class="flex between" style="align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:14px">📋 Atividades em foco</h2>
          <div class="flex" style="gap:8px;align-items:center"><button class="btn ghost xs" onclick="iniciarCadencia('${l.id}')" title="Dispara os toques do 1º e 2º dia na agenda">▶ Iniciar cadência</button><small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div></div>
          <div class="flex wrap mt8" style="gap:12px;font-size:11px"><span><span class="fdot today" style="display:inline-block"></span> hoje</span><span><span class="fdot future" style="display:inline-block"></span> futura</span><span><span class="fdot late" style="display:inline-block"></span> atrasada</span><span><span class="fdot none" style="display:inline-block"></span> sem atividade</span></div>
@@ -2548,19 +2561,20 @@ function ldActivityForm(l){
     <div class="row"><div><label class="fl">Data</label><input class="in" id="ac_data" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
       <div><label class="fl">Hora</label><input class="in" id="ac_hora" type="time"></div></div>
     <label class="fl mt8">Observação (opcional), @marque alguém</label><textarea class="in" id="ac_obs" rows="2"></textarea>
+    ${atMentionChips('ac_obs')}
     <div class="flex between mt"><small class="mut">🎙️ áudio disponível na versão de produção</small><button class="btn sm" onclick="addActivity('${l.id}')">📅 Agendar atividade</button></div>`;
 }
 function ldNoteForm(l){return `<textarea class="in" id="nt_txt" rows="4" placeholder="Escreva uma anotação sobre este lead…"></textarea>
    <button class="btn sm mt" onclick="addNote('${l.id}')">Salvar anotação</button>`;}
 function ldFileForm(l){return `<div class="card" style="border:1px dashed var(--brand-line);text-align:center;padding:26px;cursor:pointer" onclick="toast('Upload disponível na versão de produção')"><div style="font-size:28px">📎</div><div class="mut" style="font-size:13px;margin-top:6px">Anexar proposta, contrato ou documento</div></div>`;}
 function ldFocus(l){
-  const acts=DB.get(T(),"activities").filter(a=>a.leadId===l.id).sort((a,b)=>(a.data>b.data?1:-1));
+  const acts=DB.get(T(),"activities").filter(a=>a.leadId===l.id).sort((a,b)=>actKey(a)<actKey(b)?-1:1);
   if(!acts.length)return`<div class="foco"><span class="fdot none"></span><span class="mut" style="font-size:13px">Sem atividade agendada, agende um retorno.</span></div>`;
   const today=new Date().toISOString().slice(0,10);
-  return acts.map(a=>{const cls=a.done?"future":a.data<today?"late":a.data===today?"today":"future";
+  return acts.map(a=>{const late=actLate(a);const cls=a.done?"future":late?"late":a.data===today?"today":"future";
     return `<div class="foco"><span class="fdot ${cls}"></span>
-      <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">concluída</span>':a.data<today?'<span class="pill bad">atrasada</span>':''}</div>
-      <small class="mut">📅 ${a.data.split("-").reverse().join("/")} · ${a.tipo}</small></div>
+      <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">concluída</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
+      <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small></div>
       ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button>`}</div>`;}).join("");
 }
 function ldHistory(l){
@@ -2579,10 +2593,13 @@ function l_owner(id){return (DB.get(T(),"leads").find(x=>x.id===id)||{}).owner;}
 function addActivity(id){
   const tit=document.getElementById("ac_titulo").value.trim()||("Atividade · "+LD_ATYPE);
   const data=document.getElementById("ac_data").value||new Date().toISOString().slice(0,10);
+  const hora=((document.getElementById("ac_hora")||{}).value||"").trim();
   const obs=((document.getElementById("ac_obs")||{}).value||"").trim();
-  DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,done:false,owner:l_owner(id),obsAg:obs});
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+")"+(obs?", "+obs:""),ts:Date.now()});
-  toast("Atividade agendada");leadDetail(id);
+  if(!hora){alert("Informe a HORA da atividade, pra você saber a que horas falar com o cliente.");return;}
+  DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,hora:hora,done:false,owner:l_owner(id),obsAg:obs});
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+(hora?" "+hora:"")+")"+(obs?", "+obs:""),ts:Date.now()});
+  var mm=pushMentions(id,obs);
+  toast("Atividade agendada"+(mm?" · "+mm+" marcado(s)":""));leadDetail(id);
 }
 var _NEXT_TYPES=[["ligação","📞 Ligação"],["wa","🟢 WhatsApp"],["visita","📍 Visita / Consulta"],["reuniao","🤝 Reunião"],["email","✉️ E-mail"],["msg","💬 Mensagem"],["alarme","⏰ Lembrete"]];
 /* Fluxo único de conclusão: observação obrigatória + próxima atividade obrigatória (nada fica sem próximo passo). Vale p/ todas as empresas. */
@@ -2593,11 +2610,13 @@ function concludeAct(aid,ctx){
     <p class="mut" style="font-size:13px;margin:0 0 8px">${a?esc(a.titulo):''}</p>
     <label class="fl">O que aconteceu nesta atividade? <b style="color:var(--brand-bad)">*</b></label>
     <textarea class="in" id="caObs" rows="3" placeholder="Ex.: liguei e não atendeu / falei com o paciente, vai pensar / consulta confirmada"></textarea>
+    ${atMentionChips('caObs')}
     <div style="border-top:1px solid var(--brand-line);margin:14px 0 10px"></div>
     <label class="fl">Próxima atividade <b style="color:var(--brand-bad)">*</b>, todo lead precisa de um próximo passo</label>
     <input class="in" id="caNextTit" placeholder="Ex.: Ligar de novo / Enviar WhatsApp / Consulta de avaliação" style="margin-top:6px">
     <div class="row mt8"><div style="flex:1"><label class="fl">Tipo</label><select class="in" id="caNextTipo">${_NEXT_TYPES.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>';}).join('')}</select></div>
-      <div style="flex:1"><label class="fl">Data</label><input class="in" id="caNextData" type="date" value="${nx}"></div></div>
+      <div style="flex:1"><label class="fl">Data</label><input class="in" id="caNextData" type="date" value="${nx}"></div>
+      <div style="flex:1"><label class="fl">Hora <b style="color:var(--brand-bad)">*</b></label><input class="in" id="caNextHora" type="time"></div></div>
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--brand-muted)"><input type="checkbox" id="caEncerrar"> Encerrar (ganho/perdido), sem próxima atividade</label>
     <div class="flex between mt"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="concludeActDo('${aid}','${ctx}')">Concluir</button></div>`);
 }
@@ -2608,13 +2627,16 @@ function concludeActDo(aid,ctx){
   var nt=(document.getElementById("caNextTit").value||"").trim();
   var ntipo=document.getElementById("caNextTipo").value;
   var ndata=document.getElementById("caNextData").value||new Date().toISOString().slice(0,10);
+  var nhora=(document.getElementById("caNextHora").value||"").trim();
   if(!enc&&!nt){alert("Defina a próxima atividade (ou marque encerrar).");return;}
+  if(!enc&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
   var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
   DB.update(T(),"activities",aid,{done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)});
   if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
+  if(lid){var mm=pushMentions(lid,obs);}
   if(!enc&&lid){
-    DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,done:false,owner:a?a.owner:l_owner(lid)});
-    DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+")",ts:Date.now()});
+    DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,hora:nhora,done:false,owner:a?a.owner:l_owner(lid)});
+    DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+(nhora?" "+nhora:"")+")",ts:Date.now()});
   }
   closeModal();toast(enc?"Concluída ✓":"Concluída ✓ · próxima agendada");
   if(ctx==="tarefas")vTarefas();else if(ctx==="meudia")vMeuDia();else if(lid)leadDetail(lid);
@@ -2694,7 +2716,7 @@ function assignOwner(id,ownerId){var sel=DB.get(T(),"sellers").find(function(s){
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var patch={owner:ownerId};
   var f=funnelForPapel(sel.papel);
   if(f&&l.funnelId!==f.id){patch.funnelId=f.id;patch.estagio=(f.stages[0]||{}).id;patch.movedAt=Date.now();}
-  DB.update(T(),"leads",id,patch);
+  DB.update(T(),"leads",id,patch);reassignActs(id,ownerId);
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Responsável → "+(sel.nome||ownerId)+((f&&patch.funnelId)?(" · movido p/ o funil "+f.name):""),ts:Date.now()});
   toast("Responsável atualizado"+(patch.funnelId?(" · movido p/ o funil de "+(sel.papel||"")):""));}
 function doTransfer(id){const owner=document.getElementById("tr_owner").value;
@@ -2702,6 +2724,7 @@ function doTransfer(id){const owner=document.getElementById("tr_owner").value;
   const fs=DB.getObj(T(),"funnels",FUNNELS);
   const f=funnelForPapel(sel.papel)||fs[0];
   DB.update(T(),"leads",id,{owner,funnelId:f.id,estagio:(f.stages[0]||{}).id,movedAt:Date.now()});
+  reassignActs(id,owner);
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Transferido p/ "+sellerName(owner)+" · funil "+f.name,ts:Date.now()});
   closeModal();toast("Lead transferido p/ "+(sel.nome||owner));leadDetail(id);}
 function battlecard(id){const l=DB.get(T(),"leads").find(x=>x.id===id);
@@ -2842,15 +2865,24 @@ function baseToggleAll(ck){baseFiltered().slice(0,400).forEach(b=>ck?BASE_SEL.ad
 function baseSend(id){BASE_SEL=new Set([id]);baseSendSelected();}
 function baseSendSelected(){
   if(!BASE_SEL.size){toast("Selecione ao menos 1 contato","warn");return;}
-  const funnels=DB.getObj(T(),"funnels",FUNNELS);const sellersB=DB.get(T(),"sellers");
+  const admin=isAdmin();
+  const allF=DB.getObj(T(),"funnels",FUNNELS);const sellersB=DB.get(T(),"sellers");
+  var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
+  const funnels=admin?allF:allF.filter(f=>f.papel===_pap);
+  const funnelSel=admin
+    ? `<select class="in" id="sendFunnel" onchange="sendStageOpts()">${allF.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select>`
+    : `<select class="in" id="sendFunnel" onchange="sendStageOpts()">${(funnels.length?funnels:[allF[0]]).map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select><small class="mut" style="font-size:11px">Você envia sempre pro seu funil.</small>`;
+  const ownerSel=admin
+    ? `<label class="mut" style="font-size:12px;margin-top:8px;display:block">Vendedor responsável (vai pra fila dele)</label>
+       <select class="in" id="sendOwner"><option value="__auto">Distribuir automaticamente (rodízio)</option>${sellersB.map(x=>`<option value="${x.id}">${esc(x.nome)} · ${x.papel}</option>`).join("")}</select>`
+    : `<input type="hidden" id="sendOwner" value="${SESSION.sellerId||''}"><p class="mut" style="font-size:12px;margin-top:8px">O contato vai direto pra <b>sua fila</b>. Depois, dentro do CRM, você pode transferir pro colega.</p>`;
   openModal(`<h3>Enviar ${BASE_SEL.size} contato(s) para o CRM</h3>
-    <p class="mut" style="font-size:13px">Escolha o funil e a etapa inicial. Os contatos permanecem na Base.</p>
+    <p class="mut" style="font-size:13px">Escolha a etapa inicial. Os contatos permanecem na Base.</p>
     <label class="mut" style="font-size:12px">Funil</label>
-    <select class="in" id="sendFunnel" onchange="sendStageOpts()">${funnels.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")}</select>
+    ${funnelSel}
     <label class="mut" style="font-size:12px;margin-top:8px;display:block">Etapa</label>
     <select class="in" id="sendStage"></select>
-    <label class="mut" style="font-size:12px;margin-top:8px;display:block">Vendedor responsável (vai pra fila dele)</label>
-    <select class="in" id="sendOwner"><option value="__auto">Distribuir automaticamente (rodízio)</option>${sellersB.map(x=>`<option value="${x.id}">${esc(x.nome)} · ${x.papel}</option>`).join("")}</select>
+    ${ownerSel}
     <div class="flex between mt"><small class="mut">${BASE_SEL.size} selecionado(s).</small>
       <div class="flex"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="baseSendDo()">Enviar p/ CRM</button></div></div>`);
   sendStageOpts();
@@ -2858,7 +2890,7 @@ function baseSendSelected(){
 function sendStageOpts(){const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===document.getElementById("sendFunnel").value);document.getElementById("sendStage").innerHTML=(f?f.stages:[]).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");}
 function baseSendDo(){
   const fid=document.getElementById("sendFunnel").value,sid=document.getElementById("sendStage").value;
-  const own=document.getElementById("sendOwner").value,sellersD=DB.get(T(),"sellers");let rr=0;
+  const own=isAdmin()?document.getElementById("sendOwner").value:(SESSION.sellerId||document.getElementById("sendOwner").value),sellersD=DB.get(T(),"sellers");let rr=0;
   const _f0=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid)||{};
   const _pool=sellersD.filter(s=>(s.papel||"").toLowerCase()===(_f0.papel||"").toLowerCase());
   const _rota=_pool.length?_pool:sellersD; /* rodízio só entre quem enxerga esse funil */
@@ -3179,14 +3211,14 @@ function taskCount(){const t=new Date().toISOString().slice(0,10);return myActiv
 function vTarefas(){
   const today=new Date().toISOString().slice(0,10);
   const byId={};DB.get(T(),"leads").forEach(l=>{if(!l.deleted)byId[l.id]=l;});
-  const acts=myActivities().filter(a=>!a.leadId||byId[a.leadId]).sort((a,b)=>a.data<b.data?-1:1);
+  const acts=myActivities().filter(a=>!a.leadId||byId[a.leadId]).sort((a,b)=>actKey(a)<actKey(b)?-1:1);
   const g={late:[],today:[],future:[]};
-  acts.forEach(a=>{g[a.data<today?"late":a.data===today?"today":"future"].push(a);});
+  acts.forEach(a=>{g[actLate(a)?"late":a.data===today?"today":"future"].push(a);});
   const item=(a,color)=>{const l=byId[a.leadId]||{};
     return `<div class="card" style="padding:12px;margin-bottom:8px;border-left:3px solid ${color}"><div class="flex between wrap" style="gap:8px">
       <div class="flex" style="gap:10px"><span style="font-size:18px">${ATYPE_IC[a.tipo]||"•"}</span>
         <div><b style="font-size:13.5px">${a.titulo}</b>
-          <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${isAdmin()?" · "+sellerName(a.owner):""}</div></div></div>
+          <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 <b>"+a.hora+"</b>":""}${isAdmin()?" · "+sellerName(a.owner):""}</div></div></div>
       <div class="flex"><button class="btn xs ghost" onclick="leadDetail('${a.leadId}')">abrir lead</button><button class="btn xs" onclick="doneTask('${a.id}')">✓ concluir</button></div></div></div>`;};
   const sec=(title,arr,color,cls,emoji)=>`<div class="section-h"><h2>${emoji} ${title} <span class="pill ${cls}">${arr.length}</span></h2><div class="line"></div></div>
     ${arr.length?arr.map(a=>item(a,color)).join(""):'<small class="mut">Nada aqui. 🎉</small>'}`;
@@ -5625,26 +5657,46 @@ function afterQuiz(){
       ${ok?`<button class="btn sm" onclick="renderSidebar();go('painel')">Começar a operar →</button>`:`<button class="btn sm" onclick="vTreino()">Refazer prova</button>`}</div></div>`;
   renderSidebar();
 }
+/* ===== Marcar pessoa com @ (cai no sininho da pessoa marcada) ===== */
+function tenantPeople(){var t=T();var out=[];try{Object.keys(USERS).forEach(function(k){var u=USERS[k];if(u&&u.tenant===t&&u.name){out.push({key:k,nome:u.name});}});}catch(e){}return out;}
+function atMentionChips(fieldId){var ppl=tenantPeople();if(!ppl.length)return'';
+ return '<div class="flex wrap" style="gap:6px;margin-top:6px"><small class="mut" style="font-size:11px;width:100%">Marcar alguém (a pessoa recebe no 🔔 dela):</small>'
+  +'<span class="chip" onclick="acMention(\''+fieldId+'\',\'todos\')">@todos</span>'
+  +ppl.map(function(p){var fn=(p.nome||'').split(' ')[0];return '<span class="chip" onclick="acMention(\''+fieldId+'\',\''+fn+'\')">@'+esc(fn)+'</span>';}).join('')+'</div>';}
+function acMention(fieldId,name){var e=document.getElementById(fieldId);if(!e)return;var v=e.value||'';if(v&&!/\s$/.test(v))v+=' ';e.value=v+'@'+name+' ';e.focus();}
+function parseMentionTargets(text){if(!text)return[];var ppl=tenantPeople();if(/@(todos|todas|all|equipe|time|geral)\b/i.test(text))return ppl.map(function(p){return p.nome;});
+ var toks=(text.match(/@([\wÀ-ÿ.]+)/g)||[]).map(function(t){return t.slice(1).toLowerCase();});var hits=[];
+ toks.forEach(function(tk){ppl.forEach(function(p){var fn=(p.nome||'').toLowerCase().split(' ')[0];if(fn&&(fn===tk||tk.indexOf(fn)===0||fn.indexOf(tk)===0)){if(hits.indexOf(p.nome)<0)hits.push(p.nome);}});});
+ return hits;}
+function pushMentions(leadId,text){var alvos=parseMentionTargets(text);if(!alvos.length)return 0;
+ var lead=DB.get(T(),"leads").find(function(x){return x.id===leadId;})||{};var from=((SESSION&&SESSION.name)||'').split(' ')[0]||'alguém';
+ var ms=DB.get(T(),"mentions");alvos.forEach(function(nome){ms.unshift({id:DB.uid(),to:nome,from:from,leadId:leadId,leadNome:lead.nome||'',txt:text,ts:Date.now(),read:false});});
+ DB.set(T(),"mentions",ms);return alvos.length;}
+function myMentions(){var me=(SESSION&&SESSION.name)||'';return DB.get(T(),"mentions").filter(function(m){return !m.read&&m.to===me;});}
 function myActNotifs(){
- var me=SESSION.sellerId||SESSION.name;var today=new Date().toISOString().slice(0,10);
+ var me=SESSION.sellerId||SESSION.name;
  var acts=DB.get(T(),"activities").filter(function(a){return !a.done&&(isAdmin()||a.owner===me);});
  var leadById={};DB.get(T(),"leads").forEach(function(l){leadById[l.id]=l;});
- var over=acts.filter(function(a){return a.data&&a.data<today;}).map(function(a){return {a:a,l:leadById[a.leadId]};});
- var td=acts.filter(function(a){return a.data===today;}).map(function(a){return {a:a,l:leadById[a.leadId]};});
- return {over:over,today:td};
+ var today=new Date().toISOString().slice(0,10);
+ var over=acts.filter(actLate).map(function(a){return {a:a,l:leadById[a.leadId]};});
+ var td=acts.filter(function(a){return !actLate(a)&&a.data===today;}).map(function(a){return {a:a,l:leadById[a.leadId]};});
+ return {over:over,today:td,mentions:myMentions()};
 }
 function updateBell(){var dot=document.getElementById("bellDot");if(!dot)return;
- var n=myActNotifs();var cnt=n.over.length+n.today.length+(isAdmin()?DB.get(T(),"alerts").length:0);
+ var n=myActNotifs();var cnt=n.over.length+n.today.length+n.mentions.length+(isAdmin()?DB.get(T(),"alerts").length:0);
  dot.textContent=cnt;dot.classList.toggle("hidden",cnt===0);}
 function showAlerts(){
   var n=myActNotifs();var a=isAdmin()?DB.get(T(),"alerts"):[];
-  function row(x,late){var l=x.l||{};return '<div class="script" style="border-left-color:'+(late?'var(--brand-bad)':'var(--brand-ok)')+'"><b>'+(late?'🔴 Atrasada':'🟢 Para hoje')+'</b> · '+esc(x.a.titulo||x.a.tipo||'Atividade')+'<br><small class="mut">'+esc(l.nome||'(lead)')+' · '+esc(x.a.data||'')+'</small></div>';}
+  function row(x,late){var l=x.l||{};return '<div class="script" style="cursor:pointer;border-left-color:'+(late?'var(--brand-bad)':'var(--brand-ok)')+'" onclick="closeModal();leadDetail(\''+(x.a.leadId||'')+'\')"><b>'+(late?'🔴 Atrasada':'🟢 Para hoje')+'</b> · '+esc(x.a.titulo||x.a.tipo||'Atividade')+'<br><small class="mut">'+esc(l.nome||'(lead)')+' · '+esc((x.a.data||'').split("-").reverse().join("/"))+(x.a.hora?' '+esc(x.a.hora):'')+'</small></div>';}
   openModal('<h3>🔔 Notificações</h3>'
+   +(n.mentions.length?n.mentions.map(function(m){return '<div class="script" style="cursor:pointer;border-left-color:var(--brand-primary-2)" onclick="closeModal();leadDetail(\''+(m.leadId||'')+'\')"><b>@ '+esc(m.from)+' te marcou</b><br><small class="mut">'+esc(m.leadNome||'(lead)')+' · '+esc(m.txt||'')+'</small></div>';}).join(''):'')
    +(n.over.length?n.over.map(function(x){return row(x,true);}).join(''):'')
    +(n.today.length?n.today.map(function(x){return row(x,false);}).join(''):'')
    +(a.length?a.map(function(x){return '<div class="script" style="border-left-color:var(--brand-warn)"><b>⚠️ Treinamento</b><br>'+x.txt+'<br><small class="mut">'+relTime(x.ts)+' atrás</small></div>';}).join(''):'')
-   +((!n.over.length&&!n.today.length&&!a.length)?'<p class="mut">Nada pendente. 🎉</p>':'')
-   +'<div class="flex mt" style="gap:8px"><button class="btn sm" onclick="closeModal();go(\'tarefas\')">Abrir Tarefas / Agenda</button>'+(a.length?'<button class="btn ghost sm" onclick="DB.set(T(),\'alerts\',[]);updateBell();closeModal();toast(\'Alertas limpos\')">Limpar alertas do gestor</button>':'')+'</div>');}
+   +((!n.over.length&&!n.today.length&&!n.mentions.length&&!a.length)?'<p class="mut">Nada pendente. 🎉</p>':'')
+   +'<div class="flex mt" style="gap:8px"><button class="btn sm" onclick="closeModal();go(\'tarefas\')">Abrir Tarefas / Agenda</button>'+(a.length?'<button class="btn ghost sm" onclick="DB.set(T(),\'alerts\',[]);updateBell();closeModal();toast(\'Alertas limpos\')">Limpar alertas do gestor</button>':'')+'</div>');
+  if(n.mentions.length){var ms=DB.get(T(),"mentions");var me=(SESSION&&SESSION.name)||'';ms.forEach(function(m){if(m.to===me)m.read=true;});DB.set(T(),"mentions",ms);setTimeout(updateBell,100);}
+}
 
 /* ===== PERFORMANCE / METAS / FIDELIDADE / RECORRÊNCIA ===== */
 function vPerf(){
