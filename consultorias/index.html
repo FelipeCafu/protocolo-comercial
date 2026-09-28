@@ -2350,7 +2350,30 @@ function vExec(){
    </div>`;
 }
 /* ===== CRM & FUNIS ===== */
+function healLeadStages(){
+  /* Conserta leads "fantasma": entram na contagem do funil mas não aparecem em coluna nenhuma
+     porque o estágio não existe naquele funil (dados antigos, mudança de funil, importação). */
+  var fs=DB.getObj(T(),"funnels",FUNNELS);if(!fs||!fs.length)return;
+  var leads=DB.get(T(),"leads");var changed=false;
+  leads.forEach(function(l){
+    if(l.deleted)return;
+    var f=fs.find(function(x){return x.id===l.funnelId;});
+    if(!f){f=fs[0];l.funnelId=f.id;l.estagio=(f.stages[0]||{}).id;l.movedAt=l.movedAt||Date.now();changed=true;return;}
+    if(!f.stages.some(function(s){return s.id===l.estagio;})){l.estagio=(f.stages[0]||{}).id;changed=true;}
+  });
+  if(changed)DB.set(T(),"leads",leads);
+}
+function crmVisibleCount(fid){
+  /* conta só o que o usuário REALMENTE vê no kanban (mesmo dono/filtro), pra o número nunca mentir */
+  return DB.get(T(),"leads").filter(function(l){
+    if(l.deleted||l.funnelId!==fid)return false;
+    if(!isAdmin()&&SESSION.sellerId)return l.owner===SESSION.sellerId;
+    if(CRM_SELLER!=="all")return l.owner===CRM_SELLER;
+    return true;
+  }).length;
+}
 function vCRM(){
+  healLeadStages();
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
@@ -2370,7 +2393,7 @@ function vCRM(){
          ${DB.get(T(),"sellers").map(s=>`<option value="${s.id}" ${CRM_SELLER===s.id?'selected':''}>${s.nome} (${s.papel})</option>`).join("")}</select>`:''}
        <input class="in" id="crmSearch" placeholder="🔎 buscar no funil…" style="width:200px" oninput="renderKanban()">
        <button class="btn sm" onclick="leadModal()">+ Novo lead</button></div></div>
-   <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${DB.get(T(),"leads").filter(l=>l.funnelId===f.id&&!l.deleted).length})</small></span>`).join("")}
+   <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${crmVisibleCount(f.id)})</small></span>`).join("")}
      ${isAdmin()?`<span class="chip" onclick="go('funil')">⚙️ editar funis</span>`:""}</div>
    <div class="kanban" id="kanban"></div>`;
   renderKanban();
@@ -2656,11 +2679,12 @@ function lossBreakdown(){
 function loseLead_OLD(id){moveLeadStage(id,'perdido');DB.update(T(),"leads",id,{funnelId:'closer'});leadDetail(id);}
 function transferLead(id){const sellers=DB.get(T(),"sellers");
   openModal(`<h3>Transferir lead</h3><label class="fl mt">Novo responsável</label>
-   <select class="in" id="tr_owner">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
-   <label class="fl mt8">Mover para o funil</label>
-   <select class="in" id="tr_funnel">${DB.getObj(T(),"funnels",FUNNELS).map(f=>`<option value="${f.id}">${f.name}</option>`).join("")}</select>
+   <select class="in" id="tr_owner" onchange="trFunnelHint()">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
+   <p class="mut" id="tr_hint" style="font-size:12.5px;margin:8px 0 0"></p>
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button>
-     <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`);}
+     <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`);
+  trFunnelHint();}
+function trFunnelHint(){var el=document.getElementById("tr_owner");if(!el)return;var sel=DB.get(T(),"sellers").find(function(s){return s.id===el.value;})||{};var f=funnelForPapel(sel.papel);var h=document.getElementById("tr_hint");if(h)h.innerHTML=f?('Vai pro funil <b>'+esc(f.name)+'</b> (papel '+esc(sel.papel||"")+'), na 1ª etapa, e cai na fila de <b>'+esc(sel.nome||"")+'</b>.'):'⚠️ Esse responsável não tem funil do papel dele; vai pro primeiro funil.';}
 function funnelForPapel(papel){var fs=DB.getObj(T(),"funnels",FUNNELS);var p=(papel||"").toLowerCase();
   var f=fs.find(function(x){return (x.papel||"").toLowerCase()===p;});
   if(!f&&(p.indexOf("plan")>=0))f=fs.find(function(x){return (x.papel||"").toLowerCase()==="closer";});
@@ -2672,11 +2696,13 @@ function assignOwner(id,ownerId){var sel=DB.get(T(),"sellers").find(function(s){
   DB.update(T(),"leads",id,patch);
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Responsável → "+(sel.nome||ownerId)+((f&&patch.funnelId)?(" · movido p/ o funil "+f.name):""),ts:Date.now()});
   toast("Responsável atualizado"+(patch.funnelId?(" · movido p/ o funil de "+(sel.papel||"")):""));}
-function doTransfer(id){const owner=document.getElementById("tr_owner").value,fid=document.getElementById("tr_funnel").value;
-  const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid);
-  DB.update(T(),"leads",id,{owner,funnelId:fid,estagio:f.stages[0].id,movedAt:Date.now()});
+function doTransfer(id){const owner=document.getElementById("tr_owner").value;
+  const sel=DB.get(T(),"sellers").find(x=>x.id===owner)||{};
+  const fs=DB.getObj(T(),"funnels",FUNNELS);
+  const f=funnelForPapel(sel.papel)||fs[0];
+  DB.update(T(),"leads",id,{owner,funnelId:f.id,estagio:(f.stages[0]||{}).id,movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Transferido p/ "+sellerName(owner)+" · funil "+f.name,ts:Date.now()});
-  closeModal();toast("Lead transferido");leadDetail(id);}
+  closeModal();toast("Lead transferido p/ "+(sel.nome||owner));leadDetail(id);}
 function battlecard(id){const l=DB.get(T(),"leads").find(x=>x.id===id);
   openModal(`<h3>🛡️ Battlecard, ${l.nome}</h3><small class="mut">${l.setor||""} · ${l.fantasia||""}</small>
    <div class="script mt"><b>Dor provável (${l.setor||'empresário'}):</b> isolamento na decisão, falta de rede qualificada, dificuldade de crescer.</div>
@@ -2832,12 +2858,15 @@ function sendStageOpts(){const f=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id==
 function baseSendDo(){
   const fid=document.getElementById("sendFunnel").value,sid=document.getElementById("sendStage").value;
   const own=document.getElementById("sendOwner").value,sellersD=DB.get(T(),"sellers");let rr=0;
+  const _f0=DB.getObj(T(),"funnels",FUNNELS).find(x=>x.id===fid)||{};
+  const _pool=sellersD.filter(s=>(s.papel||"").toLowerCase()===(_f0.papel||"").toLowerCase());
+  const _rota=_pool.length?_pool:sellersD; /* rodízio só entre quem enxerga esse funil */
   const base=DB.get(T(),"base"),leads=DB.get(T(),"leads");let n=0;
   BASE_SEL.forEach(id=>{const b=base.find(x=>x.id===id);if(!b||b.inCrm)return;
     const lid=DB.uid();
     leads.unshift({id:lid,baseId:b.id,nome:b.nome,fantasia:b.empresa,razaoSocial:b.empresa,setor:b.ramo||"",
       contato:{nome:b.nome,tel:b.tel||"",email:b.email||""},origem:(b.origens||[]).join(", "),
-      funnelId:fid,estagio:sid,temp:"morno",valor:0,score:0,owner:(own==="__auto"?(sellersD.length?sellersD[rr++%sellersD.length].id:""):own),criadoEm:Date.now(),movedAt:Date.now(),notas:b.obs||""});
+      funnelId:fid,estagio:sid,temp:"morno",valor:0,score:0,owner:(own==="__auto"?(_rota.length?_rota[rr++%_rota.length].id:""):own),criadoEm:Date.now(),movedAt:Date.now(),notas:b.obs||""});
     b.inCrm=true;b.crmLeadId=lid;n++;});
   DB.set(T(),"leads",leads);DB.set(T(),"base",base);
   closeModal();BASE_SEL=new Set();toast(n+" contato(s) enviado(s) ao CRM");vBase();
