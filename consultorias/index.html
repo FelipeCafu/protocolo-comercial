@@ -631,6 +631,7 @@ const USERS={
   /* B2, time oficial (27/09/2026): Jorge+Pedro gestores (só gestão), Bruna SDR, Melissa Closer */
   "jorge.b2":  {pass:"jorgeb2",   role:"gestor",tenant:"b2if",name:"Jorge (Gestor)",        initials:"JO"},
   "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
+  "priscila.b2":{pass:"priscilab2",role:"gestor",tenant:"b2if",name:"Priscila (Gestora)",   initials:"PR"},
   "bruna.b2":  {pass:"brunab2",   role:"sdr",   tenant:"b2if",name:"Bruna (SDR)",           initials:"BR",sellerId:"bruna"},
   "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Closer)", initials:"ME",sellerId:"melissab2"},
   "planejador.b2":{pass:"velo2026", role:"planejador",tenant:"b2if",name:"Planejador (a definir)",initials:"PL",sellerId:"planb2"},
@@ -5826,7 +5827,10 @@ function resetIdle(){if(_idleTimer)clearTimeout(_idleTimer);_idleTimer=setTimeou
 ['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev){try{document.addEventListener(ev,resetIdle,{passive:true});}catch(e){}});
 resetIdle();
 /* Login único (SSO): se já entrou antes, restaura sozinho sem pedir senha de novo */
-(async function restoreSSO(){try{await loadAccounts();if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];const pass=acc?acc.pass:localStorage.getItem('pc_sso_pass');if(u&&pass!=null){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=pass;doLogin();}}}catch(e){}})();
+(async function restoreSSO(){try{await loadAccounts();if(localStorage.getItem('pc_sso')==='1'){const u=localStorage.getItem('pc_sso_user');const acc=USERS[u];
+  /* Link direto de empresa (?e=): se a sessão salva é de OUTRA empresa, não restaura, mostra o login da empresa do link. */
+  if(window.__forcedBrand&&acc&&acc.tenant&&acc.tenant!=="all"&&acc.tenant!==window.__forcedBrand){return;}
+  const pass=acc?acc.pass:localStorage.getItem('pc_sso_pass');if(u&&pass!=null){document.getElementById('lgUser').value=u;document.getElementById('lgPass').value=pass;doLogin();}}}catch(e){}})();
 </script>
 </body>
 </html>
