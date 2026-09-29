@@ -2031,7 +2031,7 @@ function openConsultoria(){
 }
 const NAV=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego",roles:["consultor","gestor"]},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
@@ -2041,7 +2041,7 @@ const NAV=[
 ];
 const NAV_B2=[
  {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
- {g:"Jornada Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
+ {g:"Jornada Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego",roles:["consultor","gestor"]},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"scripts",ic:"💬",t:"Script & Roteiro"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
@@ -2377,7 +2377,10 @@ function vCRM(){
   healLeadStages();
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
-  const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap):allF;
+  /* mostra o funil do papel + QUALQUER funil onde o vendedor tem lead (evita lead "sumido":
+     contava em Tarefas/Meu Dia mas não aparecia no CRM porque estava num funil de outro papel) */
+  const _ownedF=(!isAdmin()&&SESSION.sellerId)?new Set(DB.get(T(),"leads").filter(l=>!l.deleted&&l.owner===SESSION.sellerId).map(l=>l.funnelId)):null;
+  const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap||(_ownedF&&_ownedF.has(f.id))):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
   if(!funnels.find(f=>f.id===CRM_FUNNEL))CRM_FUNNEL=funnels[0].id;
@@ -3037,7 +3040,7 @@ function vImportTrafego(){
   TRAF_PARSED=null;
   M().innerHTML=`
    <div class="view-title"><h1>📥 Importar Leads de Tráfego</h1><span class="pill pri">CRM · quentes</span></div>
-   <p class="view-sub">Suba a planilha do dia (Excel ou CSV) ou cole as linhas. Os leads entram <b>direto no CRM</b>, em <b>Prospecção → Novo Lead</b>, marcados como <b>quentes</b> e <b>sem dono</b> (o gestor distribui na sequência). Nada é apagado e os que já estão no CRM (mesmo telefone) são ignorados automaticamente.</p>
+   <p class="view-sub">Suba a planilha do dia (Excel ou CSV) ou cole as linhas. Os leads entram <b>direto no funil do SDR</b>, em <b>Novo Lead</b>, marcados como <b>quentes</b> e já <b>na fila do SDR</b> (se a planilha disser quem atendeu, cai na fila dessa pessoa; senão, distribui entre os SDRs). Nada é apagado e os que já estão no CRM (mesmo telefone) são ignorados automaticamente.</p>
    <div class="card">
      <div class="flex wrap" style="gap:18px;align-items:flex-start">
        <div style="flex:1;min-width:260px">
@@ -3093,13 +3096,14 @@ function trafBuild(matrix,name){
   trafRender();
 }
 function trafGuess(headers,rows){
-  var m={nome:-1,tel:-1,email:-1,proc:-1,camp:-1};
+  var m={nome:-1,tel:-1,email:-1,proc:-1,camp:-1,vend:-1};
   headers.forEach(function(h,i){h=String(h||'').toLowerCase();
-    if(m.nome<0&&/nome|name|lead|paciente|cliente|full.?name/.test(h)&&!/empresa|company|sobrenome|last/.test(h))m.nome=i;
+    if(m.nome<0&&/nome|name|lead|paciente|cliente|full.?name/.test(h)&&!/empresa|company|sobrenome|last|atendente|vendedor|respons/.test(h))m.nome=i;
     if(m.tel<0&&/tel|phone|fone|celular|whats|contato|n.mero|number/.test(h))m.tel=i;
     if(m.email<0&&/e-?mail/.test(h))m.email=i;
     if(m.proc<0&&/procedimento|interesse|cirurgia|servi|assunto|mensagem|message/.test(h))m.proc=i;
     if(m.camp<0&&/campanha|campaign|an.ncio|conjunto|form|origem|fonte|source|midia|m.dia/.test(h))m.camp=i;
+    if(m.vend<0&&/atendente|vendedor|respons|consultor|agente|dono|owner|sdr/.test(h))m.vend=i;
   });
   if(m.tel<0||m.email<0||m.nome<0){
     var cols=headers.length,score=[];
@@ -3125,10 +3129,11 @@ function _trafScan(){
     var email=String(map.email>=0?(r[map.email]||''):'').trim();
     var proc=String(map.proc>=0?(r[map.proc]||''):'').trim();
     var camp=String(map.camp>=0?(r[map.camp]||''):'').trim();
+    var vend=String(map.vend>=0?(r[map.vend]||''):'').trim();
     var td=_telDig(tel),nl=nome.toLowerCase(),st;
     if(!nome&&!tel){out.vazio++;st='vazio';}
     else if((td&&(exTel[td]||sTel[td]))||(!td&&nl&&(exNome[nl]||sNome[nl]))){out.dup++;st='dup';}
-    else{out.novos++;st='novo';if(td)sTel[td]=1;if(nl)sNome[nl]=1;out.items.push({nome:nome,tel:tel,email:email,proc:proc,camp:camp});}
+    else{out.novos++;st='novo';if(td)sTel[td]=1;if(nl)sNome[nl]=1;out.items.push({nome:nome,tel:tel,email:email,proc:proc,camp:camp,vend:vend});}
     if(out.sample.length<8)out.sample.push({nome:nome,tel:tel,email:email,st:st});
   });
   return out;
@@ -3140,12 +3145,13 @@ function trafRender(){
   function selRow(label,field){return '<div style="min-width:150px"><label class="mut" style="font-size:11px;display:block;margin-bottom:3px">'+label+'</label><select class="in" onchange="trafSetMap(\''+field+'\',this.value)"><option value="-1"'+(map[field]<0?' selected':'')+'>(nenhuma)</option>'+_trafOpts(map[field])+'</select></div>';}
   el.innerHTML='<div class="card" style="margin-top:12px">'
    +'<div class="flex between wrap" style="gap:8px;align-items:center"><b>Confira as colunas antes de importar</b><small class="mut">'+esc(TRAF_PARSED.name||'')+' · '+st.total+' linha(s)</small></div>'
-   +'<div class="flex wrap" style="gap:10px;margin-top:10px">'+selRow('Nome','nome')+selRow('Telefone','tel')+selRow('E-mail','email')+selRow('Interesse / Procedimento','proc')+selRow('Campanha / Origem','camp')+'</div>'
+   +'<div class="flex wrap" style="gap:10px;margin-top:10px">'+selRow('Nome','nome')+selRow('Telefone','tel')+selRow('E-mail','email')+selRow('Interesse / Procedimento','proc')+selRow('Campanha / Origem','camp')+selRow('Atendente / Vendedor','vend')+'</div>'
+   +'<div class="mut" style="font-size:11.5px;margin-top:6px">💡 Se a planilha tiver a coluna de quem atendeu (ex.: Ingrid), escolha em <b>Atendente / Vendedor</b> que o lead já cai no funil e na fila dessa pessoa. Sem essa coluna, os leads são distribuídos entre os SDRs.</div>'
    +'<div class="flex wrap" style="gap:10px;margin-top:14px;font-size:13px"><span class="pill ok">'+st.novos+' novo(s)</span><span class="pill">'+st.dup+' já no CRM</span>'+(st.vazio?'<span class="pill">'+st.vazio+' sem dados</span>':'')+'</div>'
    +'<div style="overflow:auto;margin-top:12px;max-height:40vh"><table><thead><tr><th>Nome</th><th>Telefone</th><th>E-mail</th><th>Situação</th></tr></thead><tbody>'
    +st.sample.map(function(s){var tag=s.st==='novo'?'<span class="pill ok">novo</span>':(s.st==='dup'?'<span class="pill">já no CRM</span>':'<span class="pill">sem dados</span>');return '<tr><td>'+esc(s.nome||'—')+'</td><td>'+esc(s.tel||'—')+'</td><td>'+esc(s.email||'—')+'</td><td>'+tag+'</td></tr>';}).join('')
    +'</tbody></table>'+(st.total>8?'<div class="mut" style="font-size:11px;margin-top:6px">Mostrando as 8 primeiras linhas.</div>':'')+'</div>'
-   +'<div class="flex between wrap mt" style="align-items:center;gap:10px"><small class="mut">Entram em <b>Prospecção → Novo Lead</b>, quentes, sem dono, com atividade "Ligar agora".</small>'
+   +'<div class="flex between wrap mt" style="align-items:center;gap:10px"><small class="mut">Entram no <b>funil do SDR → Novo Lead</b>, quentes, já <b>na fila do SDR</b>, com atividade "Ligar agora".</small>'
    +'<button class="btn" '+(st.novos?'':'disabled')+' onclick="trafImport()">📥 Importar '+st.novos+' lead(s) para o CRM</button></div>'
    +'</div>';
 }
@@ -3153,17 +3159,28 @@ function trafImport(){
   if(!TRAF_PARSED){toast("Envie ou cole os leads primeiro","warn");return;}
   var st=_trafScan();
   if(!st.novos){toast("Nenhum lead novo para importar"+(st.dup?" ("+st.dup+" já estavam no CRM)":""),"warn");return;}
+  /* leads do tráfego caem SEMPRE no funil do SDR e JÁ com um SDR como dono (senão o SDR não vê no CRM dele).
+     Se a planilha tiver a coluna do atendente, casa com o SDR pelo nome; senão distribui em rodízio entre os SDRs. */
+  var funnels=DB.getObj(T(),"funnels",FUNNELS);
+  var sdrF=funnels.find(function(f){return (f.papel||'').toLowerCase()==='sdr';})||funnels[0];
+  var stage0=((sdrF.stages||[])[0]||{}).id||'novo';
+  var sellers=DB.get(T(),"sellers");
+  var sdrs=sellers.filter(function(s){return (s.papel||'').toLowerCase()==='sdr';});
+  function _matchSdr(name){name=(name||'').trim().toLowerCase();if(!name)return null;
+    return sdrs.find(function(s){var sn=(s.nome||'').trim().toLowerCase();if(!sn)return false;
+      var f1=sn.split(' ')[0];return sn===name||f1===name.split(' ')[0]||name.indexOf(f1)>=0;})||null;}
   var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),hist=DB.get(T(),"history");
-  var hoje=new Date().toISOString().slice(0,10),n=0;
+  var hoje=new Date().toISOString().slice(0,10),n=0,rr=0;
   st.items.forEach(function(it){
+    var m=_matchSdr(it.vend),own=m?m.id:(sdrs.length?sdrs[rr++%sdrs.length].id:"");
     var lid=DB.uid();
     leads.unshift({id:lid,nome:it.nome||"(sem nome)",fantasia:"",razaoSocial:"",setor:it.proc||"",
       contato:{nome:it.nome,tel:it.tel||"",email:it.email||""},
-      origem:"Tráfego"+(it.camp?" · "+it.camp:""),funnelId:"prospeccao",estagio:"novo",temp:"quente",valor:0,score:100,
-      owner:"",criadoEm:Date.now(),movedAt:Date.now(),
+      origem:"Tráfego"+(it.camp?" · "+it.camp:""),funnelId:sdrF.id,estagio:stage0,temp:"quente",valor:0,score:100,
+      owner:own,criadoEm:Date.now(),movedAt:Date.now(),
       notas:"Lead de tráfego"+(it.proc?" · interesse: "+it.proc:"")+(it.camp?" · campanha: "+it.camp:"")});
-    acts.unshift({id:DB.uid(),leadId:lid,tipo:"ligação",titulo:"Ligar agora, lead quente (tráfego)",data:hoje,done:false,owner:""});
-    hist.unshift({id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead importado do tráfego"+(it.camp?" ("+it.camp+")":""),ts:Date.now()});
+    acts.unshift({id:DB.uid(),leadId:lid,tipo:"ligação",titulo:"Ligar agora, lead quente (tráfego)",data:hoje,done:false,owner:own});
+    hist.unshift({id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead importado do tráfego"+(it.camp?" ("+it.camp+")":"")+(own?" · "+sellerName(own):" · sem dono (distribuir)"),ts:Date.now()});
     n++;
   });
   DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);DB.set(T(),"history",hist);
