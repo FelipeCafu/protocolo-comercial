@@ -2040,7 +2040,7 @@ const NAV=[
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
- {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
+ {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},{id:"relatorio",ic:"📈",t:"Relatório de Atividades",roles:["consultor","gestor"]},
  {g:"Receita"},{id:"fidelidade",ic:"💎",t:"Fidelidade"},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
@@ -2050,7 +2050,7 @@ const NAV_B2=[
  {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"scripts",ic:"💬",t:"Script & Roteiro"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
- {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
+ {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},{id:"relatorio",ic:"📈",t:"Relatório de Atividades",roles:["consultor","gestor"]},
  {g:"Relacionamento"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS"},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
@@ -2060,7 +2060,7 @@ const NAV_CEO=[
  {id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},{id:"fidelidade",ic:"💚",t:"Carteira & NPS"},
  {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
  {id:"funil",ic:"⚙️",t:"Config. dos Funis"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Playbook de Vendas"},
- {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"}
+ {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"relatorio",ic:"📈",t:"Relatório de Atividades"}
 ];
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 /* Líderes, vendedores (SDR/Closer/CS) acessam também CRM, Base, Prospecção, Scripts, Roteiro e Academia */
@@ -2080,7 +2080,7 @@ const NAV_ICB=[
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
- {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},
+ {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},{id:"relatorio",ic:"📈",t:"Relatório de Atividades",roles:["consultor","gestor"]},
  {g:"Administração"},{id:"acessos",ic:"🔐",t:"Gestão de Acessos",roles:["consultor","gestor"]}
 ];
 /* ICBARI, CS/pós-venda: Meu Dia/Placar + Jornada + acesso comercial (cada um vê o seu) */
@@ -2159,7 +2159,7 @@ function go(view){
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
   /* prova nao trava mais o trabalho (Pergunta 1), vira habito, nao cadeado */
   ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,diagnostico:vDiagnostico,
-    jornada:vJornada,cirmodelos:vCirModelos,importtrafego:vImportTrafego,
+    jornada:vJornada,cirmodelos:vCirModelos,importtrafego:vImportTrafego,relatorio:vRelatorio,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
   try{updateBell();}catch(e){}
@@ -2525,6 +2525,7 @@ function iniciarCadencia(id){
    HORAS ÚTEIS + LEMBRETES DE REUNIÃO (todas as empresas)
    ============================================================ */
 var BIZ_START=8, BIZ_END=18; /* horário útil 08:00–18:00 */
+var META_LIG_SDR=60; /* meta diária de ligações por SDR (todas as empresas) */
 function _isBizDay(d){var w=d.getDay();return w>=1&&w<=6;} /* seg a sáb (dia útil) */
 function _hhmm2(d){return (''+d.getHours()).padStart(2,'0')+':'+(''+d.getMinutes()).padStart(2,'0');}
 function subtractBizHours(dateStr,timeStr,hoursBack){
@@ -2631,19 +2632,30 @@ function dailyReportDue(){
  for(var i=0;i<days.length;i++){var day=days[i];var due=(day<todayStr)||(day===todayStr&&now.getHours()>=BIZ_END);if(due&&!has(day))return day;}
  return null;
 }
+function callsDoneOn(day){var me=SESSION.sellerId;return DB.get(T(),"activities").filter(function(a){return a.owner===me&&a.done&&a.tipo==='ligação'&&(a.doneDate===day||(!a.doneDate&&a.data===day));}).length;}
+function metaLigacoesDia(){return (SESSION.role==='sdr')?(META_LIG_SDR||60):0;}
 function dailyReportModal(day){
  var isCloser=SESSION.role==='closer';var q3=isCloser?'Quantos fechamentos?':'Quantas reuniões agendadas?';
  var hoje=new Date().toISOString().slice(0,10);
- openModal('<h3>📊 Fechamento do dia'+(day!==hoje?(' · '+day.split("-").reverse().join("/")):'')+'</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Antes de sair, '+esc((SESSION.name||'').split(' ')[0])+', registre seus números.</p>'
- +'<label class="fl">Quantas ligações você fez?</label><input class="in" id="dr_feitas" type="number" min="0" value="0">'
+ var commit=(DB.getObj(T(),"trainCommit",{})[SESSION.name]||{});var prometido=(commit.dia===day)?(commit.lig||0):0;
+ var reais=callsDoneOn(day);var meta=metaLigacoesDia();
+ var alvo=Math.max(prometido,meta);var bateu=reais>=alvo;
+ var check=(alvo>0)?('<div class="card" style="margin:0 0 10px;border-color:'+(bateu?'rgba(46,204,113,.45)':'rgba(240,102,122,.45)')+';background:'+(bateu?'rgba(46,204,113,.08)':'rgba(240,102,122,.08)')+'">'
+   +'<b style="font-size:13px">'+(bateu?'✅ Você bateu a meta de ligações!':'⚠️ Faltou ligação hoje')+'</b>'
+   +'<div class="mut" style="font-size:12.5px;margin-top:4px">'+(meta?('Meta do dia: <b>'+meta+'</b> ligações. '):'')+(prometido?('Você se comprometeu com <b>'+prometido+'</b>. '):'')+'Ligações registradas (atividades concluídas): <b>'+reais+'</b>.</div>'
+   +(!bateu?'<label class="fl mt8">Você fez '+reais+' de '+alvo+'. Por que não bateu?</label><textarea class="in" id="dr_motivo" rows="2" placeholder="o que atrapalhou hoje?"></textarea>':'')+'</div>'):'';
+ openModal('<h3>📊 Fechamento do dia'+(day!==hoje?(' · '+day.split("-").reverse().join("/")):'')+'</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Antes de sair, '+esc((SESSION.name||'').split(' ')[0])+', confira e registre seus números.</p>'
+ +check
+ +'<label class="fl">Quantas ligações você fez?</label><input class="in" id="dr_feitas" type="number" min="0" value="'+reais+'">'
  +'<label class="fl mt8">Quantas ligações foram atendidas?</label><input class="in" id="dr_atend" type="number" min="0" value="0">'
  +'<label class="fl mt8">'+q3+'</label><input class="in" id="dr_meta" type="number" min="0" value="0">'
  +'<div class="flex mt" style="justify-content:flex-end"><button class="btn sm" onclick="dailyReportDo(\''+day+'\')">Salvar e fechar o dia</button></div>');
 }
 function dailyReportDo(day){
  var f=+document.getElementById("dr_feitas").value||0,a=+document.getElementById("dr_atend").value||0,m=+document.getElementById("dr_meta").value||0;
+ var motivoEl=document.getElementById("dr_motivo");var motivo=motivoEl?(motivoEl.value||'').trim():'';
  var reps=DB.get(T(),"dailyReports");
- reps.push({id:DB.uid(),seller:SESSION.sellerId,sellerName:SESSION.name,role:SESSION.role,date:day,ligFeitas:f,ligAtend:a,resultado:m,ts:Date.now()});
+ reps.push({id:DB.uid(),seller:SESSION.sellerId,sellerName:SESSION.name,role:SESSION.role,date:day,ligFeitas:f,ligAtend:a,resultado:m,ligReais:callsDoneOn(day),meta:metaLigacoesDia(),motivo:motivo,ts:Date.now()});
  DB.set(T(),"dailyReports",reps);
  closeModal();toast("Dia fechado ✅ bom descanso!");setTimeout(checkDailyReport,400);
 }
@@ -5078,19 +5090,19 @@ function acadSaveCommit(){
  c[SESSION.name]={lig:+document.getElementById("cmLig").value||0,hora:document.getElementById("cmHora").value||"",
    f1:(document.getElementById("cmF1").value||"").trim(),f2:(document.getElementById("cmF2").value||"").trim(),f3:(document.getElementById("cmF3").value||"").trim(),
    dia:new Date().toISOString().slice(0,10),quando:new Date().toLocaleString("pt-BR")};
- DB.set(T(),"trainCommit",c);toast("Compromisso de amanhã assinado ✓");vAcademy();
+ DB.set(T(),"trainCommit",c);toast("Compromisso de hoje assinado ✓");vAcademy();
 }
 function acadCompromisso(){
  const c=DB.getObj(T(),"trainCommit",{});const meu=c[SESSION.name]||{};
  const hoje=new Date().toISOString().slice(0,10);const okHoje=meu.dia===hoje;
  return `
- <div class="card" style="border:1px solid ${okHoje?'rgba(46,204,113,.45)':'rgba(201,162,75,.55)'}"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de amanhã</h2>
- <p class="mut" style="font-size:13px;margin:0 0 12px">Todo dia, antes de sair, assine o seu compromisso. ${okHoje?'<b style="color:var(--brand-ok)">Você já assinou o de hoje ✓</b>':'<b style="color:var(--brand-warn)">Ainda não assinou hoje.</b>'}</p>
+ <div class="card" style="border:1px solid ${okHoje?'rgba(46,204,113,.45)':'rgba(201,162,75,.55)'}"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de hoje</h2>
+ <p class="mut" style="font-size:13px;margin:0 0 12px">Todo dia, ao começar, assine o seu compromisso. ${okHoje?'<b style="color:var(--brand-ok)">Você já assinou o de hoje ✓</b>':'<b style="color:var(--brand-warn)">Ainda não assinou hoje.</b>'}</p>
  <div class="grid2" style="gap:12px">
-  <div><label class="mut" style="font-size:12px">Quantas ligações farei amanhã?</label><input id="cmLig" type="number" value="${meu.lig||30}" style="width:100%"></div>
-  <div><label class="mut" style="font-size:12px">Meu horário de prospecção (de tal a tal)</label><input id="cmHora" value="${esc(meu.hora||"09:00 às 11:30")}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Quantas ligações farei hoje?</label><input id="cmLig" type="number" value="${meu.lig||60}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Meu compromisso de prospecção será</label><input id="cmHora" value="${esc(meu.hora||"")}" placeholder="escreva seu compromisso de prospecção" style="width:100%"></div>
  </div>
- <div style="margin-top:12px"><label class="mut" style="font-size:12px">O que vou treinar em mim, 3 coisas pra amanhã ser melhor que hoje</label>
+ <div style="margin-top:12px"><label class="mut" style="font-size:12px">O que vou treinar em mim hoje, 3 coisas pra ser melhor hoje</label>
   <input id="cmF1" value="${esc(meu.f1||"")}" placeholder="1ª coisa" style="width:100%;margin-top:5px">
   <input id="cmF2" value="${esc(meu.f2||"")}" placeholder="2ª coisa" style="width:100%;margin-top:6px">
   <input id="cmF3" value="${esc(meu.f3||"")}" placeholder="3ª coisa" style="width:100%;margin-top:6px"></div>
@@ -5098,7 +5110,7 @@ function acadCompromisso(){
  ${meu.quando?`<span class="mut" style="font-size:12px;margin-left:10px">último: ${esc(meu.quando)}</span>`:""}</div>
  </div>
  ${isAdmin()?`<div class="card"><h3 style="margin:0 0 10px;font-size:14px">Compromissos do time</h3>
-  ${Object.keys(c).length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Ligações</th><th>Horário</th><th>O que vai treinar</th><th>Assinado</th></tr></thead><tbody>
+  ${Object.keys(c).length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Ligações</th><th>Compromisso de prospecção</th><th>O que vai treinar</th><th>Assinado</th></tr></thead><tbody>
   ${Object.entries(c).map(([n,v])=>`<tr><td><b>${esc(n)}</b></td><td>${v.lig||"—"}</td><td>${esc(v.hora||"—")}</td><td class="mut">${[v.f1,v.f2,v.f3].filter(Boolean).map(esc).join(" · ")||esc(v.foco||"")||"—"}</td><td class="mut" style="font-size:11.5px">${v.dia===hoje?'<span class="pill ok">hoje</span>':esc(v.dia||v.quando||"—")}</td></tr>`).join("")}
   </tbody></table>`:`<p class="mut" style="font-size:13px">Ninguém assinou ainda.</p>`}
  </div>`:""}`;
@@ -5900,6 +5912,53 @@ function showAlerts(){
   if(n.mentions.length){var ms=DB.get(T(),"mentions");var me=(SESSION&&SESSION.name)||'';ms.forEach(function(m){if(m.to===me)m.read=true;});DB.set(T(),"mentions",ms);setTimeout(updateBell,100);}
 }
 
+/* ===== RELATÓRIO DIÁRIO DE ATIVIDADES (gestores) — todas as empresas ===== */
+var REL_FROM=null, REL_TO=null;
+var ATYPE_LABEL={"ligação":"📞 Ligações","wa":"🟢 WhatsApp","reuniao":"🤝 Reuniões","visita":"📍 Visitas","email":"✉️ E-mails","msg":"💬 Mensagens","insta":"📸 Instagram","alarme":"⏰ Lembretes"};
+function _bizDaysBetween(a,b){var n=0,d=new Date(a+'T12:00:00'),end=new Date(b+'T12:00:00');while(d<=end){if(_isBizDay(d))n++;d=new Date(d.getTime()+864e5);}return n;}
+function vRelatorio(){
+  var today=new Date().toISOString().slice(0,10);
+  if(!REL_FROM)REL_FROM=today; if(!REL_TO)REL_TO=today;
+  var from=REL_FROM,to=REL_TO;
+  var sellers=DB.get(T(),"sellers");
+  var acts=DB.get(T(),"activities");
+  var inPeriodDone=function(a){var d=a.doneDate||a.data||'';return a.done&&d>=from&&d<=to;};
+  var pendingOf=function(sid){return acts.filter(function(a){return a.owner===sid&&!a.done;}).length;};
+  var bizN=_bizDaysBetween(from,to);
+  var reps=DB.get(T(),"dailyReports").filter(function(r){return r.date>=from&&r.date<=to;});
+  var rows=sellers.map(function(s){
+    var mine=acts.filter(function(a){return a.owner===s.id&&inPeriodDone(a);});
+    var byType={};mine.forEach(function(a){byType[a.tipo]=(byType[a.tipo]||0)+1;});
+    var ligDone=byType["ligação"]||0;
+    var metaLig=((s.papel||'').toLowerCase()==='sdr')?(META_LIG_SDR*Math.max(1,bizN)):0;
+    return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,metaLig:metaLig};
+  }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return r.total>0||r.pend>0||p==='sdr'||p==='closer';});
+  var types=["ligação","wa","reuniao","visita","email","msg"];
+  function setP(k){var v=document.getElementById('rel_'+k).value;if(k==='from')REL_FROM=v;else REL_TO=v;vRelatorio();}
+  function quick(d,label){var t=new Date();var f=new Date(t.getTime()-(d-1)*864e5);return '<button class="btn ghost xs" onclick="REL_FROM=\''+f.toISOString().slice(0,10)+'\';REL_TO=\''+t.toISOString().slice(0,10)+'\';vRelatorio()">'+label+'</button>';}
+  M().innerHTML=`
+   <div class="view-title"><h1>Relatório de Atividades</h1><span class="pill pri">${bizN} dia(s) útil(eis)</span></div>
+   <p class="view-sub">O que cada pessoa <b>executou</b> e o que tem <b>a vencer</b>, por tipo de atividade. Filtre por dia, semana ou período.</p>
+   <div class="card" style="margin-bottom:12px"><div class="flex wrap" style="gap:10px;align-items:flex-end">
+     <div><label class="fl">De</label><input class="in" id="rel_from" type="date" value="${from}" oninput="REL_FROM=this.value"></div>
+     <div><label class="fl">Até</label><input class="in" id="rel_to" type="date" value="${to}" oninput="REL_TO=this.value"></div>
+     <button class="btn sm" onclick="vRelatorio()">Aplicar</button>
+     ${quick(1,'Hoje')}${quick(7,'7 dias')}${quick(30,'30 dias')}
+   </div></div>
+   <div class="card" style="overflow:auto">
+     <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
+     ${rows.length?rows.map(function(r){
+        var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;
+        return `<tr><td><b>${esc(r.s.nome)}</b></td><td class="mut">${esc(r.s.papel||'')}</td><td><b>${r.total}</b></td>${types.map(t=>`<td>${r.byType[t]||0}</td>`).join("")}<td><span class="pill ${r.pend?'warn':''}">${r.pend}</span></td><td>${r.metaLig?(`<b style="color:${pct>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.ligDone}/${r.metaLig}</b> · ${pct}%`):'—'}</td></tr>`;
+      }).join(""):`<tr><td colspan="${types.length+5}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
+     </tbody></table>
+   </div>
+   <div class="card mt"><h2 style="margin:0 0 8px;font-size:14px">📝 Fechamentos do dia (autoinformados)</h2>
+     ${reps.length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Dia</th><th>Lig. feitas</th><th>Atendidas</th><th>Reuniões/Fech.</th><th>Motivo (se faltou)</th></tr></thead><tbody>
+       ${reps.sort((a,b)=>b.date<a.date?-1:1).map(r=>`<tr><td><b>${esc(r.sellerName||r.seller)}</b></td><td class="mut">${esc(r.role||'')}</td><td>${(r.date||'').split("-").reverse().join("/")}</td><td>${r.ligFeitas||0}</td><td>${r.ligAtend||0}</td><td>${r.resultado||0}</td><td class="mut" style="font-size:12px">${esc(r.motivo||'—')}</td></tr>`).join("")}
+     </tbody></table>`:'<p class="mut" style="font-size:13px">Nenhum fechamento de dia informado no período.</p>'}
+   </div>`;
+}
 /* ===== PERFORMANCE / METAS / FIDELIDADE / RECORRÊNCIA ===== */
 function vPerf(){
   const s=DB.get(T(),"sellers"),leads=DB.get(T(),"leads").filter(l=>!l.deleted),hist=DB.getObj(T(),"quizHistory",{});
