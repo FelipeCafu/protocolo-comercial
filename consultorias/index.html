@@ -2143,7 +2143,7 @@ function renderSidebar(){
     if(n.ten&&n.ten!==CURRENT_TENANT)return;
     if(!canSee(n))return;
     let badge="";
-    if(n.id==="crm")badge=`<span class="badge">${DB.get(CURRENT_TENANT,"leads").length}</span>`;
+    if(n.id==="crm"){const _cc=crmBadgeCount();if(_cc)badge=`<span class="badge">${_cc}</span>`;}
     if(n.id==="tarefas"){const c=taskCount();if(c)badge=`<span class="badge">${c}</span>`;}
     if(n.id==="academy"&&!quizPassedToday()&&["sdr","closer","cs","planejador"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
     var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
@@ -2381,6 +2381,16 @@ function crmVisibleCount(fid){
   /* conta só o que o usuário REALMENTE vê no kanban (mesmo dono/filtro), pra o número nunca mentir */
   return DB.get(T(),"leads").filter(function(l){
     if(l.deleted||l.funnelId!==fid)return false;
+    if(!isAdmin()&&SESSION.sellerId)return l.owner===SESSION.sellerId;
+    if(CRM_SELLER!=="all")return l.owner===CRM_SELLER;
+    return true;
+  }).length;
+}
+/* Total que o login vê no CRM (soma de todos os funis dele). É isto que vai no balãozinho do menu,
+   pra nunca contar "a empresa inteira": vendedor vê só os seus, gestor vê todos (ou o filtrado). */
+function crmBadgeCount(){
+  return DB.get(T(),"leads").filter(function(l){
+    if(l.deleted)return false;
     if(!isAdmin()&&SESSION.sellerId)return l.owner===SESSION.sellerId;
     if(CRM_SELLER!=="all")return l.owner===CRM_SELLER;
     return true;
