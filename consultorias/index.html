@@ -694,7 +694,7 @@ const DB={
 /* ===== SYNC COM O BANCO (Supabase), nada se perde ===== */
 const SB_URL="https://peqwcrkcgzbpfvrwcwlo.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlcXdjcmtjZ3picGZ2cndjd2xvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjczOTUsImV4cCI6MjA5NjgwMzM5NX0.ub2cInuad6_27oGPrUtq14hgvuYo8mAF7nAdOnVYVpE";
-const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos","cirurgias","pacientes","vtrain"];
+const SYNC_COLS=["funnels","products","sellers","leads","activities","history","members","cadences","quizBank","coupons","goals","alerts","quizPass","quizHistory","objMatrix","trainCommit","base","accounts","diagnosticos","cirurgias","pacientes","vtrain","mentions","dailyReports"];
 let sb=null,CLOUD_ON=false,CLOUD_SYNCED={};
 function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_URL,SB_KEY);CLOUD_ON=true;}}catch(e){CLOUD_ON=false;console.warn("cloud off",e);}}
 /* BLINDAGEM: salva por REGISTRO (merge por id), ninguem apaga o dado do outro. Fallback seguro. */
@@ -2117,6 +2117,7 @@ function openTenant(tenant){
   document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
   renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs","planejador"].includes(SESSION.role)?"meudia":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
+  try{setTimeout(reminderTick,2600);}catch(e){}
 }
 const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
 function renderSidebar(){
@@ -2486,7 +2487,7 @@ function moveLeadStage(id,stage){
   DB.update(T(),"leads",id,{estagio:stage,movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"etapa",txt:"Movido para "+stageName(stage),ts:Date.now()});
   toast("Lead → "+stageName(stage));
-  if(stage==="agendou"){autoScheduleNoShow(id);}
+  if(stage==="agendou"){meetingModal(id);}
   else if(!["ganho","perdido","churn"].includes(stage)){
     var acts=DB.get(T(),"activities");
     if(!acts.some(function(a){return a.leadId===id&&!a.done;})){
@@ -2520,6 +2521,152 @@ function iniciarCadencia(id){
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência SDR iniciada, "+made+" toques agendados (D0 e D1)",ts:Date.now()});
   toast(made+" toques da cadência agendados ✅");leadDetail(id);
 }
+/* ============================================================
+   HORAS ÚTEIS + LEMBRETES DE REUNIÃO (todas as empresas)
+   ============================================================ */
+var BIZ_START=8, BIZ_END=18; /* horário útil 08:00–18:00 */
+function _isBizDay(d){var w=d.getDay();return w>=1&&w<=6;} /* seg a sáb (dia útil) */
+function _hhmm2(d){return (''+d.getHours()).padStart(2,'0')+':'+(''+d.getMinutes()).padStart(2,'0');}
+function subtractBizHours(dateStr,timeStr,hoursBack){
+  var need=Math.round((hoursBack||0)*60);
+  var cur=new Date(dateStr+'T'+(timeStr||'09:00')+':00');var guard=0;
+  while(need>0&&guard++<100000){
+    var mm=cur.getHours()*60+cur.getMinutes();
+    if(!_isBizDay(cur)||mm<=BIZ_START*60){cur.setDate(cur.getDate()-1);cur.setHours(BIZ_END,0,0,0);continue;}
+    if(mm>BIZ_END*60){cur.setHours(BIZ_END,0,0,0);continue;}
+    var avail=mm-BIZ_START*60;
+    if(avail>=need){cur=new Date(cur.getTime()-need*60000);need=0;}
+    else{need-=avail;cur.setHours(BIZ_START,0,0,0);}
+  }
+  return {data:cur.toISOString().slice(0,10),hora:_hhmm2(cur)};
+}
+function clearMeetingReminders(id){
+  DB.set(T(),"activities",DB.get(T(),"activities").filter(function(a){return !(a.leadId===id&&!a.done&&(a.meetingReminder||a.isMeeting));}));
+}
+function scheduleMeetingReminders(id,dateStr,timeStr){
+  if(!dateStr||!timeStr){toast("Informe data e hora da reunião","warn");return false;}
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var own=l.owner||SESSION.sellerId||"";
+  clearMeetingReminders(id);
+  var acts=DB.get(T(),"activities");
+  var touches=[
+    {h:6,tipo:"wa",     tit:"Lembrete da reunião: mandar mensagem (6h úteis antes)"},
+    {h:3,tipo:"ligação",tit:"Ligar pra lembrar da reunião (3h úteis antes)"},
+    {h:2,tipo:"wa",     tit:"Mandar áudio: 'estamos prontos, só aguardando o horário' (2h úteis antes)"}
+  ];
+  touches.forEach(function(t){var w=subtractBizHours(dateStr,timeStr,t.h);
+    acts.push({id:DB.uid(),leadId:id,tipo:t.tipo,titulo:t.tit,data:w.data,hora:w.hora,done:false,owner:own,meetingReminder:true});});
+  var d30=new Date(new Date(dateStr+'T'+timeStr+':00').getTime()-30*60000);
+  acts.push({id:DB.uid(),leadId:id,tipo:"wa",titulo:"WhatsApp com gif/figurinha: 'estamos prontos, em 30 min começamos' (30min antes)",data:d30.toISOString().slice(0,10),hora:_hhmm2(d30),done:false,owner:own,meetingReminder:true});
+  acts.push({id:DB.uid(),leadId:id,tipo:"reuniao",titulo:"REUNIÃO com "+(l.nome||"o lead"),data:dateStr,hora:timeStr,done:false,owner:own,isMeeting:true});
+  DB.set(T(),"activities",acts);
+  DB.update(T(),"leads",id,{reuniaoData:dateStr,reuniaoHora:timeStr});
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"📅 Reunião agendada p/ "+dateStr.split('-').reverse().join('/')+" "+timeStr+" · lembretes criados (6h, 3h, 2h e 30min antes)",ts:Date.now()});
+  toast("Reunião agendada ✅ · 4 lembretes criados");return true;
+}
+function meetingModal(id){
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+  var d=l.reuniaoData||new Date().toISOString().slice(0,10);var h=l.reuniaoHora||'';
+  openModal('<h3>📅 Reunião agendada</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Defina a data e a hora. O sistema cria sozinho os lembretes em horas úteis: <b>6h</b> mensagem, <b>3h</b> ligação, <b>2h</b> áudio e <b>30min</b> gif/figurinha antes.</p>'
+   +'<div class="row"><div style="flex:1"><label class="fl">Data</label><input class="in" id="mtData" type="date" value="'+d+'"></div><div style="flex:1"><label class="fl">Hora</label><input class="in" id="mtHora" type="time" value="'+h+'"></div></div>'
+   +'<div class="flex mt" style="justify-content:flex-end;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="meetingModalDo(\''+id+'\')">Agendar reunião</button></div>');
+}
+function meetingModalDo(id){
+  var d=document.getElementById("mtData").value,h=document.getElementById("mtHora").value;
+  if(!d||!h){alert("Informe a data e a hora da reunião.");return;}
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+  var f=fs.find(function(x){return x.id===l.funnelId;})||{};
+  if(f.stages&&f.stages.some(function(s){return s.id==='agendou';})&&l.estagio!=='agendou'){DB.update(T(),"leads",id,{estagio:'agendou',movedAt:Date.now()});}
+  scheduleMeetingReminders(id,d,h);closeModal();leadDetail(id);
+}
+/* ============================================================
+   ICP na transferência SDR → Closer (SÓ LÍDERES)
+   ============================================================ */
+function needIcpTransfer(){return T()==='lideres'&&effRole()==='sdr';}
+function icpFormHtml(pr){pr=pr||{};
+ return '<div style="border-top:1px solid var(--brand-line);margin:12px 0 6px;padding-top:10px"><b style="font-size:13.5px">🎯 Qualificação ICP (obrigatória pra passar pro closer)</b>'
+ +'<label class="fl mt8">Faturamento</label><input class="in" id="icp_fat" value="'+esc(pr.faturamento||'')+'" placeholder="Ex.: R$ 80 mil/mês, ~R$ 1 mi/ano">'
+ +'<label class="fl mt8">Quem decide?</label><select class="in" id="icp_dec" onchange="icpToggleDecisor()"><option value="unico"'+(pr.decisor==='unico'?' selected':'')+'>É o único decisor</option><option value="multiplos"'+(pr.decisor==='multiplos'?' selected':'')+'>Tem mais de um decisor</option></select>'
+ +'<div id="icp_decBox" style="display:none"><div class="row mt8"><div style="flex:1"><label class="fl">Nome do outro decisor</label><input class="in" id="icp_decNome" value="'+esc(pr.decisorNome||'')+'"></div><div style="flex:1"><label class="fl">Telefone dele</label><input class="in" id="icp_decTel" value="'+esc(pr.decisorTel||'')+'"></div></div></div>'
+ +'<label class="fl mt8">Urgência (a pessoa precisa resolver isso agora?)</label><select class="in" id="icp_urg"><option value="alta"'+(pr.urgencia==='alta'?' selected':'')+'>Alta, quer resolver agora</option><option value="media"'+(pr.urgencia==='media'?' selected':'')+'>Média</option><option value="baixa"'+(pr.urgencia==='baixa'?' selected':'')+'>Baixa, só pesquisando</option></select>'
+ +'<div class="row mt8"><div style="flex:1"><label class="fl">Empresa</label><input class="in" id="icp_emp" value="'+esc(pr.empresa||'')+'"></div><div style="flex:1"><label class="fl">Ramo</label><input class="in" id="icp_ramo" value="'+esc(pr.ramo||'')+'"></div></div>'
+ +'<label class="fl mt8">Observações da conversa</label><textarea class="in" id="icp_obs" rows="3" placeholder="Resumo do que foi conversado, dores, contexto...">'+esc(pr.obs||'')+'</textarea></div>';
+}
+function icpToggleDecisor(){var s=document.getElementById("icp_dec"),b=document.getElementById("icp_decBox");if(s&&b)b.style.display=(s.value==='multiplos')?'block':'none';}
+function icpCard(p){return '<div class="card" style="border-color:rgba(231,181,60,.45);background:rgba(231,181,60,.08);margin:0 0 10px"><b style="font-size:13.5px">🎯 Qualificação ICP (passada pela SDR'+(p.por?' · '+esc(p.por):'')+')</b>'
+ +'<div class="flex wrap mt8" style="gap:6px;font-size:12.5px"><span class="pill">💰 '+esc(p.faturamento||'—')+'</span><span class="pill">'+(p.decisor==='multiplos'?'👥 Vários decisores':'✅ Decisor único')+'</span><span class="pill">⏱ Urgência '+esc(p.urgencia||'—')+'</span><span class="pill">🏢 '+esc(p.empresa||'—')+'</span><span class="pill">🏷 '+esc(p.ramo||'—')+'</span></div>'
+ +(p.decisor==='multiplos'?'<div class="mut" style="font-size:12.5px;margin-top:6px">Outro decisor: <b>'+esc(p.decisorNome||'—')+'</b> · '+esc(p.decisorTel||'—')+'</div>':'')
+ +(p.obs?'<div style="font-size:13px;margin-top:8px"><b>Conversa:</b> '+esc(p.obs)+'</div>':'')+'</div>';}
+/* ============================================================
+   INDICAÇÕES (todas as empresas): cada indicação vira lead novo
+   ============================================================ */
+function indicacoesModal(id){var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+ openModal('<h3>🤝 Pedir indicações</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Indicação é lead quente. Peça <b>3</b>. Cada uma com nome e telefone vira um lead novo na 1ª etapa do funil.</p>'
+ +[0,1,2].map(function(i){return '<div class="row"'+(i?' style="margin-top:6px"':'')+'><div style="flex:2"><label class="fl">Nome '+(i+1)+'</label><input class="in" id="ind_nome'+i+'"></div><div style="flex:1.5"><label class="fl">Telefone</label><input class="in" id="ind_tel'+i+'"></div></div>';}).join('')
+ +'<div class="flex mt" style="justify-content:flex-end;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="indicacoesDo(\''+id+'\')">Criar leads das indicações</button></div>');
+}
+function indicacoesDo(id){var src=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+ var fs=DB.getObj(T(),"funnels",FUNNELS);var sdrF=fs.find(function(f){return (f.papel||'').toLowerCase()==='sdr';})||fs[0];var st0=((sdrF.stages||[])[0]||{}).id||'novo';
+ var own=SESSION.sellerId||src.owner||"";
+ var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),n=0,hoje=new Date().toISOString().slice(0,10);
+ [0,1,2].forEach(function(i){var nome=(document.getElementById("ind_nome"+i).value||'').trim();var tel=(document.getElementById("ind_tel"+i).value||'').trim();
+   if(!nome)return;var lid=DB.uid();
+   leads.unshift({id:lid,nome:nome,contato:{nome:nome,tel:tel,email:""},origem:"Indicação de "+(src.nome||''),funnelId:sdrF.id,estagio:st0,temp:"quente",valor:0,score:80,owner:own,criadoEm:Date.now(),movedAt:Date.now(),notas:"Indicado por "+(src.nome||'')+((src.contato&&src.contato.tel)?(" ("+src.contato.tel+")"):""),indicadoPor:id});
+   acts.unshift({id:DB.uid(),leadId:lid,tipo:"ligação",titulo:"Ligar agora, indicação quente de "+(src.nome||''),data:hoje,done:false,owner:own});n++;
+ });
+ if(!n){toast("Preencha ao menos um nome","warn");return;}
+ DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);
+ DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🤝 "+n+" indicação(ões) viraram lead novo",ts:Date.now()});
+ closeModal();toast(n+" lead(s) de indicação criado(s) ✅");leadDetail(id);
+}
+/* ============================================================
+   RELATÓRIO DE FIM DE DIA (18h) — SDR e Closer, todas as empresas
+   ============================================================ */
+function _lastBizDays(n){var out=[],d=new Date(),g=0;while(out.length<n&&g++<40){if(_isBizDay(d))out.push(d.toISOString().slice(0,10));d=new Date(d.getTime()-864e5);}return out;}
+function dailyReportDue(){
+ if(!SESSION||!['sdr','closer'].includes(SESSION.role)||!SESSION.sellerId)return null;
+ var reps=DB.get(T(),"dailyReports");
+ var has=function(day){return reps.some(function(r){return r.seller===SESSION.sellerId&&r.date===day;});};
+ var now=new Date(),todayStr=now.toISOString().slice(0,10);
+ var days=_lastBizDays(5).reverse();
+ for(var i=0;i<days.length;i++){var day=days[i];var due=(day<todayStr)||(day===todayStr&&now.getHours()>=BIZ_END);if(due&&!has(day))return day;}
+ return null;
+}
+function dailyReportModal(day){
+ var isCloser=SESSION.role==='closer';var q3=isCloser?'Quantos fechamentos?':'Quantas reuniões agendadas?';
+ var hoje=new Date().toISOString().slice(0,10);
+ openModal('<h3>📊 Fechamento do dia'+(day!==hoje?(' · '+day.split("-").reverse().join("/")):'')+'</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Antes de sair, '+esc((SESSION.name||'').split(' ')[0])+', registre seus números.</p>'
+ +'<label class="fl">Quantas ligações você fez?</label><input class="in" id="dr_feitas" type="number" min="0" value="0">'
+ +'<label class="fl mt8">Quantas ligações foram atendidas?</label><input class="in" id="dr_atend" type="number" min="0" value="0">'
+ +'<label class="fl mt8">'+q3+'</label><input class="in" id="dr_meta" type="number" min="0" value="0">'
+ +'<div class="flex mt" style="justify-content:flex-end"><button class="btn sm" onclick="dailyReportDo(\''+day+'\')">Salvar e fechar o dia</button></div>');
+}
+function dailyReportDo(day){
+ var f=+document.getElementById("dr_feitas").value||0,a=+document.getElementById("dr_atend").value||0,m=+document.getElementById("dr_meta").value||0;
+ var reps=DB.get(T(),"dailyReports");
+ reps.push({id:DB.uid(),seller:SESSION.sellerId,sellerName:SESSION.name,role:SESSION.role,date:day,ligFeitas:f,ligAtend:a,resultado:m,ts:Date.now()});
+ DB.set(T(),"dailyReports",reps);
+ closeModal();toast("Dia fechado ✅ bom descanso!");setTimeout(checkDailyReport,400);
+}
+function checkDailyReport(){try{var day=dailyReportDue();if(day)dailyReportModal(day);}catch(e){}}
+/* ===== Lembrete de indicação ~10 min antes de uma ligação ===== */
+function checkCallReminders(){try{
+  if(!SESSION||!SESSION.sellerId)return;
+  var now=new Date(),today=now.toISOString().slice(0,10),nowM=now.getHours()*60+now.getMinutes();
+  window.__callReminded=window.__callReminded||{};
+  DB.get(T(),"activities").forEach(function(a){
+    if(a.done||a.tipo!=='ligação'||a.owner!==SESSION.sellerId||a.data!==today||!a.hora)return;
+    var m=(+a.hora.split(':')[0])*60+(+a.hora.split(':')[1]),diff=m-nowM;
+    if(diff>=0&&diff<=10&&!window.__callReminded[a.id]){window.__callReminded[a.id]=1;
+      var l=DB.get(T(),"leads").find(function(x){return x.id===a.leadId;})||{};
+      toast("📞 Ligação com "+(l.nome||'lead')+" em ~"+diff+" min · não esqueça de pedir 3 indicações!","warn");}
+  });
+}catch(e){}}
+function reminderTick(){try{
+  if(!SESSION||!CURRENT_TENANT)return;
+  var mr=document.getElementById("modalRoot");if(mr&&mr.innerHTML.trim())return;
+  checkDailyReport();checkCallReminders();
+}catch(e){}}
+if(!window.__reminderTick)window.__reminderTick=setInterval(reminderTick,60000);
 function leadDetail(id){
   const l=DB.get(T(),"leads").find(x=>x.id===id);if(!l)return;
   const funnel=funnelOf(l.estagio)||DB.getObj(T(),"funnels",FUNNELS).find(f=>f.id===l.funnelId)||DB.getObj(T(),"funnels",FUNNELS)[0];
@@ -2535,10 +2682,13 @@ function leadDetail(id){
      <div class="spacer" style="flex:1"></div>
      ${(function(){var d=((l.contato||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';var tl=(d.length>=12&&d.slice(0,2)==='55')?d:('55'+d);var w=waLink(l);return '<a class="btn ghost sm" href="tel:+'+tl+'">📞 Ligar</a>'+(w?'<a class="btn ghost sm" href="'+w+'" target="_blank">💬 WhatsApp</a>':'');})()}
      ${T()==="icbari"?`<button class="btn ghost sm" onclick="crmToJornada('${l.id}')">🧭 Jornada</button>`:`<button class="btn ghost sm" onclick="battlecard('${l.id}')">🛡️ Battlecard</button>`}
+     <button class="btn ghost sm" onclick="meetingModal('${l.id}')">📅 Reunião agendada</button>
+     <button class="btn ghost sm" onclick="indicacoesModal('${l.id}')">🤝 Indicações</button>
      <button class="btn ghost sm" onclick="transferLead('${l.id}')">⇄ Transferir</button>
      <button class="btn ok sm" onclick="winLead('${l.id}')">✓ Ganho</button>
      <button class="btn bad sm" onclick="loseLead('${l.id}')">✕ Perdido</button>
    </div>
+   ${(T()==='lideres'&&l.icp)?icpCard(l.icp):''}
    ${l.estagio!=='perdido'?leadBriefing(l):''}
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(', <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
@@ -2600,7 +2750,7 @@ function ldFocus(l){
   return acts.map(a=>{const late=actLate(a);const cls=a.done?"future":late?"late":a.data===today?"today":"future";
     return `<div class="foco"><span class="fdot ${cls}"></span>
       <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">concluída</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
-      <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small></div>
+      <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small>${(a.tipo==='ligação'&&!a.done)?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div>
       ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button>`}</div>`;}).join("");
 }
 function ldHistory(l){
@@ -2727,12 +2877,14 @@ function lossBreakdown(){
 }
 function loseLead_OLD(id){moveLeadStage(id,'perdido');DB.update(T(),"leads",id,{funnelId:'closer'});leadDetail(id);}
 function transferLead(id){const sellers=DB.get(T(),"sellers");
+  var _icp=needIcpTransfer();var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
   openModal(`<h3>Transferir lead</h3><label class="fl mt">Novo responsável</label>
    <select class="in" id="tr_owner" onchange="trFunnelHint()">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
-   <p class="mut" id="tr_hint" style="font-size:12.5px;margin:8px 0 0"></p>
-   <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button>
-     <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`);
-  trFunnelHint();}
+   <p class="mut" id="tr_hint" style="font-size:12.5px;margin:8px 0 0"></p>`
+   +(_icp?icpFormHtml(l.icp):'')
+   +`<div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button>
+     <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`,_icp);
+  trFunnelHint();if(_icp)icpToggleDecisor();}
 function trFunnelHint(){var el=document.getElementById("tr_owner");if(!el)return;var sel=DB.get(T(),"sellers").find(function(s){return s.id===el.value;})||{};var f=funnelForPapel(sel.papel);var h=document.getElementById("tr_hint");if(h)h.innerHTML=f?('Vai pro funil <b>'+esc(f.name)+'</b> (papel '+esc(sel.papel||"")+'), na 1ª etapa, e cai na fila de <b>'+esc(sel.nome||"")+'</b>.'):'⚠️ Esse responsável não tem funil do papel dele; vai pro primeiro funil.';}
 function funnelForPapel(papel){var fs=DB.getObj(T(),"funnels",FUNNELS);var p=(papel||"").toLowerCase();
   var f=fs.find(function(x){return (x.papel||"").toLowerCase()===p;});
@@ -2747,6 +2899,16 @@ function assignOwner(id,ownerId){var sel=DB.get(T(),"sellers").find(function(s){
   toast("Responsável atualizado"+(patch.funnelId?(" · movido p/ o funil de "+(sel.papel||"")):""));}
 function doTransfer(id){const owner=document.getElementById("tr_owner").value;
   const sel=DB.get(T(),"sellers").find(x=>x.id===owner)||{};
+  if(needIcpTransfer()&&document.getElementById("icp_fat")){
+    var fat=document.getElementById("icp_fat").value.trim();
+    var dec=document.getElementById("icp_dec").value,urg=document.getElementById("icp_urg").value;
+    var emp=document.getElementById("icp_emp").value.trim(),ramo=document.getElementById("icp_ramo").value.trim(),obs=document.getElementById("icp_obs").value.trim();
+    var decNome=((document.getElementById("icp_decNome")||{}).value||'').trim(),decTel=((document.getElementById("icp_decTel")||{}).value||'').trim();
+    if(!fat||!emp||!ramo||!obs){alert("Preencha a qualificação ICP (faturamento, empresa, ramo e observações) antes de passar pro closer.");return;}
+    if(dec==='multiplos'&&(!decNome||!decTel)){alert("Como tem mais de um decisor, informe o nome e o telefone do outro decisor.");return;}
+    DB.update(T(),"leads",id,{icp:{faturamento:fat,decisor:dec,decisorNome:decNome,decisorTel:decTel,urgencia:urg,empresa:emp,ramo:ramo,obs:obs,por:(SESSION.name||''),ts:Date.now()}});
+    DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🎯 ICP preenchido pela SDR ("+fat+" · "+(dec==='multiplos'?'vários decisores':'decisor único')+" · urgência "+urg+")",ts:Date.now()});
+  }
   const fs=DB.getObj(T(),"funnels",FUNNELS);
   const f=funnelForPapel(sel.papel)||fs[0];
   DB.update(T(),"leads",id,{owner,funnelId:f.id,estagio:(f.stages[0]||{}).id,movedAt:Date.now()});
@@ -3258,7 +3420,7 @@ function vTarefas(){
     return `<div class="card" style="padding:12px;margin-bottom:8px;border-left:3px solid ${color}"><div class="flex between wrap" style="gap:8px">
       <div class="flex" style="gap:10px"><span style="font-size:18px">${ATYPE_IC[a.tipo]||"•"}</span>
         <div><b style="font-size:13.5px">${a.titulo}</b>
-          <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 <b>"+a.hora+"</b>":""}${isAdmin()?" · "+sellerName(a.owner):""}</div></div></div>
+          <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 <b>"+a.hora+"</b>":""}${isAdmin()?" · "+sellerName(a.owner):""}</div>${a.tipo==='ligação'?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div></div>
       <div class="flex"><button class="btn xs ghost" onclick="leadDetail('${a.leadId}')">abrir lead</button><button class="btn xs" onclick="doneTask('${a.id}')">✓ concluir</button></div></div></div>`;};
   const sec=(title,arr,color,cls,emoji)=>`<div class="section-h"><h2>${emoji} ${title} <span class="pill ${cls}">${arr.length}</span></h2><div class="line"></div></div>
     ${arr.length?arr.map(a=>item(a,color)).join(""):'<small class="mut">Nada aqui. 🎉</small>'}`;
