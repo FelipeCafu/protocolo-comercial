@@ -5084,9 +5084,9 @@ function acadObjecoes(){
  <div class="card"><h2 style="margin:0 0 4px;font-size:15px">🛡️ Matriz de Objeções</h2>
  <p class="mut" style="font-size:13px;margin:0">A frase que o cliente diz e como responder. <b>Se você não souber responder, deixe a resposta em branco e salve</b>, o Felipe é avisado na hora e responde essa objeção pra você. <b>Salva na nuvem</b>, todo o time vê e usa.</p></div>
  <div class="card"><h3 style="margin:0 0 10px;font-size:14px">➕ Registrar uma objeção que você ouviu</h3>
-  <div><label class="mut" style="font-size:12px">A frase que o cliente diz (a objeção)</label><input id="mxObj" placeholder='Ex.: "Tá caro", "Preciso pensar", "Vou ver com meu sócio"' style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">A frase que o cliente diz (a objeção)</label><input class="in" id="mxObj" placeholder='Ex.: "Tá caro", "Preciso pensar", "Vou ver com meu sócio"' style="width:100%"></div>
   <div style="margin-top:10px"><label class="mut" style="font-size:12px">Como você responde? <b>Se souber, escreva.</b> Se não souber, deixe em branco, o Felipe é avisado e responde pra você.</label>
-   <textarea id="mxResp" rows="2" placeholder="Se souber, escreva a resposta que funciona. Se não, deixe em branco." style="width:100%"></textarea></div>
+   <textarea class="in" id="mxResp" rows="2" placeholder="Se souber, escreva a resposta que funciona. Se não, deixe em branco." style="width:100%"></textarea></div>
   <div class="flex" style="margin-top:10px;align-items:center;gap:10px"><button class="btn gold sm" onclick="acadAddObj()">Salvar objeção</button>
    <span class="mut" style="font-size:12px">${m.length} objeções mapeadas</span></div>
  </div>
@@ -5115,13 +5115,13 @@ function acadCompromisso(){
  <div class="card" style="border:1px solid ${okHoje?'rgba(46,204,113,.45)':'rgba(201,162,75,.55)'}"><h2 style="margin:0 0 4px;font-size:15px">✅ Meu compromisso de hoje</h2>
  <p class="mut" style="font-size:13px;margin:0 0 12px">Todo dia, ao começar, assine o seu compromisso. ${okHoje?'<b style="color:var(--brand-ok)">Você já assinou o de hoje ✓</b>':'<b style="color:var(--brand-warn)">Ainda não assinou hoje.</b>'}</p>
  <div class="grid2" style="gap:12px">
-  <div><label class="mut" style="font-size:12px">Quantas ligações farei hoje?</label><input id="cmLig" type="number" value="${meu.lig||60}" style="width:100%"></div>
-  <div><label class="mut" style="font-size:12px">Meu compromisso de prospecção será</label><input id="cmHora" value="${esc(meu.hora||"")}" placeholder="escreva seu compromisso de prospecção" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Quantas ligações farei hoje?</label><input class="in" id="cmLig" type="number" value="${meu.lig||60}" style="width:100%"></div>
+  <div><label class="mut" style="font-size:12px">Meu compromisso de prospecção será</label><input class="in" id="cmHora" value="${esc(meu.hora||"")}" placeholder="escreva seu compromisso de prospecção" style="width:100%"></div>
  </div>
  <div style="margin-top:12px"><label class="mut" style="font-size:12px">O que vou treinar em mim hoje, 3 coisas pra ser melhor hoje</label>
-  <input id="cmF1" value="${esc(meu.f1||"")}" placeholder="1ª coisa" style="width:100%;margin-top:5px">
-  <input id="cmF2" value="${esc(meu.f2||"")}" placeholder="2ª coisa" style="width:100%;margin-top:6px">
-  <input id="cmF3" value="${esc(meu.f3||"")}" placeholder="3ª coisa" style="width:100%;margin-top:6px"></div>
+  <input class="in" id="cmF1" value="${esc(meu.f1||"")}" placeholder="1ª coisa" style="width:100%;margin-top:5px">
+  <input class="in" id="cmF2" value="${esc(meu.f2||"")}" placeholder="2ª coisa" style="width:100%;margin-top:6px">
+  <input class="in" id="cmF3" value="${esc(meu.f3||"")}" placeholder="3ª coisa" style="width:100%;margin-top:6px"></div>
  <div style="margin-top:12px"><button class="btn gold sm" onclick="acadSaveCommit()">✍️ Assinar meu compromisso de hoje</button>
  ${meu.quando?`<span class="mut" style="font-size:12px;margin-left:10px">último: ${esc(meu.quando)}</span>`:""}</div>
  </div>
