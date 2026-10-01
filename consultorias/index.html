@@ -2387,6 +2387,15 @@ function crmVisibleCount(fid){
     return true;
   }).length;
 }
+/* Selo de temperatura do lead (quente = das listas novas; frio = base antiga). Vale p/ CRM, agenda e lead. */
+function tempBadge(l){if(!l)return'';var t=l.temp;
+ if(t==='quente')return '<span class="pill" style="background:#e8502e;color:#fff;font-weight:700;letter-spacing:.02em">🔥 LEAD QUENTE</span>';
+ if(t==='frio')return '<span class="pill" style="background:#2b6cb0;color:#fff;font-weight:700;letter-spacing:.02em">🧊 LEAD FRIO</span>';
+ return '';}
+function tempBadgeMini(l){if(!l)return'';var t=l.temp;
+ if(t==='quente')return '<span class="pill" style="background:#e8502e;color:#fff;font-size:9.5px;padding:1px 6px">🔥 QUENTE</span>';
+ if(t==='frio')return '<span class="pill" style="background:#2b6cb0;color:#fff;font-size:9.5px;padding:1px 6px">🧊 FRIO</span>';
+ return '';}
 /* Total que o login vê no CRM (soma de todos os funis dele). É isto que vai no balãozinho do menu,
    pra nunca contar "a empresa inteira": vendedor vê só os seus, gestor vê todos (ou o filtrado). */
 function crmBadgeCount(){
@@ -2461,7 +2470,7 @@ function renderKanban(){
         const cls=(as==="late"||slaLate)?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
         const sc=leadScore(l).score;const scc=sc>=70?'var(--brand-ok)':sc>=45?'var(--brand-primary-2)':'var(--brand-muted)';
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
-          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div class="co">${esc(l.procedimento||l.plano||"")}</div>
+          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div>${tempBadgeMini(l)?`<div style="margin:2px 0">${tempBadgeMini(l)}</div>`:''}<div class="co">${esc(l.procedimento||l.plano||"")}</div>
           <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small>${slaLate?'<span class="pill bad" style="padding:1px 6px">SLA</span>':''}<span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
       </div></div>`;}).join("");
   bindDrag();
@@ -2690,7 +2699,7 @@ function leadDetail(id){
    <div class="ld-top">
      <button class="btn ghost sm" onclick="go('crm')">← Voltar ao funil</button>
      <h1 style="font-size:20px;margin:0">${l.nome}</h1>
-     <span class="pill">${funnel.name}</span>
+     <span class="pill">${funnel.name}</span>${tempBadge(l)}
      <div class="spacer" style="flex:1"></div>
      ${(function(){var d=((l.contato||{}).tel||'').replace(/\D/g,'');if(d.length<10)return '';var tl=(d.length>=12&&d.slice(0,2)==='55')?d:('55'+d);var w=waLink(l);return '<a class="btn ghost sm" href="tel:+'+tl+'">📞 Ligar</a>'+(w?'<a class="btn ghost sm" href="'+w+'" target="_blank">💬 WhatsApp</a>':'');})()}
      ${T()==="icbari"?`<button class="btn ghost sm" onclick="crmToJornada('${l.id}')">🧭 Jornada</button>`:`<button class="btn ghost sm" onclick="battlecard('${l.id}')">🛡️ Battlecard</button>`}
@@ -3001,6 +3010,7 @@ function vBase(){
        ${baseStatuses().length?`<select class="in" id="bStatus" style="max-width:180px" onchange="vBaseRows()"><option value="">Todos os status</option>${baseStatuses().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
        ${baseResps().length?`<select class="in" id="bResp" style="max-width:170px" onchange="vBaseRows()"><option value="">Todos os responsáveis</option>${baseResps().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
        ${baseAllYears().length?`<select class="in" id="bPeriodo" style="max-width:150px" onchange="vBaseRows()"><option value="">Qualquer período</option>${baseAllYears().map(y=>`<option value="${y}">${y}</option>`).join("")}<option value="__none">Sem data</option></select>`:''}
+       <select class="in" id="bTemp" style="max-width:160px" onchange="vBaseRows()"><option value="">🌡️ Status: todos</option><option value="quente">🔥 Leads quentes</option><option value="frio">🧊 Leads frios</option></select>
        <select class="in" id="bTel" style="max-width:150px" onchange="vBaseRows()"><option value="">Telefone: todos</option><option value="com">Com telefone</option><option value="sem">Sem telefone</option></select>
        ${baseRamos().length?`<select class="in" id="bRamo" style="max-width:160px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
        <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">Membro: todos</option><option value="sim">Só membros</option><option value="nao">Não-membros</option></select>
@@ -3025,9 +3035,10 @@ function baseFiltered(){
   const mem=document.getElementById("bMembro")?.value||"",crm=document.getElementById("bCrm")?.value||"";
   const st=document.getElementById("bStatus")?.value||"",rsp=document.getElementById("bResp")?.value||"";
   const per=document.getElementById("bPeriodo")?.value||"",tel=document.getElementById("bTel")?.value||"";
+  const tmp=document.getElementById("bTemp")?.value||"";
   const sort=document.getElementById("bSort")?.value||"";
   const out=DB.get(T(),"base").filter(b=>{
-    if(T()==="lideres" && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); a real fica bloqueada */
+    if(T()==="lideres" && !isAdmin() && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); gestores veem a base real completa */
     if(T()==="icbari" && !isAdmin() && b.treino!==true)return false; /* ICBARI: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
     if(T()==="b2if" && !isAdmin() && b.treino!==true)return false; /* B2: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
     if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
@@ -3037,6 +3048,8 @@ function baseFiltered(){
     if(rsp && b.oldResp!==rsp)return false;
     if(tel==="com" && !(b.tel||"").trim())return false;
     if(tel==="sem" && (b.tel||"").trim())return false;
+    if(tmp==="quente" && b.temp!=="quente")return false;
+    if(tmp==="frio" && b.temp==="quente")return false;
     if(per){ if(per==="__none"){ if(baseMaxYear(b))return false; } else if(!baseYears(b).has(per))return false; }
     if(mem==="sim" && b.membro!=="sim")return false;
     if(mem==="nao" && b.membro==="sim")return false;
@@ -3052,7 +3065,7 @@ function vBaseRows(){
   const list=baseFiltered(),CAP=400,show=list.slice(0,CAP);
   document.getElementById("baseRows").innerHTML=show.map(b=>`<tr>
     <td><input type="checkbox" ${BASE_SEL.has(b.id)?'checked':''} onclick="baseSel('${b.id}',this.checked)"></td>
-    <td><b>${esc(b.nome)}</b>${b.oldResp?`<br><small class="mut">👤 ${esc(b.oldResp)}</small>`:''}</td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
+    <td><b>${esc(b.nome)}</b> ${tempBadgeMini(b)}${b.oldResp?`<br><small class="mut">👤 ${esc(b.oldResp)}</small>`:''}</td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
     <td><small>${esc(b.tel||'')}</small></td><td><small class="mut">${esc(b.email||'')}</small></td>
     <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}${b.oldStatus?`<br><span class="pill warn" style="font-size:9.5px;padding:1px 6px">${esc(b.oldStatus)}</span>`:''}</td>
     <td>${b.membro==="sim"?'<span class="pill ok">membro</span>':'—'}</td>
@@ -3431,7 +3444,7 @@ function vTarefas(){
   const item=(a,color)=>{const l=byId[a.leadId]||{};
     return `<div class="card" style="padding:12px;margin-bottom:8px;border-left:3px solid ${color}"><div class="flex between wrap" style="gap:8px">
       <div class="flex" style="gap:10px"><span style="font-size:18px">${ATYPE_IC[a.tipo]||"•"}</span>
-        <div><b style="font-size:13.5px">${a.titulo}</b>
+        <div><b style="font-size:13.5px">${a.titulo}</b> ${tempBadgeMini(l)}
           <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 <b>"+a.hora+"</b>":""}${isAdmin()?" · "+sellerName(a.owner):""}</div>${a.tipo==='ligação'?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div></div>
       <div class="flex"><button class="btn xs ghost" onclick="leadDetail('${a.leadId}')">abrir lead</button><button class="btn xs" onclick="doneTask('${a.id}')">✓ concluir</button></div></div></div>`;};
   const sec=(title,arr,color,cls,emoji)=>`<div class="section-h"><h2>${emoji} ${title} <span class="pill ${cls}">${arr.length}</span></h2><div class="line"></div></div>
@@ -5169,7 +5182,7 @@ function vMeuDia(){
   const hot=openLeads.map(l=>({l,s:leadScore(l).score})).sort((a,b)=>b.s-a.s).map(o=>o.l);
   function card(l,tag,tc){const S=leadScore(l);const sc=S.score;const c=l.contato||{};const tel=(c.tel||"").replace(/\D/g,"");const wa=waLink(l);
     return `<div class="card" style="padding:13px 15px;margin-bottom:9px"><div class="flex" style="align-items:center;gap:10px">
-      <div style="flex:1"><b style="font-size:14.5px">${esc(l.nome)}</b> ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
+      <div style="flex:1"><b style="font-size:14.5px">${esc(l.nome)}</b> ${tempBadgeMini(l)} ${tag?`<span class="pill ${tc||'warn'}" style="font-size:10px">${tag}</span>`:''}<span class="pill ${sc>=70?'ok':sc>=45?'warn':'pri'}" style="font-size:10px;margin-left:4px">${sc}% chance</span>
       <br><span class="mut" style="font-size:12.5px">${c.nome||l.nome} · ${S.reasons.join(' · ')||stageName(l.estagio)}</span></div>
       <div style="font-weight:800">${money(l.valor)}</div></div>
       <div class="flex" style="gap:7px;margin-top:9px;flex-wrap:wrap">
