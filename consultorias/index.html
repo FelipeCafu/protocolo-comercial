@@ -5932,6 +5932,30 @@ function showAlerts(){
 var REL_FROM=null, REL_TO=null;
 var ATYPE_LABEL={"ligação":"📞 Ligações","wa":"🟢 WhatsApp","reuniao":"🤝 Reuniões","visita":"📍 Visitas","email":"✉️ E-mails","msg":"💬 Mensagens","insta":"📸 Instagram","alarme":"⏰ Lembretes"};
 function _bizDaysBetween(a,b){var n=0,d=new Date(a+'T12:00:00'),end=new Date(b+'T12:00:00');while(d<=end){if(_isBizDay(d))n++;d=new Date(d.getTime()+864e5);}return n;}
+/* mini-gráficos SVG (tema do sistema, sem libs externas) */
+function _relBars(items){
+ var max=Math.max(1,Math.max.apply(null,items.map(function(i){return i.value;})));
+ var rowH=32,pad=6,w=560,labelW=130,barW=w-labelW-55,h=items.length*rowH+pad*2;
+ var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="max-width:100%;height:auto;color:currentColor" font-family="inherit">';
+ items.forEach(function(it,i){var y=pad+i*rowH,bw=Math.round(it.value/max*barW);
+  s+='<text x="0" y="'+(y+rowH/2+4)+'" font-size="12.5" fill="currentColor" opacity=".7">'+esc(it.label)+'</text>';
+  s+='<rect x="'+labelW+'" y="'+(y+6)+'" width="'+barW+'" height="'+(rowH-14)+'" rx="5" fill="currentColor" opacity=".06"/>';
+  s+='<rect x="'+labelW+'" y="'+(y+6)+'" width="'+Math.max(it.value?3:0,bw)+'" height="'+(rowH-14)+'" rx="5" fill="'+(it.color||'var(--brand-primary,#C9A24B)')+'"/>';
+  s+='<text x="'+(labelW+Math.max(it.value?3:0,bw)+8)+'" y="'+(y+rowH/2+4)+'" font-size="12.5" font-weight="800" fill="currentColor">'+it.value+'</text>';
+ });
+ return s+'</svg>';
+}
+function _relDonut(parts,centerSub){
+ var total=parts.reduce(function(a,p){return a+p.value;},0)||0;var tt=total||1;
+ var cx=72,cy=74,r=52,sw=22,circ=2*Math.PI*r,off=0;
+ var s='<svg viewBox="0 0 320 160" width="100%" style="max-width:320px;height:auto;color:currentColor" font-family="inherit">';
+ s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="currentColor" stroke-opacity=".08" stroke-width="'+sw+'"/>';
+ parts.forEach(function(p){var len=(p.value/tt)*circ;if(len>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+p.color+'" stroke-width="'+sw+'" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';off+=len;});
+ s+='<text x="'+cx+'" y="'+(cy-1)+'" text-anchor="middle" font-size="24" font-weight="800" fill="currentColor">'+total+'</text>';
+ s+='<text x="'+cx+'" y="'+(cy+17)+'" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">'+esc(centerSub||'')+'</text>';
+ var ly=38;parts.forEach(function(p){s+='<rect x="160" y="'+ly+'" width="12" height="12" rx="3" fill="'+p.color+'"/><text x="179" y="'+(ly+10.5)+'" font-size="12.5" fill="currentColor">'+esc(p.label)+' · <tspan font-weight="800">'+p.value+'</tspan></text>';ly+=24;});
+ return s+'</svg>';
+}
 function vRelatorio(){
   var today=new Date().toISOString().slice(0,10);
   if(!REL_FROM)REL_FROM=today; if(!REL_TO)REL_TO=today;
@@ -5950,18 +5974,51 @@ function vRelatorio(){
     return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,metaLig:metaLig};
   }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return r.total>0||r.pend>0||p==='sdr'||p==='closer';});
   var types=["ligação","wa","reuniao","visita","email","msg"];
-  function setP(k){var v=document.getElementById('rel_'+k).value;if(k==='from')REL_FROM=v;else REL_TO=v;vRelatorio();}
-  function quick(d,label){var t=new Date();var f=new Date(t.getTime()-(d-1)*864e5);return '<button class="btn ghost xs" onclick="REL_FROM=\''+f.toISOString().slice(0,10)+'\';REL_TO=\''+t.toISOString().slice(0,10)+'\';vRelatorio()">'+label+'</button>';}
+  var TC={"ligação":"#e7b53c","wa":"#28b46e","reuniao":"#5fd3d8","visita":"#8e7bef","email":"#e8792e","msg":"#5b74d6"};
+  function quick(d,label){var t=new Date();var f=new Date(t.getTime()-(d-1)*864e5);var act=(from===f.toISOString().slice(0,10)&&to===t.toISOString().slice(0,10));return '<button class="btn '+(act?'':'ghost')+' xs" onclick="REL_FROM=\''+f.toISOString().slice(0,10)+'\';REL_TO=\''+t.toISOString().slice(0,10)+'\';vRelatorio()">'+label+'</button>';}
+  /* agregados extras (leads/reuniões), além das atividades */
+  var leadsAll=DB.get(T(),"leads").filter(function(l){return !l.deleted;});
+  var ativos=leadsAll.filter(function(l){return !["ganho","perdido","churn"].includes(l.estagio);});
+  var quentes=leadsAll.filter(function(l){return l.temp==='quente';}).length;
+  var frios=leadsAll.filter(function(l){return l.temp!=='quente';}).length;
+  var allDone=acts.filter(inPeriodDone);
+  var byTypeTotal={};allDone.forEach(function(a){byTypeTotal[a.tipo]=(byTypeTotal[a.tipo]||0)+1;});
+  var totalDone=allDone.length, callsDone=byTypeTotal["ligação"]||0, pendingTotal=acts.filter(function(a){return !a.done;}).length;
+  var reunioesP=leadsAll.filter(function(l){return l.reuniaoData&&l.reuniaoData>=from&&l.reuniaoData<=to;}).length;
+  var ganhosP=leadsAll.filter(function(l){return l.estagio==='ganho';}).length;
+  var nSdr=sellers.filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
+  var metaCallsTeam=META_LIG_SDR*Math.max(1,bizN)*Math.max(1,nSdr);
+  var pctCalls=Math.round(callsDone/metaCallsTeam*100);
+  /* dados dos gráficos */
+  var barTipos=types.filter(function(t){return (byTypeTotal[t]||0)>0;}).map(function(t){return {label:(ATYPE_LABEL[t]||t),value:byTypeTotal[t]||0,color:TC[t]};});
+  if(!barTipos.length)barTipos=[{label:"Sem atividades",value:0,color:"var(--brand-primary)"}];
+  var barVend=rows.slice().sort(function(a,b){return b.total-a.total;}).map(function(r){return {label:r.s.nome,value:r.total,color:"var(--brand-primary,#C9A24B)"};});
+  var stageCount={};ativos.forEach(function(l){var n=stageName(l.estagio);stageCount[n]=(stageCount[n]||0)+1;});
+  var barStage=Object.keys(stageCount).map(function(k){return {label:k,value:stageCount[k],color:"var(--brand-primary-2,#38c6b4)"};}).sort(function(a,b){return b.value-a.value;});
+  if(!barStage.length)barStage=[{label:"Sem leads ativos",value:0,color:"var(--brand-primary-2)"}];
   M().innerHTML=`
-   <div class="view-title"><h1>Relatório de Atividades</h1><span class="pill pri">${bizN} dia(s) útil(eis)</span></div>
-   <p class="view-sub">O que cada pessoa <b>executou</b> e o que tem <b>a vencer</b>, por tipo de atividade. Filtre por dia, semana ou período.</p>
+   <div class="view-title"><h1>📈 Relatório de Atividades</h1><span class="pill pri">${from.split("-").reverse().join("/")}${from!==to?' a '+to.split("-").reverse().join("/"):''} · ${bizN} dia(s) útil(eis)</span></div>
+   <p class="view-sub">Visão do gestor: produção do time, metas e carteira. Filtre por dia, semana ou período.</p>
    <div class="card" style="margin-bottom:12px"><div class="flex wrap" style="gap:10px;align-items:flex-end">
      <div><label class="fl">De</label><input class="in" id="rel_from" type="date" value="${from}" oninput="REL_FROM=this.value"></div>
      <div><label class="fl">Até</label><input class="in" id="rel_to" type="date" value="${to}" oninput="REL_TO=this.value"></div>
      <button class="btn sm" onclick="vRelatorio()">Aplicar</button>
      ${quick(1,'Hoje')}${quick(7,'7 dias')}${quick(30,'30 dias')}
    </div></div>
-   <div class="card" style="overflow:auto">
+   <div class="grid kpis">
+     ${kpi("⚡","Atividades executadas",totalDone,"no período",totalDone>0?"up":"down")}
+     ${kpi("📞","Ligações feitas",callsDone,"meta "+metaCallsTeam+" · "+pctCalls+"%",pctCalls>=100?"up":"down")}
+     ${kpi("🤝","Reuniões agendadas",reunioesP,"no período","up")}
+     ${kpi("🗂️","Leads ativos no CRM",ativos.length,ganhosP+" ganho(s)","up")}
+     ${kpi("⏳","Atividades a vencer",pendingTotal,"em aberto",pendingTotal?"down":"up")}
+   </div>
+   <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+     <div class="card"><h2 style="margin:0 0 10px;font-size:14px">Atividades por tipo</h2>${_relBars(barTipos)}</div>
+     <div class="card"><h2 style="margin:0 0 10px;font-size:14px">🔥 Quentes x 🧊 Frios</h2>${_relDonut([{label:"🔥 Quentes",value:quentes,color:"#e8502e"},{label:"🧊 Frios",value:frios,color:"#2b6cb0"}],"leads")}</div>
+     <div class="card"><h2 style="margin:0 0 10px;font-size:14px">Produção por vendedor</h2>${_relBars(barVend)}</div>
+     <div class="card"><h2 style="margin:0 0 10px;font-size:14px">Leads por etapa (ativos)</h2>${_relBars(barStage)}</div>
+   </div>
+   <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 10px;font-size:14px">Detalhe por pessoa</h2>
      <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
      ${rows.length?rows.map(function(r){
         var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;
@@ -5969,7 +6026,7 @@ function vRelatorio(){
       }).join(""):`<tr><td colspan="${types.length+5}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
      </tbody></table>
    </div>
-   <div class="card mt"><h2 style="margin:0 0 8px;font-size:14px">📝 Fechamentos do dia (autoinformados)</h2>
+   <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 8px;font-size:14px">📝 Fechamentos do dia (autoinformados)</h2>
      ${reps.length?`<table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Dia</th><th>Lig. feitas</th><th>Atendidas</th><th>Reuniões/Fech.</th><th>Motivo (se faltou)</th></tr></thead><tbody>
        ${reps.sort((a,b)=>b.date<a.date?-1:1).map(r=>`<tr><td><b>${esc(r.sellerName||r.seller)}</b></td><td class="mut">${esc(r.role||'')}</td><td>${(r.date||'').split("-").reverse().join("/")}</td><td>${r.ligFeitas||0}</td><td>${r.ligAtend||0}</td><td>${r.resultado||0}</td><td class="mut" style="font-size:12px">${esc(r.motivo||'—')}</td></tr>`).join("")}
      </tbody></table>`:'<p class="mut" style="font-size:13px">Nenhum fechamento de dia informado no período.</p>'}
