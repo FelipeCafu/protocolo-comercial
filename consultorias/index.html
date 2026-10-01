@@ -2653,15 +2653,18 @@ function dailyReportModal(day){
    +'<b style="font-size:13px">'+(bateu?'✅ Você bateu a meta de ligações!':'⚠️ Faltou ligação hoje')+'</b>'
    +'<div class="mut" style="font-size:12.5px;margin-top:4px">'+(meta?('Meta do dia: <b>'+meta+'</b> ligações. '):'')+(prometido?('Você se comprometeu com <b>'+prometido+'</b>. '):'')+'Ligações registradas (atividades concluídas): <b>'+reais+'</b>.</div>'
    +(!bateu?'<label class="fl mt8">Você fez '+reais+' de '+alvo+'. Por que não bateu?</label><textarea class="in" id="dr_motivo" rows="2" placeholder="o que atrapalhou hoje?"></textarea>':'')+'</div>'):'';
- openModal('<h3>📊 Fechamento do dia'+(day!==hoje?(' · '+day.split("-").reverse().join("/")):'')+'</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Antes de sair, '+esc((SESSION.name||'').split(' ')[0])+', confira e registre seus números.</p>'
+ openModalLocked('<h3>📊 Fechamento do dia'+(day!==hoje?(' · '+day.split("-").reverse().join("/")):'')+'</h3><p class="mut" style="font-size:13px;margin:0 0 8px">'+esc((SESSION.name||'').split(' ')[0])+', pra fechar o dia você precisa responder as 3 perguntas. <b style="color:var(--brand-warn)">Esta janela não fecha sem o preenchimento.</b></p>'
  +check
- +'<label class="fl">Quantas ligações você fez?</label><input class="in" id="dr_feitas" type="number" min="0" value="'+reais+'">'
- +'<label class="fl mt8">Quantas ligações foram atendidas?</label><input class="in" id="dr_atend" type="number" min="0" value="0">'
- +'<label class="fl mt8">'+q3+'</label><input class="in" id="dr_meta" type="number" min="0" value="0">'
+ +'<label class="fl">Quantas ligações você fez? <b style="color:var(--brand-bad)">*</b></label><input class="in" id="dr_feitas" type="number" min="0" value="'+reais+'">'
+ +'<label class="fl mt8">Quantas ligações foram atendidas? <b style="color:var(--brand-bad)">*</b></label><input class="in" id="dr_atend" type="number" min="0" placeholder="digite o número">'
+ +'<label class="fl mt8">'+q3+' <b style="color:var(--brand-bad)">*</b></label><input class="in" id="dr_meta" type="number" min="0" placeholder="digite o número">'
  +'<div class="flex mt" style="justify-content:flex-end"><button class="btn sm" onclick="dailyReportDo(\''+day+'\')">Salvar e fechar o dia</button></div>');
 }
 function dailyReportDo(day){
- var f=+document.getElementById("dr_feitas").value||0,a=+document.getElementById("dr_atend").value||0,m=+document.getElementById("dr_meta").value||0;
+ var ef=document.getElementById("dr_feitas"),ea=document.getElementById("dr_atend"),em=document.getElementById("dr_meta");
+ if((ef.value||'').trim()===''||(ea.value||'').trim()===''||(em.value||'').trim()===''){
+   alert("Responda as 3 perguntas (ligações feitas, atendidas e "+(SESSION.role==='closer'?'fechamentos':'reuniões agendadas')+") pra poder fechar o dia.");return;}
+ var f=+ef.value||0,a=+ea.value||0,m=+em.value||0;
  var motivoEl=document.getElementById("dr_motivo");var motivo=motivoEl?(motivoEl.value||'').trim():'';
  var reps=DB.get(T(),"dailyReports");
  reps.push({id:DB.uid(),seller:SESSION.sellerId,sellerName:SESSION.name,role:SESSION.role,date:day,ligFeitas:f,ligAtend:a,resultado:m,ligReais:callsDoneOn(day),meta:metaLigacoesDia(),motivo:motivo,ts:Date.now()});
@@ -6136,6 +6139,8 @@ function globalSearch(q){
 }
 function sec(t,arr){return arr.length?`<div class="section-h"><h2>${t}</h2><div class="line"></div></div>${arr.join("")}`:"";}
 function openModal(html,wide){document.getElementById("modalRoot").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal ${wide?'wide':''}"><button class="x" onclick="closeModal()">×</button>${html}</div></div>`;}
+/* Modal TRAVADO: sem X e sem fechar clicando fora. Só sai pelo botão da própria tela (ex.: fechamento do dia obrigatório). */
+function openModalLocked(html,wide){document.getElementById("modalRoot").innerHTML=`<div class="modal-bg"><div class="modal ${wide?'wide':''}">${html}</div></div>`;}
 function closeModal(){document.getElementById("modalRoot").innerHTML="";}
 let toastT;
 function toast(msg,type){const t=document.getElementById("toast");t.textContent=msg;t.style.borderLeftColor=type==="bad"?"var(--brand-bad)":type==="warn"?"var(--brand-warn)":"var(--brand-ok)";t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);}
