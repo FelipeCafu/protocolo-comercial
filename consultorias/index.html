@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="apresentacoes/icbari/roteiro-icbari.js"></script>
 <script src="treino-videos.js"></script>
+<script src="treino-materiais.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2631,21 +2632,24 @@ function indicacoesDo(id){var src=DB.get(T(),"leads").find(function(x){return x.
 /* ============================================================
    RELATÓRIO DE FIM DE DIA (18h) — SDR e Closer, todas as empresas
    ============================================================ */
-function _lastBizDays(n){var out=[],d=new Date(),g=0;while(out.length<n&&g++<40){if(_isBizDay(d))out.push(d.toISOString().slice(0,10));d=new Date(d.getTime()-864e5);}return out;}
+function _dLocal(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _lastBizDays(n){var out=[],d=new Date(),g=0;while(out.length<n&&g++<40){if(_isBizDay(d))out.push(_dLocal(d));d=new Date(d.getTime()-864e5);}return out;}
 function dailyReportDue(){
  if(!SESSION||!['sdr','closer'].includes(SESSION.role)||!SESSION.sellerId)return null;
+ if(REAL_SESSION)return null; /* Felipe/gestor no "ver como": senha master não fecha o dia de ninguém */
  var reps=DB.get(T(),"dailyReports");
  var has=function(day){return reps.some(function(r){return r.seller===SESSION.sellerId&&r.date===day;});};
- var now=new Date(),todayStr=now.toISOString().slice(0,10);
- var days=_lastBizDays(5).reverse();
- for(var i=0;i<days.length;i++){var day=days[i];var due=(day<todayStr)||(day===todayStr&&now.getHours()>=BIZ_END);if(due&&!has(day))return day;}
- return null;
+ var now=new Date(),todayStr=_dLocal(now);
+ /* só cobra o ÚLTIMO dia útil vencido: hoje depois das 18h, senão o dia útil anterior (ex.: de manhã cobra o de ontem) */
+ var days=_lastBizDays(2);var day=null;
+ for(var i=0;i<days.length;i++){var dd=days[i];if(dd<todayStr||(dd===todayStr&&now.getHours()>=BIZ_END)){day=dd;break;}}
+ return (day&&!has(day))?day:null;
 }
 function callsDoneOn(day){var me=SESSION.sellerId;return DB.get(T(),"activities").filter(function(a){return a.owner===me&&a.done&&a.tipo==='ligação'&&(a.doneDate===day||(!a.doneDate&&a.data===day));}).length;}
 function metaLigacoesDia(){return (SESSION.role==='sdr')?(META_LIG_SDR||60):0;}
 function dailyReportModal(day){
  var isCloser=SESSION.role==='closer';var q3=isCloser?'Quantos fechamentos?':'Quantas reuniões agendadas?';
- var hoje=new Date().toISOString().slice(0,10);
+ var hoje=_dLocal();
  var commit=(DB.getObj(T(),"trainCommit",{})[SESSION.name]||{});var prometido=(commit.dia===day)?(commit.lig||0):0;
  var reais=callsDoneOn(day);var meta=metaLigacoesDia();
  var alvo=Math.max(prometido,meta);var bateu=reais>=alvo;
@@ -5143,10 +5147,10 @@ function acadVideos(){
  if(!list.length)return '<div class="card"><p class="mut">Trilha de vídeos indisponível para este perfil.</p></div>';
  var done=trainDoneSet(),total=list.length,ndone=list.filter(function(v){return done.has(v.id);}).length,pct=total?Math.round(ndone/total*100):0;
  var rk=trainRoleKey().toUpperCase();
- return '<div class="card"><div class="flex between wrap" style="align-items:center"><b style="font-size:15px">🎬 Trilha de Vídeos · '+rk+'</b><span class="pill pri">'+ndone+'/'+total+' aulas · '+pct+'%</span></div>'
+ return trainMatsCard()+'<div class="card"><div class="flex between wrap" style="align-items:center"><b style="font-size:15px">🎬 Trilha de Vídeos · '+rk+'</b><span class="pill pri">'+ndone+'/'+total+' aulas · '+pct+'%</span></div>'
   +'<div style="height:8px;background:rgba(255,255,255,.08);border-radius:6px;margin:10px 0;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
   +'<p class="mut" style="font-size:12.5px;margin:0 0 6px">Aulas da Full Sales para o seu papel. Assista na ordem; no seu Meu Dia aparecem as próximas do dia.</p>'
-  +'<div style="max-height:56vh;overflow:auto">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:13px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' '+esc(v.t)+' <small class="mut">· '+esc(v.c||'')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+'</small></span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div></div>';
+  +'<div style="max-height:56vh;overflow:auto">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><span style="font-size:13px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' '+esc(v.t)+' <small class="mut">· '+esc(v.c||'')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+'</small></span>'+trainMatBtn(v.id)+'<button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div></div>';
 }
 
 function leadScore(l){
@@ -5223,19 +5227,31 @@ function trainTodayVideos(){var list=trainList(),done=trainDoneSet();var pend=li
  if(T()==="icbari")return pend.slice(0,1); /* ICBARI: 1 vídeo por dia (eles têm outras atividades) */
  var out=[],acc=0;for(var i=0;i<pend.length;i++){out.push(pend[i]);acc+=trainDurSec(pend[i]);if(acc>=TRAIN_MIN_SEC)break;}return out;}
 function trainOpen(id){window.open('https://drive.google.com/file/d/'+id+'/view','_blank');}
+/* Materiais das aulas (anexos da Full Sales): botão 📎 na aula + bloco de materiais de apoio do papel */
+function trainMatsOf(id){var M=window.TRAIN_MATS;return (M&&M.v&&M.v[id])||[];}
+function trainMatLink(m){return '<a class="btn ghost xs" style="text-decoration:none" target="_blank" rel="noopener" href="'+esc(m.u)+'">📎 '+esc(m.t)+(m.x&&m.x!=='link'?' <small class="mut">'+esc(m.x.toUpperCase())+'</small>':'')+'</a>';}
+function trainMatBtn(id){var ms=trainMatsOf(id);if(!ms.length)return '';return '<button class="btn ghost xs" title="Material desta aula" onclick="trainMatOpen(\''+id+'\')">📎 '+ms.length+'</button>';}
+function trainMatOpen(id){var v=trainFind(id)||{};var ms=trainMatsOf(id);openModal('<h3>📎 Material da aula</h3><p class="mut" style="font-size:13px;margin:0 0 10px">'+esc(v.t||'')+'</p><div class="flex wrap" style="gap:8px">'+ms.map(trainMatLink).join('')+'</div>');}
+function trainMatsCard(){
+  var M=window.TRAIN_MATS;var gs=(M&&M.r&&M.r[trainRoleKey()])||[];if(!gs.length)return '';
+  var tot=gs.reduce(function(a,g){return a+g.m.length;},0);
+  return '<div class="card" style="margin-bottom:14px"><div class="flex between wrap" style="align-items:center"><b style="font-size:15px">📚 Materiais de apoio · '+trainRoleKey().toUpperCase()+'</b><span class="pill pri">'+tot+' materiais</span></div>'
+   +'<p class="mut" style="font-size:12.5px;margin:6px 0 10px">Playbooks, scripts e planilhas da Full Sales para o seu papel. Abre no Google Drive pra ver ou baixar.</p>'
+   +gs.map(function(g){return '<div style="padding:8px 0;border-top:1px solid var(--line)"><div class="mut" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">'+esc(g.c)+'</div><div class="flex wrap" style="gap:6px">'+g.m.map(trainMatLink).join('')+'</div></div>';}).join('')+'</div>';
+}
 function trainMark(id){trainMarkDone(id);toast("Aula marcada como assistida ✓");if(CURRENT_VIEW==='meudia')vMeuDia();else if(CURRENT_VIEW==='academy')vAcademy();}
 function trainCard(){
   var list=trainList();if(!list.length)return '';
   var done=trainDoneSet();var total=list.length;var ndone=list.filter(function(v){return done.has(v.id);}).length;var pct=total?Math.round(ndone/total*100):0;
   var today=trainTodayVideos();var todaySec=today.reduce(function(a,v){return a+trainDurSec(v);},0);
-  var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">'+esc(v.c||'Full Sales')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+' · abre no Google Drive</small></div><button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost sm" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
+  var rows=today.length?today.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)"><div style="min-width:0;flex:1"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 '+esc(v.t)+'</div><small class="mut">'+esc(v.c||'Full Sales')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+' · abre no Google Drive</small></div>'+trainMatBtn(v.id)+'<button class="btn sm" onclick="trainOpen(\''+v.id+'\')">▶ Assistir</button><button class="btn ghost sm" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join(''):'<div class="mut" style="padding:10px 0">Você concluiu toda a trilha 🎉</div>';
   return '<div class="card" style="margin-bottom:14px;background:linear-gradient(160deg,rgba(31,200,202,.08),transparent)"><div class="flex between wrap" style="align-items:center"><b style="font-size:14px">🎓 Treinamento de hoje · '+trainRoleKey().toUpperCase()+'</b><small class="mut">'+ndone+'/'+total+' aulas · '+pct+'%</small></div>'
    +'<div style="height:7px;background:rgba(255,255,255,.08);border-radius:6px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+pct+'%;background:var(--brand-primary-2,#38c6b4)"></i></div>'
    +'<p class="mut" style="font-size:12px;margin:8px 0 0">'+(T()==="icbari"?'Meta: <b>1 vídeo por dia</b>. Seu vídeo de hoje: ~<b>'+trainMinFmt(todaySec)+'</b>':'Meta: <b>mínimo 1h de treino por dia</b>. Suas aulas de hoje somam ~<b>'+trainMinFmt(todaySec)+'</b>')+', assista e marque como feito pra avançar.</p>'
    +rows
    +'<div class="mt8"><button class="btn ghost sm" onclick="trainAll()">Ver trilha completa ('+total+' aulas)</button></div></div>';
 }
-function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' '+esc(v.t)+' <small class="mut">· '+esc(v.c||'')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+'</small></span><button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div>');}
+function trainAll(){var list=trainList(),done=trainDoneSet();openModal('<h3>Trilha de treino · '+trainRoleKey().toUpperCase()+' ('+list.length+' aulas)</h3><div style="max-height:60vh;overflow:auto;margin-top:8px">'+list.map(function(v){return '<div class="flex between" style="align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)"><span style="font-size:12.5px;flex:1;min-width:0">'+(done.has(v.id)?'✅':'⬜')+' '+esc(v.t)+' <small class="mut">· '+esc(v.c||'')+(v.d?' · ⏱ '+trainMinFmt(v.d):'')+'</small></span>'+trainMatBtn(v.id)+'<button class="btn xs" onclick="trainOpen(\''+v.id+'\')">▶</button><button class="btn ghost xs" title="Marcar como assistida" onclick="trainMark(\''+v.id+'\')">✓</button></div>';}).join('')+'</div>');}
 function vMeuPlacar(){
   const me=SESSION.sellerId;const sellers=DB.get(T(),"sellers");
   const meS=sellers.find(s=>s.id===me)||{nome:SESSION.name,meta:0,realizado:0,papel:roleLabel(effRole())};
