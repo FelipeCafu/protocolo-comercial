@@ -2382,7 +2382,7 @@ function healLeadStages(){
 function crmVisibleCount(fid){
   /* conta só o que o usuário REALMENTE vê no kanban (mesmo dono/filtro), pra o número nunca mentir */
   return DB.get(T(),"leads").filter(function(l){
-    if(l.deleted||l.funnelId!==fid)return false;
+    if(l.deleted||l.funnelId!==fid||CLOSED_STAGES.includes(l.estagio))return false;
     if(!isAdmin()&&SESSION.sellerId)return l.owner===SESSION.sellerId;
     if(CRM_SELLER!=="all")return l.owner===CRM_SELLER;
     return true;
@@ -2401,19 +2401,19 @@ function tempBadgeMini(l){if(!l)return'';var t=l.temp;
    pra nunca contar "a empresa inteira": vendedor vê só os seus, gestor vê todos (ou o filtrado). */
 function crmBadgeCount(){
   return DB.get(T(),"leads").filter(function(l){
-    if(l.deleted)return false;
+    if(l.deleted||CLOSED_STAGES.includes(l.estagio))return false;
     if(!isAdmin()&&SESSION.sellerId)return l.owner===SESSION.sellerId;
     if(CRM_SELLER!=="all")return l.owner===CRM_SELLER;
     return true;
   }).length;
 }
 function vCRM(){
-  healLeadStages();
+  healLeadStages();healSingleOpenPerLead();
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   /* mostra o funil do papel + QUALQUER funil onde o vendedor tem lead (evita lead "sumido":
      contava em Tarefas/Meu Dia mas não aparecia no CRM porque estava num funil de outro papel) */
-  const _ownedF=(!isAdmin()&&SESSION.sellerId)?new Set(DB.get(T(),"leads").filter(l=>!l.deleted&&l.owner===SESSION.sellerId).map(l=>l.funnelId)):null;
+  const _ownedF=(!isAdmin()&&SESSION.sellerId)?new Set(DB.get(T(),"leads").filter(l=>!l.deleted&&l.owner===SESSION.sellerId&&!CLOSED_STAGES.includes(l.estagio)).map(l=>l.funnelId)):null;
   const funnels=(!isAdmin()&&_pap)?allF.filter(f=>f.papel===_pap||(_ownedF&&_ownedF.has(f.id))):allF;
   if(!funnels.length)funnels.push(allF[0]);
   if(!isAdmin()&&SESSION.sellerId)CRM_SELLER=SESSION.sellerId;
@@ -2454,16 +2454,30 @@ function actStatus(leadId){
   return"future";
 }
 function reassignActs(leadId,ownerId){var acts=DB.get(T(),"activities");var ch=false;acts.forEach(function(a){if(a.leadId===leadId&&!a.done&&a.owner!==ownerId){a.owner=ownerId;ch=true;}});if(ch)DB.set(T(),"activities",acts);}
+/* ===== Etapas "fechadas" (saem do CRM ativo) e regra de 1 atividade aberta por lead ===== */
+var CLOSED_STAGES=["ganho","perdido","churn"];
+function _openNormalActs(leadId,exceptId){return DB.get(T(),"activities").filter(function(a){return a.leadId===leadId&&!a.done&&!a.meetingReminder&&!a.isMeeting&&a.id!==exceptId;});}
+/* Garante no máximo UMA atividade "normal" aberta por lead: mantém a mais próxima (próximo passo) e remove as sobras (pile-up). Lembretes de reunião não contam. */
+function healSingleOpenPerLead(){
+  var acts=DB.get(T(),"activities");var byLead={};
+  acts.forEach(function(a){if(a.done||a.meetingReminder||a.isMeeting)return;(byLead[a.leadId]=byLead[a.leadId]||[]).push(a);});
+  var rm={},changed=false;
+  Object.keys(byLead).forEach(function(lid){var arr=byLead[lid];if(arr.length<=1)return;
+    arr.sort(function(x,y){return actKey(x)<actKey(y)?-1:1;});
+    arr.slice(1).forEach(function(a){rm[a.id]=1;changed=true;});
+  });
+  if(changed)DB.set(T(),"activities",acts.filter(function(a){return !rm[a.id];}));
+}
 function renderKanban(){
   const funnels=DB.getObj(T(),"funnels",FUNNELS);
   const funnel=funnels.find(f=>f.id===CRM_FUNNEL)||funnels[0];
   const q=(document.getElementById("crmSearch")?.value||"").toLowerCase();
-  let leads=DB.get(T(),"leads").filter(l=>l.funnelId===funnel.id&&!l.deleted);
+  let leads=DB.get(T(),"leads").filter(l=>l.funnelId===funnel.id&&!l.deleted&&!CLOSED_STAGES.includes(l.estagio));
   if(!isAdmin()&&SESSION.sellerId)leads=leads.filter(l=>l.owner===SESSION.sellerId);
   else if(CRM_SELLER!=="all")leads=leads.filter(l=>l.owner===CRM_SELLER);
   if(q)leads=leads.filter(l=>(l.nome+(l.fantasia||"")+(l.razaoSocial||"")+((l.contato||{}).email||"")).toLowerCase().includes(q));
   const now=Date.now();
-  document.getElementById("kanban").innerHTML=funnel.stages.map(s=>{
+  document.getElementById("kanban").innerHTML=funnel.stages.filter(s=>!CLOSED_STAGES.includes(s.id)).map(s=>{
     const ls=leads.filter(l=>l.estagio===s.id);const val=ls.reduce((a,l)=>a+(l.valor||0),0);
     return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
@@ -2519,17 +2533,17 @@ function iniciarCadencia(id){
   var lead=DB.get(T(),"leads").find(function(x){return x.id===id;});if(!lead)return;
   var cad=DB.getObj(T(),"cadences",{});var sdr=cad.sdr||[];
   if(!sdr.length){toast("Sem cadência configurada","warn");return;}
-  var now=Date.now();var made=0;var acts=DB.get(T(),"activities");
-  sdr.slice(0,2).forEach(function(day){ // D0 e D1 (a fase de bombardeio)
-    var dstr=new Date(now+(day.dia||0)*864e5).toISOString().slice(0,10);
-    (day.toques||[]).forEach(function(t){
-      var tipo=t.canal==="ligação"?"ligação":t.canal==="wa"?"wa":t.canal==="email"?"email":t.canal==="visita"?"visita":"msg";
-      acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:"D"+day.dia+" ["+t.h+"] "+t.cond,data:dstr,done:false,owner:lead.owner,cad:true});made++;
-    });
-  });
+  if(_openNormalActs(id).length){alert("Este lead já tem uma atividade em aberto. Conclua ela primeiro; a cadência cria um toque de cada vez.");return;}
+  var now=Date.now();var acts=DB.get(T(),"activities");
+  /* 1 atividade por vez: cria só o PRIMEIRO toque da cadência; os próximos entram ao concluir */
+  var day0=sdr[0]||{};var t=(day0.toques||[])[0];
+  if(!t){toast("Sem toque configurado na cadência","warn");return;}
+  var tipo=t.canal==="ligação"?"ligação":t.canal==="wa"?"wa":t.canal==="email"?"email":t.canal==="visita"?"visita":"msg";
+  var dstr=new Date(now+(day0.dia||0)*864e5).toISOString().slice(0,10);
+  acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:"D"+(day0.dia||0)+" ["+t.h+"] "+t.cond,data:dstr,hora:(/^\d{1,2}:\d{2}$/.test(t.h||'')?t.h:''),done:false,owner:lead.owner,cad:true});
   DB.set(T(),"activities",acts);
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência SDR iniciada, "+made+" toques agendados (D0 e D1)",ts:Date.now()});
-  toast(made+" toques da cadência agendados ✅");leadDetail(id);
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência SDR iniciada (1º toque). Os próximos entram ao concluir cada um.",ts:Date.now()});
+  toast("1º toque da cadência agendado ✅");leadDetail(id);
 }
 /* ============================================================
    HORAS ÚTEIS + LEMBRETES DE REUNIÃO (todas as empresas)
@@ -2558,16 +2572,20 @@ function scheduleMeetingReminders(id,dateStr,timeStr){
   if(!dateStr||!timeStr){toast("Informe data e hora da reunião","warn");return false;}
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var own=l.owner||SESSION.sellerId||"";
   clearMeetingReminders(id);
+  /* a reunião substitui a tarefa que estava em aberto (ex.: "ligar pra agendar"): conclui as abertas pra o card não ficar vermelho */
+  DB.set(T(),"activities",DB.get(T(),"activities").filter(function(x){return !(x.leadId===id&&!x.done&&!x.meetingReminder&&!x.isMeeting);}));
   var acts=DB.get(T(),"activities");
+  var nowMs=Date.now();
+  function _push(data,hora,tipo,tit){var when=new Date(data+'T'+(hora||'09:00')+':00').getTime();if(when<=nowMs)return;/* não cria lembrete no passado (evita "atrasada") */
+    acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:tit,data:data,hora:hora,done:false,owner:own,meetingReminder:true});}
   var touches=[
     {h:6,tipo:"wa",     tit:"Lembrete da reunião: mandar mensagem (6h úteis antes)"},
     {h:3,tipo:"ligação",tit:"Ligar pra lembrar da reunião (3h úteis antes)"},
     {h:2,tipo:"wa",     tit:"Mandar áudio: 'estamos prontos, só aguardando o horário' (2h úteis antes)"}
   ];
-  touches.forEach(function(t){var w=subtractBizHours(dateStr,timeStr,t.h);
-    acts.push({id:DB.uid(),leadId:id,tipo:t.tipo,titulo:t.tit,data:w.data,hora:w.hora,done:false,owner:own,meetingReminder:true});});
+  touches.forEach(function(t){var w=subtractBizHours(dateStr,timeStr,t.h);_push(w.data,w.hora,t.tipo,t.tit);});
   var d30=new Date(new Date(dateStr+'T'+timeStr+':00').getTime()-30*60000);
-  acts.push({id:DB.uid(),leadId:id,tipo:"wa",titulo:"WhatsApp com gif/figurinha: 'estamos prontos, em 30 min começamos' (30min antes)",data:d30.toISOString().slice(0,10),hora:_hhmm2(d30),done:false,owner:own,meetingReminder:true});
+  _push(d30.toISOString().slice(0,10),_hhmm2(d30),"wa","WhatsApp com gif/figurinha: 'estamos prontos, em 30 min começamos' (30min antes)");
   acts.push({id:DB.uid(),leadId:id,tipo:"reuniao",titulo:"REUNIÃO com "+(l.nome||"o lead"),data:dateStr,hora:timeStr,done:false,owner:own,isMeeting:true});
   DB.set(T(),"activities",acts);
   DB.update(T(),"leads",id,{reuniaoData:dateStr,reuniaoHora:timeStr});
@@ -2800,6 +2818,7 @@ function addActivity(id){
   const hora=((document.getElementById("ac_hora")||{}).value||"").trim();
   const obs=((document.getElementById("ac_obs")||{}).value||"").trim();
   if(!hora){alert("Informe a HORA da atividade, pra você saber a que horas falar com o cliente.");return;}
+  if(_openNormalActs(id).length){alert("Este lead já tem uma atividade em aberto. Conclua a atividade atual (ela pede a observação e já cria a próxima) antes de agendar outra, pra não acumular vários agendamentos no mesmo cliente.");return;}
   DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,hora:hora,done:false,owner:l_owner(id),obsAg:obs});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+(hora?" "+hora:"")+")"+(obs?", "+obs:""),ts:Date.now()});
   var mm=pushMentions(id,obs);
@@ -2835,9 +2854,13 @@ function concludeActDo(aid,ctx){
   if(!enc&&!nt){alert("Defina a próxima atividade (ou marque encerrar).");return;}
   if(!enc&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
   var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
+  if(a&&a.done){closeModal();return;} /* trava duplo-clique: já foi concluída */
   DB.update(T(),"activities",aid,{done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)});
   if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
   if(lid){var mm=pushMentions(lid,obs);}
+  if(lid){ /* 1 atividade por lead: remove sobras abertas (não-reunião) antes de criar o próximo passo */
+    DB.set(T(),"activities",DB.get(T(),"activities").filter(function(x){return !(x.leadId===lid&&!x.done&&!x.meetingReminder&&!x.isMeeting);}));
+  }
   if(!enc&&lid){
     DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,hora:nhora,done:false,owner:a?a.owner:l_owner(lid)});
     DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+(nhora?" "+nhora:"")+")",ts:Date.now()});
@@ -2951,13 +2974,15 @@ function battlecard(id){const l=DB.get(T(),"leads").find(x=>x.id===id);
    <div class="script"><b>Fechamento:</b> vagas limitadas do grupo + próximo encontro dia X → "bora garantir hoje?"</div>
    <button class="btn ghost sm mt" onclick="closeModal();go('scripts')">Abrir playbook completo →</button>`,true);}
 function delLead(id){if(!confirm("Arquivar este lead? Ele sai do funil mas fica guardado, nada é apagado de verdade."))return;DB.update(T(),"leads",id,{deleted:true,deletedAt:Date.now()});toast("Lead arquivado");go('crm');}
+function lmFillStages(){var fs=DB.getObj(T(),"funnels",FUNNELS);var fid=(document.getElementById("f_funnel")||{}).value;var f=fs.find(function(x){return x.id===fid;})||fs[0];var sel=document.getElementById("f_estagio");if(sel&&f)sel.innerHTML=(f.stages||[]).map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join("");}
 function leadModal(){
   const funnels=DB.getObj(T(),"funnels",FUNNELS),sellers=DB.get(T(),"sellers");
   const f=funnels.find(x=>x.id===CRM_FUNNEL)||funnels[0];
   const isIcb=T()==="icbari";
   const cirs=isIcb?DB.getObj(T(),"cirurgias",(typeof ICB_CIRURGIAS_DEFAULT!=="undefined"?ICB_CIRURGIAS_DEFAULT:[])):[];
-  const funSel=`<select class="in" id="f_funnel">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select>`;
-  const ownSel=`<select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}">${esc(s.nome)}</option>`).join("")}</select>`;
+  const funSel=`<select class="in" id="f_funnel" onchange="lmFillStages()">${funnels.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.name)}</option>`).join("")}</select>`;
+  const stgSel=`<select class="in" id="f_estagio">${f.stages.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select>`;
+  const ownSel=`<select class="in" id="f_owner">${sellers.map(s=>`<option value="${s.id}" ${s.id===SESSION.sellerId?'selected':''}>${esc(s.nome)}</option>`).join("")}</select>`;
   const tempSel=`<select class="in" id="f_temp"><option>quente</option><option selected>morno</option><option>frio</option></select>`;
   const planoSaude=`<select class="in" id="f_plano"><option>Bradesco</option><option>Unimed</option><option>SulAmérica</option><option>Porto Seguro</option><option>INAS</option><option>Postal Saúde</option><option>CBMDF</option><option>PMDF</option><option>Amil</option><option>Quality</option><option>Unity</option><option>MedSênior</option><option>Hapvida</option><option selected>Particular</option><option>Outro</option></select>`;
   openModal(`<h3>Novo lead</h3>
@@ -2966,7 +2991,8 @@ function leadModal(){
    <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><select class="in" id="f_origem"><option>Instagram</option><option>Google</option><option>Facebook</option><option>WhatsApp</option><option>Indicação</option><option>Tráfego pago</option><option>Outro</option></select></div></div>
    <div class="row mt"><div><label class="fl">Procedimento que quer fazer</label><select class="in" id="f_proc">${cirs.map(c=>`<option>${esc(c.nome)}</option>`).join("")}<option>Outro / A definir</option></select></div><div><label class="fl">Plano de saúde</label>${planoSaude}</div></div>
    <div class="row mt"><div><label class="fl">Valor do procedimento (R$)</label><input class="in" id="f_valor" type="number" placeholder="ex.: 15000"></div><div><label class="fl">Funil</label>${funSel}</div></div>
-   <div class="row mt"><div><label class="fl">Temp.</label>${tempSel}</div><div><label class="fl">Responsável</label>${ownSel}</div></div>
+   <div class="row mt"><div><label class="fl">Etapa do funil</label>${stgSel}</div><div><label class="fl">Temp.</label>${tempSel}</div></div>
+   <div class="mt"><label class="fl">Responsável</label>${ownSel}</div>
    `:`
    <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div></div>
    <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
@@ -2974,23 +3000,35 @@ function leadModal(){
      ${T()==="lideres"?`<div><label class="fl">Plano provável</label><select class="in" id="f_plano"><option>Evolução</option><option selected>Referência</option><option>Legado</option><option>A definir</option></select></div>
      <div><label class="fl">Probabilidade</label><select class="in" id="f_prob"><option>Baixa</option><option selected>Média</option><option>Alta</option></select></div>`:`<div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>`}
      <div><label class="fl">Temp.</label>${tempSel}</div></div>
-   <div><label class="fl mt8">Responsável</label>${ownSel}</div>
+   <div class="row mt"><div><label class="fl">Etapa do funil</label>${stgSel}</div><div><label class="fl">Responsável</label>${ownSel}</div></div>
    `}
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="saveNewLead()">Criar lead</button></div>`);
 }
 function saveNewLead(){
   const g=x=>{var e=document.getElementById(x);return e?e.value:"";};const nome=g("f_nome");if(!nome){toast("Informe o nome","bad");return;}
   const funnels=DB.getObj(T(),"funnels",FUNNELS);const fid=g("f_funnel");const f=funnels.find(x=>x.id===fid)||funnels[0];
+  const estagio=g("f_estagio")||(f.stages[0]||{}).id;
   const id=DB.uid();
   const _val=document.getElementById("f_valor")?(+g("f_valor")||0):0;
   const _plano=document.getElementById("f_plano")?g("f_plano"):"";
   const _prob=document.getElementById("f_prob")?g("f_prob"):"";
   const _proc=document.getElementById("f_proc")?g("f_proc"):"";
-  DB.push(T(),"leads",{id,nome,procedimento:_proc,origem:g("f_origem"),
-    funnelId:fid,estagio:f.stages[0].id,valor:_val,plano:_plano,prob:_prob,temp:g("f_temp")||"morno",owner:g("f_owner"),score:50,
-    contato:{nome,tel:g("f_tel"),email:g("f_email")},criadoEm:Date.now(),movedAt:Date.now()});
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado",ts:Date.now()});
-  closeModal();toast("Lead criado");renderSidebar();if(CURRENT_VIEW==="crm")vCRM();else if(CURRENT_VIEW==="base")vBase();
+  const tel=g("f_tel"),email=g("f_email"),temp=g("f_temp")||"morno",owner=g("f_owner"),origem=g("f_origem");
+  /* cria/vincula também na BASE (o lead tem que aparecer nos dois lugares) */
+  var base=DB.get(T(),"base");var dig=(tel||"").replace(/\D/g,"");
+  var bexist=dig?base.find(function(b){return (b.tel||"").replace(/\D/g,"")===dig&&dig.length>=8;}):null;
+  var bid;
+  if(bexist){bid=bexist.id;bexist.inCrm=true;bexist.crmLeadId=id;if(!bexist.owner)bexist.owner=owner;if(!bexist.temp)bexist.temp=temp;}
+  else{bid=DB.uid();base.unshift({id:bid,nome:nome,empresa:"",tel:tel,email:email,ramo:"",origens:[origem||"Manual"],obs:"",temp:temp,inCrm:true,crmLeadId:id,owner:owner,createdBy:(SESSION.name||"")});}
+  DB.set(T(),"base",base);
+  DB.push(T(),"leads",{id,baseId:bid,nome,procedimento:_proc,origem:origem,
+    funnelId:fid,estagio:estagio,valor:_val,plano:_plano,prob:_prob,temp:temp,owner:owner,score:50,
+    contato:{nome,tel:tel,email:email},criadoEm:Date.now(),movedAt:Date.now()});
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado (no CRM e na Base)",ts:Date.now()});
+  closeModal();toast("Lead criado no CRM e na Base ✓");
+  /* garante que o lead apareça: foca o funil/etapa dele e, se gestor, mostra todos os vendedores */
+  CRM_FUNNEL=fid;if(isAdmin())CRM_SELLER="all";
+  renderSidebar();if(CURRENT_VIEW==="base")vBase();else go("crm");
 }
 /* ===== BASE DE CLIENTES ===== */
 function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -3045,9 +3083,11 @@ function baseFiltered(){
   const tmp=document.getElementById("bTemp")?.value||"";
   const sort=document.getElementById("bSort")?.value||"";
   const out=DB.get(T(),"base").filter(b=>{
-    if(T()==="lideres" && !isAdmin() && b.treino!==true)return false; /* Líderes: time só vê a base de treino (fake); gestores veem a base real completa */
-    if(T()==="icbari" && !isAdmin() && b.treino!==true)return false; /* ICBARI: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
-    if(T()==="b2if" && !isAdmin() && b.treino!==true)return false; /* B2: SDR/Closer/CS só veem a base de treino (fake); gestores veem a base real completa */
+    /* time (não-gestor) vê: base de treino + os contatos que ELE criou/é dono (ex.: novo lead que ele cadastrou) */
+    var _mine=(b.owner&&b.owner===SESSION.sellerId)||(b.createdBy&&b.createdBy===(SESSION.name||""));
+    if(T()==="lideres" && !isAdmin() && b.treino!==true && !_mine)return false;
+    if(T()==="icbari" && !isAdmin() && b.treino!==true && !_mine)return false;
+    if(T()==="b2if" && !isAdmin() && b.treino!==true && !_mine)return false;
     if(q && !((b.nome||"")+" "+(b.empresa||"")+" "+(b.tel||"")+" "+(b.email||"")+" "+(b.cargo||"")+" "+(b.oldResp||"")+" "+(b.oldStatus||"")).toLowerCase().includes(q))return false;
     if(org && !(b.origens||[]).includes(org))return false;
     if(ram && b.ramo!==ram)return false;
@@ -3136,7 +3176,7 @@ function baseNovoDo(){
   const base=DB.get(T(),"base");
   base.unshift({id:DB.uid(),nome,empresa:document.getElementById("nbEmp").value.trim(),tel:document.getElementById("nbTel").value.trim(),
     email:document.getElementById("nbEmail").value.trim(),cpf:"",cargo:"",instagram:"",membro:"",ramo:document.getElementById("nbRamo").value.trim(),
-    origens:[document.getElementById("nbOrig").value.trim()||"Manual"],obs:"",inCrm:false});
+    origens:[document.getElementById("nbOrig").value.trim()||"Manual"],obs:"",inCrm:false,owner:(SESSION.sellerId||""),createdBy:(SESSION.name||"")});
   DB.set(T(),"base",base);closeModal();toast("Contato adicionado à Base");vBase();
 }
 
