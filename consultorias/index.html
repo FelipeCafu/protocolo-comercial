@@ -5986,7 +5986,8 @@ function showAlerts(){
 }
 
 /* ===== RELATÓRIO DIÁRIO DE ATIVIDADES (gestores) — todas as empresas ===== */
-var REL_FROM=null, REL_TO=null;
+var REL_FROM=null, REL_TO=null, REL_ROLE="", REL_PERSON="";
+function relSetRole(v){REL_ROLE=v;REL_PERSON="";vRelatorio();}
 var ATYPE_LABEL={"ligação":"📞 Ligações","wa":"🟢 WhatsApp","reuniao":"🤝 Reuniões","visita":"📍 Visitas","email":"✉️ E-mails","msg":"💬 Mensagens","insta":"📸 Instagram","alarme":"⏰ Lembretes"};
 function _bizDaysBetween(a,b){var n=0,d=new Date(a+'T12:00:00'),end=new Date(b+'T12:00:00');while(d<=end){if(_isBizDay(d))n++;d=new Date(d.getTime()+864e5);}return n;}
 /* mini-gráficos SVG (tema do sistema, sem libs externas) */
@@ -6018,32 +6019,37 @@ function vRelatorio(){
   if(!REL_FROM)REL_FROM=today; if(!REL_TO)REL_TO=today;
   var from=REL_FROM,to=REL_TO;
   var sellers=DB.get(T(),"sellers");
+  /* filtros por função e por pessoa */
+  var _selS=sellers.filter(function(s){if(REL_ROLE&&(s.papel||'').toLowerCase()!==REL_ROLE.toLowerCase())return false;if(REL_PERSON&&s.id!==REL_PERSON)return false;return true;});
+  var _scoped=!!(REL_ROLE||REL_PERSON);
+  var _ownset=new Set(_selS.map(function(s){return s.id;}));
+  var _inScope=function(owner){return !_scoped||_ownset.has(owner);};
   var acts=DB.get(T(),"activities");
   var inPeriodDone=function(a){var d=a.doneDate||a.data||'';return a.done&&d>=from&&d<=to;};
   var pendingOf=function(sid){return acts.filter(function(a){return a.owner===sid&&!a.done;}).length;};
   var bizN=_bizDaysBetween(from,to);
   var reps=DB.get(T(),"dailyReports").filter(function(r){return r.date>=from&&r.date<=to;});
-  var rows=sellers.map(function(s){
+  var rows=_selS.map(function(s){
     var mine=acts.filter(function(a){return a.owner===s.id&&inPeriodDone(a);});
     var byType={};mine.forEach(function(a){byType[a.tipo]=(byType[a.tipo]||0)+1;});
     var ligDone=byType["ligação"]||0;
     var metaLig=((s.papel||'').toLowerCase()==='sdr')?(META_LIG_SDR*Math.max(1,bizN)):0;
     return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,metaLig:metaLig};
-  }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return r.total>0||r.pend>0||p==='sdr'||p==='closer';});
+  }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return _scoped||r.total>0||r.pend>0||p==='sdr'||p==='closer';});
   var types=["ligação","wa","reuniao","visita","email","msg"];
   var TC={"ligação":"#e7b53c","wa":"#28b46e","reuniao":"#5fd3d8","visita":"#8e7bef","email":"#e8792e","msg":"#5b74d6"};
   function quick(d,label){var t=new Date();var f=new Date(t.getTime()-(d-1)*864e5);var act=(from===f.toISOString().slice(0,10)&&to===t.toISOString().slice(0,10));return '<button class="btn '+(act?'':'ghost')+' xs" onclick="REL_FROM=\''+f.toISOString().slice(0,10)+'\';REL_TO=\''+t.toISOString().slice(0,10)+'\';vRelatorio()">'+label+'</button>';}
   /* agregados extras (leads/reuniões), além das atividades */
-  var leadsAll=DB.get(T(),"leads").filter(function(l){return !l.deleted;});
+  var leadsAll=DB.get(T(),"leads").filter(function(l){return !l.deleted&&_inScope(l.owner);});
   var ativos=leadsAll.filter(function(l){return !["ganho","perdido","churn"].includes(l.estagio);});
   var quentes=leadsAll.filter(function(l){return l.temp==='quente';}).length;
   var frios=leadsAll.filter(function(l){return l.temp!=='quente';}).length;
-  var allDone=acts.filter(inPeriodDone);
+  var allDone=acts.filter(function(a){return inPeriodDone(a)&&_inScope(a.owner);});
   var byTypeTotal={};allDone.forEach(function(a){byTypeTotal[a.tipo]=(byTypeTotal[a.tipo]||0)+1;});
-  var totalDone=allDone.length, callsDone=byTypeTotal["ligação"]||0, pendingTotal=acts.filter(function(a){return !a.done;}).length;
+  var totalDone=allDone.length, callsDone=byTypeTotal["ligação"]||0, pendingTotal=acts.filter(function(a){return !a.done&&_inScope(a.owner);}).length;
   var reunioesP=leadsAll.filter(function(l){return l.reuniaoData&&l.reuniaoData>=from&&l.reuniaoData<=to;}).length;
   var ganhosP=leadsAll.filter(function(l){return l.estagio==='ganho';}).length;
-  var nSdr=sellers.filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
+  var nSdr=(_scoped?_selS:sellers).filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
   var metaCallsTeam=META_LIG_SDR*Math.max(1,bizN)*Math.max(1,nSdr);
   var pctCalls=Math.round(callsDone/metaCallsTeam*100);
   /* dados dos gráficos */
@@ -6055,12 +6061,24 @@ function vRelatorio(){
   if(!barStage.length)barStage=[{label:"Sem leads ativos",value:0,color:"var(--brand-primary-2)"}];
   M().innerHTML=`
    <div class="view-title"><h1>📈 Relatório de Atividades</h1><span class="pill pri">${from.split("-").reverse().join("/")}${from!==to?' a '+to.split("-").reverse().join("/"):''} · ${bizN} dia(s) útil(eis)</span></div>
-   <p class="view-sub">Visão do gestor: produção do time, metas e carteira. Filtre por dia, semana ou período.</p>
+   <p class="view-sub">Visão do gestor: produção do time, metas e carteira. Filtre por <b>data</b>, por <b>função</b> (ex.: todos os SDRs) e/ou por <b>pessoa</b>.</p>
    <div class="card" style="margin-bottom:12px"><div class="flex wrap" style="gap:10px;align-items:flex-end">
      <div><label class="fl">De</label><input class="in" id="rel_from" type="date" value="${from}" oninput="REL_FROM=this.value"></div>
      <div><label class="fl">Até</label><input class="in" id="rel_to" type="date" value="${to}" oninput="REL_TO=this.value"></div>
+     <div><label class="fl">Função</label><select class="in" onchange="relSetRole(this.value)">
+       <option value="">Todas as funções</option>
+       <option value="sdr" ${REL_ROLE==='sdr'?'selected':''}>SDR</option>
+       <option value="closer" ${REL_ROLE==='closer'?'selected':''}>Closer</option>
+       <option value="cs" ${REL_ROLE==='cs'?'selected':''}>CS</option>
+       <option value="planejador" ${REL_ROLE==='planejador'?'selected':''}>Planejador</option>
+     </select></div>
+     <div><label class="fl">Pessoa</label><select class="in" onchange="REL_PERSON=this.value;vRelatorio()">
+       <option value="">Todas as pessoas</option>
+       ${sellers.filter(function(s){return !REL_ROLE||(s.papel||'').toLowerCase()===REL_ROLE.toLowerCase();}).map(function(s){return '<option value="'+s.id+'"'+(REL_PERSON===s.id?' selected':'')+'>'+esc(s.nome)+' ('+esc(s.papel||'')+')</option>';}).join("")}
+     </select></div>
      <button class="btn sm" onclick="vRelatorio()">Aplicar</button>
      ${quick(1,'Hoje')}${quick(7,'7 dias')}${quick(30,'30 dias')}
+     ${_scoped?'<button class="btn ghost xs" onclick="REL_ROLE=\'\';REL_PERSON=\'\';vRelatorio()">✕ limpar função/pessoa</button>':''}
    </div></div>
    <div class="grid kpis">
      ${kpi("⚡","Atividades executadas",totalDone,"no período",totalDone>0?"up":"down")}
