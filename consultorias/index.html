@@ -2834,6 +2834,8 @@ function concludeAct(aid,ctx){
     <label class="fl">O que aconteceu nesta atividade? <b style="color:var(--brand-bad)">*</b></label>
     <textarea class="in" id="caObs" rows="3" placeholder="Ex.: liguei e não atendeu / falei com o paciente, vai pensar / consulta confirmada"></textarea>
     ${atMentionChips('caObs')}
+    ${(a&&a.tipo==='ligação')?`<label class="fl mt8">A ligação foi atendida? <b style="color:var(--brand-bad)">*</b></label>
+    <select class="in" id="caAtendida"><option value="nao">Não atendida</option><option value="sim">Sim, foi atendida</option></select>`:''}
     <div style="border-top:1px solid var(--brand-line);margin:14px 0 10px"></div>
     <label class="fl">Próxima atividade <b style="color:var(--brand-bad)">*</b>, todo lead precisa de um próximo passo</label>
     <input class="in" id="caNextTit" placeholder="Ex.: Ligar de novo / Enviar WhatsApp / Consulta de avaliação" style="margin-top:6px">
@@ -2856,7 +2858,9 @@ function concludeActDo(aid,ctx){
   if(!enc&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
   var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
   if(a&&a.done){closeModal();return;} /* trava duplo-clique: já foi concluída */
-  DB.update(T(),"activities",aid,{done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)});
+  var _patch={done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)};
+  if(a&&a.tipo==='ligação'){var _at=document.getElementById("caAtendida");_patch.atendida=!!(_at&&_at.value==='sim');}
+  DB.update(T(),"activities",aid,_patch);
   if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
   if(lid){var mm=pushMentions(lid,obs);}
   if(lid){ /* 1 atividade por lead: remove sobras abertas (não-reunião) antes de criar o próximo passo */
@@ -6033,8 +6037,9 @@ function vRelatorio(){
     var mine=acts.filter(function(a){return a.owner===s.id&&inPeriodDone(a);});
     var byType={};mine.forEach(function(a){byType[a.tipo]=(byType[a.tipo]||0)+1;});
     var ligDone=byType["ligação"]||0;
+    var ligAtend=mine.filter(function(a){return a.tipo==='ligação'&&a.atendida===true;}).length;
     var metaLig=((s.papel||'').toLowerCase()==='sdr')?(META_LIG_SDR*Math.max(1,bizN)):0;
-    return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,metaLig:metaLig};
+    return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,ligAtend:ligAtend,metaLig:metaLig};
   }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return _scoped||r.total>0||r.pend>0||p==='sdr'||p==='closer';});
   var types=["ligação","wa","reuniao","visita","email","msg"];
   var TC={"ligação":"#e7b53c","wa":"#28b46e","reuniao":"#5fd3d8","visita":"#8e7bef","email":"#e8792e","msg":"#5b74d6"};
@@ -6047,6 +6052,8 @@ function vRelatorio(){
   var allDone=acts.filter(function(a){return inPeriodDone(a)&&_inScope(a.owner);});
   var byTypeTotal={};allDone.forEach(function(a){byTypeTotal[a.tipo]=(byTypeTotal[a.tipo]||0)+1;});
   var totalDone=allDone.length, callsDone=byTypeTotal["ligação"]||0, pendingTotal=acts.filter(function(a){return !a.done&&_inScope(a.owner);}).length;
+  var callsAnswered=allDone.filter(function(a){return a.tipo==='ligação'&&a.atendida===true;}).length;
+  var pctAns=callsDone?Math.round(callsAnswered/callsDone*100):0;
   var reunioesP=leadsAll.filter(function(l){return l.reuniaoData&&l.reuniaoData>=from&&l.reuniaoData<=to;}).length;
   var ganhosP=leadsAll.filter(function(l){return l.estagio==='ganho';}).length;
   var nSdr=(_scoped?_selS:sellers).filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
@@ -6083,6 +6090,7 @@ function vRelatorio(){
    <div class="grid kpis">
      ${kpi("⚡","Atividades executadas",totalDone,"no período",totalDone>0?"up":"down")}
      ${kpi("📞","Ligações feitas",callsDone,"meta "+metaCallsTeam+" · "+pctCalls+"%",pctCalls>=100?"up":"down")}
+     ${kpi("✅","Ligações atendidas",callsAnswered,pctAns+"% atendidas · "+(callsDone-callsAnswered)+" não",callsAnswered>0?"up":"down")}
      ${kpi("🤝","Reuniões agendadas",reunioesP,"no período","up")}
      ${kpi("🗂️","Leads ativos no CRM",ativos.length,ganhosP+" ganho(s)","up")}
      ${kpi("⏳","Atividades a vencer",pendingTotal,"em aberto",pendingTotal?"down":"up")}
@@ -6094,11 +6102,11 @@ function vRelatorio(){
      <div class="card"><h2 style="margin:0 0 10px;font-size:14px">Leads por etapa (ativos)</h2>${_relBars(barStage)}</div>
    </div>
    <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 10px;font-size:14px">Detalhe por pessoa</h2>
-     <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
+     <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>Lig. atendidas</th><th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
      ${rows.length?rows.map(function(r){
-        var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;
-        return `<tr><td><b>${esc(r.s.nome)}</b></td><td class="mut">${esc(r.s.papel||'')}</td><td><b>${r.total}</b></td>${types.map(t=>`<td>${r.byType[t]||0}</td>`).join("")}<td><span class="pill ${r.pend?'warn':''}">${r.pend}</span></td><td>${r.metaLig?(`<b style="color:${pct>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.ligDone}/${r.metaLig}</b> · ${pct}%`):'—'}</td></tr>`;
-      }).join(""):`<tr><td colspan="${types.length+5}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
+        var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;var pa=r.ligDone?Math.round((r.ligAtend||0)/r.ligDone*100):0;
+        return `<tr><td><b>${esc(r.s.nome)}</b></td><td class="mut">${esc(r.s.papel||'')}</td><td><b>${r.total}</b></td>${types.map(t=>`<td>${r.byType[t]||0}</td>`).join("")}<td><b style="color:var(--brand-ok)">${r.ligAtend||0}</b>${r.ligDone?` <span class="mut" style="font-size:11px">de ${r.ligDone} · ${pa}%</span>`:''}</td><td><span class="pill ${r.pend?'warn':''}">${r.pend}</span></td><td>${r.metaLig?(`<b style="color:${pct>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.ligDone}/${r.metaLig}</b> · ${pct}%`):'—'}</td></tr>`;
+      }).join(""):`<tr><td colspan="${types.length+6}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
      </tbody></table>
    </div>
    <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 8px;font-size:14px">📝 Fechamentos do dia (autoinformados)</h2>
