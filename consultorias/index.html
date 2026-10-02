@@ -2844,7 +2844,8 @@ function concludeAct(aid,ctx){
     <div class="flex between mt"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="concludeActDo('${aid}','${ctx}')">Concluir</button></div>`);
 }
 function concludeActDo(aid,ctx){
-  var obs=(document.getElementById("caObs").value||"").trim();
+  var _o=document.getElementById("caObs");if(!_o)return; /* modal já fechado (ex.: duplo-clique) */
+  var obs=(_o.value||"").trim();
   if(!obs){alert("Descreva o que aconteceu nesta atividade. A observação é obrigatória.");return;}
   var enc=document.getElementById("caEncerrar").checked;
   var nt=(document.getElementById("caNextTit").value||"").trim();
