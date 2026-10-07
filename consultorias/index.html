@@ -663,16 +663,17 @@ function canSeeSdrPeek(){var s=REAL_SESSION||SESSION;return !!(s&&s.seeSdr)&&!ca
 function sdrPeekOn(){return !!(REAL_SESSION&&REAL_SESSION.seeSdr&&SESSION&&SESSION.role==='sdr');}
 function sellerHasPapel(id,pap){var s=DB.get(CURRENT_TENANT,"sellers").find(function(x){return x.id===id;});return !!(s&&(s.papel||'').toLowerCase()===pap);}
 function firstSellerOf(pap){var s=DB.get(CURRENT_TENANT,"sellers").find(function(x){return (x.papel||'').toLowerCase()===pap;});return s?s.id:null;}
-function previewAs(role){
+function previewAs(role,sid){
   var real=REAL_SESSION||SESSION;var nm=((real.name||'Você').split(' ')[0])||'Você';
   if(role==='self'){SESSION=real;REAL_SESSION=null;}
   else{
     REAL_SESSION=real;
     if(role==='gestor'){SESSION={tenant:CURRENT_TENANT,role:'gestor',roles:['gestor'],name:nm+' · ver como Gestor',initials:'VG'};}
     else{
-      var papel=(role==='closer'&&CURRENT_TENANT==='b2if')?'especialista':role;
-      var sid=(real.sellerId&&sellerHasPapel(real.sellerId,papel))?real.sellerId:firstSellerOf(papel);
-      SESSION={tenant:CURRENT_TENANT,role:role,roles:[role],sellerId:sid,name:nm+' · ver como '+roleLabel(role),initials:'V'+((role[0]||'').toUpperCase())};
+      var papel=role;
+      var _sid=sid||((real.sellerId&&sellerHasPapel(real.sellerId,papel))?real.sellerId:firstSellerOf(papel));
+      var _snome=(DB.get(CURRENT_TENANT,"sellers").find(function(s){return s.id===_sid;})||{}).nome||'';
+      SESSION={tenant:CURRENT_TENANT,role:role,roles:[role],sellerId:_sid,name:nm+' · ver '+roleLabel(role)+(_snome?' ('+_snome+')':''),initials:'V'+((role[0]||'').toUpperCase())};
     }
   }
   VIEW_AS='gestor';
@@ -2129,7 +2130,15 @@ function renderSidebar(){
     var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 Closer']];
     if(CURRENT_TENANT==='b2if')_opts.push(['planejador','🧭 Planejador']);
     _opts.push(['cs','💚 CS']);
-    html+='<div style="padding:9px 9px 7px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));margin-bottom:6px"><div class="mut" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px">👁️ Ver como</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_opts.map(function(o){return '<button class="btn '+(_cur===o[0]?'':'ghost')+' xs" style="padding:5px 8px;font-size:11px" onclick="previewAs(\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div>'+(_cur!=='self'?'<div class="mut" style="font-size:10.5px;margin:6px 2px 0">Você está vendo como <b>'+roleLabel(_cur==='gestor'?'gestor':_cur)+'</b>. Clique em <b>Eu</b> pra voltar.</div>':'')+'</div>';
+    var _papelDe={sdr:'sdr',closer:'closer',cs:'cs',planejador:'planejador'};
+    var _subrow='';
+    if(_papelDe[_cur]){
+      var _ppl=DB.get(CURRENT_TENANT,"sellers").filter(function(s){return (s.papel||'').toLowerCase()===_papelDe[_cur];});
+      var _curSid=(SESSION&&SESSION.sellerId)||'';
+      if(_ppl.length){_subrow='<div class="mut" style="font-size:10px;margin:7px 2px 3px">Qual '+esc(roleLabel(_cur))+'?</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_ppl.map(function(s){return '<button class="btn '+(s.id===_curSid?'':'ghost')+' xs" style="padding:4px 8px;font-size:10.5px" onclick="previewAs(\''+_cur+'\',\''+s.id+'\')">'+esc(s.nome)+'</button>';}).join('')+'</div>';}
+    }
+    var _curNm=(_cur!=='self'&&_cur!=='gestor'&&SESSION&&SESSION.sellerId)?((DB.get(CURRENT_TENANT,"sellers").find(function(s){return s.id===SESSION.sellerId;})||{}).nome||''):'';
+    html+='<div style="padding:9px 9px 7px;border-bottom:1px solid var(--line,rgba(255,255,255,.08));margin-bottom:6px"><div class="mut" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 6px">👁️ Ver como</div><div style="display:flex;flex-wrap:wrap;gap:4px">'+_opts.map(function(o){return '<button class="btn '+(_cur===o[0]?'':'ghost')+' xs" style="padding:5px 8px;font-size:11px" onclick="previewAs(\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div>'+_subrow+(_cur!=='self'?'<div class="mut" style="font-size:10.5px;margin:6px 2px 0">Vendo como <b>'+roleLabel(_cur==='gestor'?'gestor':_cur)+'</b>'+(_curNm?' · <b>'+esc(_curNm)+'</b>':'')+'. Clique em <b>Eu</b> pra voltar.</div>':'')+'</div>';
   }
   else if(canSeeSdrPeek()){
     var _on=sdrPeekOn();
