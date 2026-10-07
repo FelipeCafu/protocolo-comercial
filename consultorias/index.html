@@ -603,13 +603,15 @@ const BRANDS={
   protocolo:{brand:"protocolo",name:"O Protocolo Comercial",sub:"Mentoria Comercial B2B",mark:markProtocolo,color:"#FF6B2B"},
   lideres:{brand:"lideres",name:"Líderes do Brasil",sub:"Comunidade de Empresários",mark:markLideres,color:"#354B9C"},
   b2if:{brand:"b2if",name:"B2 Inteligência Financeira",sub:"Wealth Planner · Planejamento Financeiro",mark:markB2,color:"#159a9c"},
-  icbari:{brand:"icbari",name:"ICBARI",sub:"Instituto de Cirurgia Bariátrica, Digestiva & Especialidades",mark:markIcbari,color:"#2A9D8F"}
+  icbari:{brand:"icbari",name:"ICBARI",sub:"Instituto de Cirurgia Bariátrica, Digestiva & Especialidades",mark:markIcbari,color:"#2A9D8F"},
+  treino:{brand:"protocolo",name:"O Protocolo Comercial",sub:"Ambiente de Treinamento (dados fictícios)",mark:markProtocolo,color:"#FF6B2B"}
 };
 /* ===== Léxico por marca (mesmas funcionalidades, vocabulário diferente) ===== */
 const LEX={
   lideres:{cliente:"membro",clientes:"membros",Cliente:"Membro",Clientes:"Membros",venda:"adesão",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"},
   b2if:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"contratação",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"},
-  icbari:{cliente:"paciente",clientes:"pacientes",Cliente:"Paciente",Clientes:"Pacientes",venda:"agendamento",planoUp:"procedimento",closerRole:"Closer",closerRoleUp:"CLOSER"}
+  icbari:{cliente:"paciente",clientes:"pacientes",Cliente:"Paciente",Clientes:"Pacientes",venda:"agendamento",planoUp:"procedimento",closerRole:"Closer",closerRoleUp:"CLOSER"},
+  treino:{cliente:"cliente",clientes:"clientes",Cliente:"Cliente",Clientes:"Clientes",venda:"venda",planoUp:"plano",closerRole:"Closer",closerRoleUp:"CLOSER"}
 };
 function lx(k){const t=(typeof CURRENT_TENANT!=="undefined"&&CURRENT_TENANT)?CURRENT_TENANT:"lideres";return (LEX[t]||LEX.lideres)[k]||(LEX.lideres[k]||k);}
 function roleLabel(r){return r==="closer"?lx("closerRoleUp"):(r||"").toUpperCase();}
@@ -623,6 +625,17 @@ const USERS={
   "daher.lid":   {pass:"daherlideres",   role:"gestor", tenant:"lideres",name:"Daher (Closer/Gestor)",   initials:"DA",sellerId:"daher"},
   "claudia.lid": {pass:"claudialideres", role:"gestor", tenant:"lideres",name:"Cláudia (Closer/Gestor)", initials:"CL",sellerId:"claudia"},
   "luiz.lid":    {pass:"luizlideres",    role:"cs",     tenant:"lideres",name:"Luiz (CS)",                initials:"LU",sellerId:"luiz"},
+  /* ===== TREINO, O Protocolo Comercial (ambiente fictício p/ demonstração) ===== */
+  treino:    {pass:"treino", role:"gestor",tenant:"treino",name:"Gestor (Treino)",   initials:"GT"},
+  "ana.tr":   {pass:"treino", role:"sdr",   tenant:"treino",name:"Ana (SDR)",      initials:"AN",sellerId:"t_ana"},
+  "bruno.tr": {pass:"treino", role:"sdr",   tenant:"treino",name:"Bruno (SDR)",    initials:"BU",sellerId:"t_bruno"},
+  "carla.tr": {pass:"treino", role:"sdr",   tenant:"treino",name:"Carla (SDR)",    initials:"CA",sellerId:"t_carla"},
+  "diego.tr": {pass:"treino", role:"sdr",   tenant:"treino",name:"Diego (SDR)",    initials:"DI",sellerId:"t_diego"},
+  "elisa.tr": {pass:"treino", role:"sdr",   tenant:"treino",name:"Elisa (SDR)",    initials:"EL",sellerId:"t_elisa"},
+  "fernando.tr":{pass:"treino",role:"closer",tenant:"treino",name:"Fernando (Closer)",initials:"FE",sellerId:"t_fernando"},
+  "gabriela.tr":{pass:"treino",role:"closer",tenant:"treino",name:"Gabriela (Closer)",initials:"GA",sellerId:"t_gabriela"},
+  "henrique.tr":{pass:"treino",role:"closer",tenant:"treino",name:"Henrique (Closer)",initials:"HE",sellerId:"t_henrique"},
+  "isabela.tr": {pass:"treino",role:"cs",    tenant:"treino",name:"Isabela (CS)",     initials:"IS",sellerId:"t_isabela"},
   /* ===== B2 Inteligência Financeira ===== */
   ceob2:      {pass:"1234", role:"ceo",   tenant:"b2if",name:"Ricardo Bastos (CEO)",     initials:"RB"},
   b2if:       {pass:"1234", role:"gestor",tenant:"b2if",name:"Diego Martins (Gestor)",   initials:"DM"},
@@ -2025,12 +2038,12 @@ function openConsultoria(){
        <small class="mut">Cirurgia digestiva, bariátrica e metabólica · identidade neutra (a atualizar)</small>
        <div class="st"><div><b>${icl}</b>leads</div><div><b>${icp}</b>pacientes</div><div><b>4</b>funis</div></div>
        <div class="mt"><span class="pill ok">● Ativo · login: icbari</span></div></div>
-     <div class="card co-card locked">
-       <div class="logo" style="background:#2a2724">+</div>
-       <div style="font-weight:800;font-size:16px">Próxima empresa</div>
-       <small class="mut">Envie identidade visual + argumentos de venda</small>
-       <div class="st"><div><b>—</b>a configurar</div></div>
-       <div class="mt"><span class="pill">Aguardando</span></div></div>
+     <div class="card co-card brk card-hover" onclick="enterAs('treino')" style="border:1px dashed var(--brand-primary)">
+       <div class="logo" style="background:#FF6B2B">${markProtocolo(30)}</div>
+       <div style="font-weight:800;font-size:16px">O Protocolo Comercial <span class="pill warn" style="font-size:9.5px">TREINO</span></div>
+       <small class="mut">Ambiente de treinamento · dados fictícios (demonstração)</small>
+       <div class="st"><div><b>${DB.get("treino","leads").length}</b>leads</div><div><b>${DB.get("treino","base").length}</b>clientes</div><div><b>4</b>funis</div></div>
+       <div class="mt"><span class="pill ok">● Treino · login: treino</span></div></div>
    </div>`;
   if(!CLOUD_SYNCED["lideres"])syncTenant("lideres");
   if(!CLOUD_SYNCED["b2if"])syncTenant("b2if");
@@ -2104,6 +2117,7 @@ function activeNav(){
   if(SESSION&&["sdr","closer"].includes(SESSION.role)&&CURRENT_TENANT==="icbari")return NAV_SELLER_ICB;
   if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role)&&CURRENT_TENANT==="lideres")return NAV_SELLER_LID;
   if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role)&&CURRENT_TENANT==="b2if")return NAV_SELLER_B2;
+  if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role)&&CURRENT_TENANT==="treino")return NAV_SELLER_LID;
   if(SESSION&&["sdr","closer","cs","planejador"].includes(SESSION.role))return NAV_SELLER;
   if(SESSION&&SESSION.role==="ceo")return NAV_CEO;
   return CURRENT_TENANT==="icbari"?NAV_ICB:(CURRENT_TENANT==="b2if"?NAV_B2:NAV);
@@ -2379,14 +2393,16 @@ function healLeadStages(){
   /* Conserta leads "fantasma": entram na contagem do funil mas não aparecem em coluna nenhuma
      porque o estágio não existe naquele funil (dados antigos, mudança de funil, importação). */
   var fs=DB.getObj(T(),"funnels",FUNNELS);if(!fs||!fs.length)return;
-  var leads=DB.get(T(),"leads");var changed=false;
+  var leads=DB.get(T(),"leads");var changed=false;var logs=[];
   leads.forEach(function(l){
     if(l.deleted)return;
     var f=fs.find(function(x){return x.id===l.funnelId;});
-    if(!f){f=fs[0];l.funnelId=f.id;l.estagio=(f.stages[0]||{}).id;l.movedAt=l.movedAt||Date.now();changed=true;return;}
-    if(!f.stages.some(function(s){return s.id===l.estagio;})){l.estagio=(f.stages[0]||{}).id;changed=true;}
+    if(!f){var _eOld=l.estagio;f=fs[0];l.funnelId=f.id;l.estagio=(f.stages[0]||{}).id;l.movedAt=l.movedAt||Date.now();changed=true;logs.push({id:l.id,txt:"⚙ Correção automática: funil inexistente, movido p/ "+f.name+" ("+(f.stages[0]||{}).name+")"});return;}
+    if(!f.stages.some(function(s){return s.id===l.estagio;})){var _eo=l.estagio;l.estagio=(f.stages[0]||{}).id;changed=true;logs.push({id:l.id,txt:"⚙ Correção automática: etapa '"+(_eo||'?')+"' não existe no funil, ajustada p/ "+((f.stages[0]||{}).name||'')});}
   });
-  if(changed)DB.set(T(),"leads",leads);
+  if(changed){DB.set(T(),"leads",leads);
+    if(logs.length){var h=DB.get(T(),"history");logs.forEach(function(x){h.unshift({id:DB.uid(),leadId:x.id,tipo:"sistema",txt:x.txt,ts:Date.now()});});DB.set(T(),"history",h);}
+  }
 }
 function crmVisibleCount(fid){
   /* conta só o que o usuário REALMENTE vê no kanban (mesmo dono/filtro), pra o número nunca mentir */
@@ -2406,8 +2422,15 @@ function tempBadgeMini(l){if(!l)return'';var t=l.temp;
  if(t==='quente')return '<span class="pill" style="background:#e8502e;color:#fff;font-size:9.5px;padding:1px 6px">🔥 QUENTE</span>';
  if(t==='frio')return '<span class="pill" style="background:#2b6cb0;color:#fff;font-size:9.5px;padding:1px 6px">🧊 FRIO</span>';
  return '';}
-/* SLA do funil = tag separada (NÃO muda a cor do card; cor é só da atividade). Contado em dias ÚTEIS (seg a sex; fim de semana não conta). */
-function _slaBizDaysSince(ts){if(!ts)return 0;var d=new Date(ts);d.setHours(0,0,0,0);var end=new Date();end.setHours(0,0,0,0);var n=0;var cur=new Date(d.getTime()+864e5);var g=0;while(cur<=end&&g++<3650){var w=cur.getDay();if(w>=1&&w<=5)n++;cur=new Date(cur.getTime()+864e5);}return n;}
+/* Feriados nacionais (não contam como dia útil). + fins de semana. Atualizar por ano quando precisar. */
+var FERIADOS=new Set([
+ /* 2026 */ "2026-01-01","2026-02-16","2026-02-17","2026-04-03","2026-04-21","2026-05-01","2026-06-04","2026-09-07","2026-10-12","2026-11-02","2026-11-15","2026-11-20","2026-12-25",
+ /* 2027 */ "2027-01-01","2027-02-08","2027-02-09","2027-03-26","2027-04-21","2027-05-01","2027-05-27","2027-09-07","2027-10-12","2027-11-02","2027-11-15","2027-11-20","2027-12-25"
+]);
+function _isFeriado(d){return FERIADOS.has(d.toISOString().slice(0,10));}
+function _diaUtil(d){var w=d.getDay();return w>=1&&w<=5&&!_isFeriado(d);} /* seg a sex, sem feriado */
+/* SLA do funil = tag separada (NÃO muda a cor do card; cor é só da atividade). Contado em dias ÚTEIS (seg a sex; fim de semana e feriado não contam). */
+function _slaBizDaysSince(ts){if(!ts)return 0;var d=new Date(ts);d.setHours(0,0,0,0);var end=new Date();end.setHours(0,0,0,0);var n=0;var cur=new Date(d.getTime()+864e5);var g=0;while(cur<=end&&g++<3650){if(_diaUtil(cur))n++;cur=new Date(cur.getTime()+864e5);}return n;}
 function slaThresholdDays(s){if(!s||!s.sla)return 0;if(s.slaUnit==='d')return s.sla;return Math.max(1,Math.round(s.sla/24));}
 function slaTag(bz){return '<span class="pill" style="background:#9333ea;color:#fff;font-size:9.5px;padding:1px 7px;font-weight:700;letter-spacing:.02em">⏳ parado '+bz+' dia(s) úteis</span>';}
 /* Total que o login vê no CRM (soma de todos os funis dele). É isto que vai no balãozinho do menu,
@@ -2523,8 +2546,9 @@ function bindDrag(){
 function slaMs(s){if(!s||!s.sla)return 0;return s.sla*((s.slaUnit==="d")?24:1)*36e5;}
 function slaLabel(s){if(!s||!s.sla)return "sem prazo";return s.sla+(s.slaUnit==="d"?(s.sla>1?" dias":" dia"):"h");}
 function moveLeadStage(id,stage){
+  var _l0=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var _de=_l0.estagio;
   DB.update(T(),"leads",id,{estagio:stage,movedAt:Date.now()});
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"etapa",txt:"Movido para "+stageName(stage),ts:Date.now()});
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"etapa",txt:"Etapa: "+(_de?stageName(_de)+" → ":"")+stageName(stage)+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
   toast("Lead → "+stageName(stage));
   if(stage==="agendou"){meetingModal(id);}
   else if(!["ganho","perdido","churn"].includes(stage)){
@@ -5258,15 +5282,14 @@ function vMeuDia(){
       <button class="btn ghost sm" onclick="openRoteiro('${l.id}')">🎤 Roteiro</button><div style="flex:1"></div>
       <button class="btn gold sm" onclick="mdDone('${l.id}')">✓ Feito</button></div></div>`;}
   let fila="";
-  if(overdue.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:6px 0">🔴 Atrasadas (${overdue.length})</div>`+overdue.map(a=>{const l=leadById[a.leadId];return l?card(l,'atrasada','bad'):'';}).join("");
-  if(dueToday.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🟢 Para hoje (${dueToday.length})</div>`+dueToday.map(a=>{const l=leadById[a.leadId];return l?card(l,'hoje','ok'):'';}).join("");
-  const semT=hot.filter(l=>!acts.some(a=>a.leadId===l.id));
-  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade, maior chance (${semT.length})</div>`+semT.slice(0,20).map(l=>card(l)).join("");
-  if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Quando o gestor te distribuir leads da Base de Clientes, eles aparecem aqui, já com o que fazer e o roteiro do lado.</p></div>`;
+  /* Meu Dia NÃO mostra atividades (atrasadas/hoje). As atividades ficam só na Agenda (Tarefas). Aqui fica a lista de prioridade (leads a trabalhar). */
+  const semT=hot;
+  if(semT.length)fila+=`<div class="mut" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px">🎯 Prioridade, maior chance (${semT.length})</div>`+semT.slice(0,30).map(l=>card(l)).join("");
+  if(!fila)fila=`<div class="card" style="text-align:center;padding:30px"><div style="font-size:34px">🎯</div><b>Sua fila está limpa!</b><p class="mut" style="font-size:13px">Suas tarefas do dia ficam na <b>Agenda (Tarefas)</b>. Quando o gestor te distribuir leads da Base, eles aparecem aqui pra você trabalhar.</p></div>`;
   M().innerHTML=`<div class="view-title"><h1>Bom dia, ${first||'campeão'}! ⚡</h1><span class="pill pri">${roleLabel(effRole())}</span></div>
    <p class="view-sub">Sua fila do dia, de cima pra baixo. O sistema já te diz o que fazer agora.</p>
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar, a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
-   ${(function(){var pend=overdue.length+dueToday.length+semT.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
+   ${(function(){var pend=hot.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
    ${compromissoCard()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação treinando o Script de Vendas do seu papel.</p></div><button class="btn sm" onclick="go('scripts')">Treinar agora →</button></div></div>
    ${(function(){var ok=quizPassedToday();return '<div class="card" style="margin-bottom:14px;border:1px solid '+(ok?'rgba(46,204,113,.4)':'rgba(201,162,75,.5)')+'"><div class="flex between wrap" style="align-items:center;gap:8px"><div><b style="font-size:14px">📝 Prova do dia</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+(ok?'Você já fez a prova de hoje ✓':'Faça a prova rápida, antes dos vídeos e das tarefas.')+'</p></div>'+(ok?'<span class="pill ok">feita</span>':'<button class="btn sm" onclick="go(\'treino\')">Fazer a prova →</button>')+'</div></div>';})()}
