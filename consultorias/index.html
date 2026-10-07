@@ -735,12 +735,12 @@ function setCloudBadge(state){const el=document.getElementById("cloudBadge");if(
   el.style.color=state==="off"?"var(--brand-warn)":"var(--brand-muted)";}
 const FUNNELS=[
  {id:"sdr",name:"SDR · Qualificação",papel:"SDR",stages:[
-   {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
-   {id:"qualif",name:"Qualificação (SPIN)",sla:48},{id:"agendou",name:"Reunião Agendada",sla:24},
-   {id:"noshow",name:"Falta / Remarcar",sla:12}]},
+   {id:"novo",name:"Novo Lead",sla:2,slaUnit:"d"},{id:"tentativa",name:"Tentativa de Contato",sla:2,slaUnit:"d"},
+   {id:"qualif",name:"Qualificação (SPIN)",sla:2,slaUnit:"d"},{id:"agendou",name:"Reunião Agendada",sla:2,slaUnit:"d"},
+   {id:"noshow",name:"Falta / Remarcar",sla:2,slaUnit:"d"}]},
  {id:"closer",name:"Closer · Fechamento",papel:"Closer",stages:[
-   {id:"reuniao",name:"Reunião Realizada",sla:24},{id:"apresent",name:"Apresentação",sla:48},
-   {id:"proposta",name:"Proposta",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
+   {id:"reuniao",name:"Reunião Realizada",sla:2,slaUnit:"d"},{id:"apresent",name:"Apresentação",sla:2,slaUnit:"d"},
+   {id:"proposta",name:"Proposta",sla:2,slaUnit:"d"},{id:"negoc",name:"Em Negociação",sla:2,slaUnit:"d"},
    {id:"ganho",name:"Membro (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
  {id:"cs",name:"CS · Pós-venda",papel:"CS",stages:[
    {id:"onboarding",name:"Onboarding",sla:48},{id:"ativado",name:"Ativado",sla:0},
@@ -2406,6 +2406,10 @@ function tempBadgeMini(l){if(!l)return'';var t=l.temp;
  if(t==='quente')return '<span class="pill" style="background:#e8502e;color:#fff;font-size:9.5px;padding:1px 6px">🔥 QUENTE</span>';
  if(t==='frio')return '<span class="pill" style="background:#2b6cb0;color:#fff;font-size:9.5px;padding:1px 6px">🧊 FRIO</span>';
  return '';}
+/* SLA do funil = tag separada (NÃO muda a cor do card; cor é só da atividade). Contado em dias ÚTEIS (seg a sex; fim de semana não conta). */
+function _slaBizDaysSince(ts){if(!ts)return 0;var d=new Date(ts);d.setHours(0,0,0,0);var end=new Date();end.setHours(0,0,0,0);var n=0;var cur=new Date(d.getTime()+864e5);var g=0;while(cur<=end&&g++<3650){var w=cur.getDay();if(w>=1&&w<=5)n++;cur=new Date(cur.getTime()+864e5);}return n;}
+function slaThresholdDays(s){if(!s||!s.sla)return 0;if(s.slaUnit==='d')return s.sla;return Math.max(1,Math.round(s.sla/24));}
+function slaTag(bz){return '<span class="pill" style="background:#9333ea;color:#fff;font-size:9.5px;padding:1px 7px;font-weight:700;letter-spacing:.02em">⏳ parado '+bz+' dia(s) úteis</span>';}
 /* Total que o login vê no CRM (soma de todos os funis dele). É isto que vai no balãozinho do menu,
    pra nunca contar "a empresa inteira": vendedor vê só os seus, gestor vê todos (ou o filtrado). */
 function crmBadgeCount(){
@@ -2490,12 +2494,14 @@ function renderKanban(){
     const ls=leads.filter(l=>l.estagio===s.id);const val=ls.reduce((a,l)=>a+(l.valor||0),0);
     return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
-      ${ls.map(l=>{const slaLate=s.sla&&(now-(l.movedAt||l.criadoEm))>slaMs(s);const as=actStatus(l.id);
-        const cls=(as==="late"||slaLate)?"late":as==="none"?"noact":as==="today"?"today":"future";const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
+      ${ls.map(l=>{const as=actStatus(l.id);
+        const cls=as==="late"?"late":as==="today"?"today":as==="none"?"noact":"future"; /* COR do card = SÓ atividade */
+        const _slaD=slaThresholdDays(s);const _bz=_slaBizDaysSince(l.movedAt||l.criadoEm);const slaLate=_slaD>0&&_bz>_slaD; /* SLA = tag separada, em dias úteis */
+        const tc=l.temp==="quente"?"q":l.temp==="morno"?"m":"f";
         const sc=leadScore(l).score;const scc=sc>=70?'var(--brand-ok)':sc>=45?'var(--brand-primary-2)':'var(--brand-muted)';
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
-          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div>${tempBadgeMini(l)?`<div style="margin:2px 0">${tempBadgeMini(l)}</div>`:''}<div class="co">${esc(l.procedimento||l.plano||"")}</div>
-          <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small>${slaLate?'<span class="pill bad" style="padding:1px 6px">SLA</span>':''}<span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
+          <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div style="margin:2px 0;display:flex;flex-wrap:wrap;gap:4px">${tempBadgeMini(l)}${slaLate?slaTag(_bz):''}</div><div class="co">${esc(l.procedimento||l.plano||"")}</div>
+          <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small><span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
       </div></div>`;}).join("");
   bindDrag();
 }
@@ -2728,7 +2734,8 @@ function leadDetail(id){
   const stages=funnel.stages;const curIdx=stages.findIndex(s=>s.id===l.estagio);
   const sellers=DB.get(T(),"sellers");
   const tempoEtapa=relTime(l.movedAt||l.criadoEm),tempoFunil=relTime(l.criadoEm);
-  const sla=stages[curIdx];const late=sla&&sla.sla&&(Date.now()-(l.movedAt||l.criadoEm))>slaMs(sla);
+  const sla=stages[curIdx];const late=actStatus(l.id)==='late'; /* "atrasada" = atividade, não SLA */
+  const _slaDL=slaThresholdDays(sla);const _bzL=_slaBizDaysSince(l.movedAt||l.criadoEm);const slaLateL=_slaDL>0&&_bzL>_slaDL;
   M().innerHTML=`
    <div class="ld-top">
      <button class="btn ghost sm" onclick="go('crm')">← Voltar ao funil</button>
@@ -2751,7 +2758,7 @@ function leadDetail(id){
    <div class="ld-grid">
      <div>
        <div class="card">
-         <div class="flex wrap" style="gap:6px">${late?'<span class="pill bad">● Atrasada</span>':'<span class="pill ok">● No prazo</span>'}<span class="pill">${leadScore(l).score}% chance</span><span class="pill pri">${esc(sellerName(l.owner))}</span></div>
+         <div class="flex wrap" style="gap:6px">${late?'<span class="pill bad">● Atividade atrasada</span>':actStatus(l.id)==='none'?'<span class="pill warn">● Sem próxima atividade</span>':'<span class="pill ok">● Atividade em dia</span>'}${slaLateL?slaTag(_bzL):''}<span class="pill">${leadScore(l).score}% chance</span><span class="pill pri">${esc(sellerName(l.owner))}</span></div>
          <div class="flex between mt8" style="font-size:12px"><span class="mut">⏱ ${tempoEtapa} nesta etapa</span><span class="mut">📅 ${tempoFunil} no funil</span></div>
          <label class="fl mt">Etapa</label>
          <select class="in" onchange="moveLeadStage('${l.id}',this.value);leadDetail('${l.id}')">${stages.map(s=>`<option value="${s.id}" ${l.estagio===s.id?'selected':''}>${s.name}</option>`).join("")}</select>
