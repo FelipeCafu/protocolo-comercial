@@ -2088,7 +2088,7 @@ const NAV_CEO=[
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
 /* Líderes, vendedores (SDR/Closer/CS) acessam também CRM, Base, Prospecção, Scripts, Roteiro e Academia */
 const NAV_SELLER_LID=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas & Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},{id:"passados",ic:"📤",t:"Leads que passei",roles:["sdr","closer"]},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & Recompra",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recompra & Recorrência",roles:["cs"]}];
 /* Daher/Cláudia vendo COMO GESTOR: só visão de gestão (sem CRM/Base/Prospecção/Scripts/Roteiro, isso veem como closer) */
 const NAV_GESTOR_DUAL=[{g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial"},{id:"relatorio",ic:"📈",t:"Relatório de Atividades"},
@@ -2112,11 +2112,11 @@ const NAV_SELLER_ICB_CS=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
 /* ICBARI, SDR/Closer: Meu Dia/Placar + comercial completo do seu papel */
 const NAV_SELLER_ICB=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},{id:"passados",ic:"📤",t:"Leads que passei",roles:["sdr","closer"]},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"}];
 /* B2, vendedores (SDR/Closer/CS): Meu Dia/Placar + comercial completo do seu papel */
 const NAV_SELLER_B2=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"placar",ic:"🏆",t:"Meu Placar"},
- {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
+ {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},{id:"passados",ic:"📤",t:"Leads que passei",roles:["sdr","closer"]},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},{id:"fidelidade",ic:"💚",t:"Fidelidade & NPS",roles:["cs"]},{id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão",roles:["cs"]}];
 function activeNav(){
   if(dualRole()&&VIEW_AS==='closer')return NAV_SELLER_LID; /* Daher/Cláudia vendo como closer */
@@ -2179,6 +2179,7 @@ function renderSidebar(){
     if(n.id==="crm"){const _cc=crmBadgeCount();if(_cc)badge=`<span class="badge">${_cc}</span>`;}
     if(n.id==="tarefas"){const c=taskCount();if(c)badge=`<span class="badge">${c}</span>`;}
     if(n.id==="academy"&&!quizPassedToday()&&["sdr","closer","cs","planejador"].includes(SESSION.role))badge=`<span class="badge">!</span>`;
+    if(n.id==="passados"){const _pc=passadosBadgeCount();if(_pc)badge=`<span class="badge">${_pc}</span>`;}
     var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
     html+=`<div class="nav-item ${_av===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
   });
@@ -2190,7 +2191,7 @@ function go(view){
   const nav=activeNav().find(n=>n.id===view);
   document.getElementById("crumbs").innerHTML=`<b>${BRANDS[CURRENT_TENANT].name}</b> · ${nav?nav.t:''}`;
   /* prova nao trava mais o trabalho (Pergunta 1), vira habito, nao cadeado */
-  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,diagnostico:vDiagnostico,
+  ({painel:vPainel,exec:vExec,crm:vCRM,tarefas:vTarefas,base:vBase,funil:vFunil,prospec:vProspec,scripts:vScripts,acessos:vAcessos,meudia:vMeuDia,placar:vMeuPlacar,roteiro:vRoteiro,diagnostico:vDiagnostico,passados:vPassados,
     jornada:vJornada,cirmodelos:vCirModelos,importtrafego:vImportTrafego,relatorio:vRelatorio,
     treino:vTreino,academy:vAcademy,perf:vPerf,metas:vMetas,fidelidade:vFidelidade,recorrencia:vRecorrencia}[view]||vPainel)();
   document.getElementById("main").scrollTop=0;
@@ -3008,13 +3009,20 @@ function loseLead_OLD(id){moveLeadStage(id,'perdido');DB.update(T(),"leads",id,{
 function transferLead(id){const sellers=DB.get(T(),"sellers");
   var _icp=needIcpTransfer();var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
   openModal(`<h3>Transferir lead</h3><label class="fl mt">Novo responsável</label>
-   <select class="in" id="tr_owner" onchange="trFunnelHint()">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
+   <select class="in" id="tr_owner" onchange="trUpdateStages()">${sellers.map(s=>`<option value="${s.id}">${s.nome} (${s.papel})</option>`).join("")}</select>
+   <label class="fl mt8">Etapa onde vai cair</label><select class="in" id="tr_stage"></select>
    <p class="mut" id="tr_hint" style="font-size:12.5px;margin:8px 0 0"></p>`
    +(_icp?icpFormHtml(l.icp):'')
    +`<div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button>
      <button class="btn sm" onclick="doTransfer('${id}')">Transferir</button></div>`,_icp);
-  trFunnelHint();if(_icp)icpToggleDecisor();}
-function trFunnelHint(){var el=document.getElementById("tr_owner");if(!el)return;var sel=DB.get(T(),"sellers").find(function(s){return s.id===el.value;})||{};var f=funnelForPapel(sel.papel);var h=document.getElementById("tr_hint");if(h)h.innerHTML=f?('Vai pro funil <b>'+esc(f.name)+'</b> (papel '+esc(sel.papel||"")+'), na 1ª etapa, e cai na fila de <b>'+esc(sel.nome||"")+'</b>.'):'⚠️ Esse responsável não tem funil do papel dele; vai pro primeiro funil.';}
+  trUpdateStages();if(_icp)icpToggleDecisor();}
+function trUpdateStages(){var el=document.getElementById("tr_owner");if(!el)return;
+  var sel=DB.get(T(),"sellers").find(function(s){return s.id===el.value;})||{};
+  var f=funnelForPapel(sel.papel)||DB.getObj(T(),"funnels",FUNNELS)[0];
+  var ss=document.getElementById("tr_stage");
+  if(ss&&f){ss.innerHTML=(f.stages||[]).filter(function(s){return !["ganho","perdido","churn"].includes(s.id);}).map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join("");}
+  var h=document.getElementById("tr_hint");if(h)h.innerHTML=f?('Vai pro funil <b>'+esc(f.name)+'</b> (papel '+esc(sel.papel||"")+'), na etapa que você escolher, e cai na fila de <b>'+esc(sel.nome||"")+'</b>.'):'⚠️ Esse responsável não tem funil do papel dele; vai pro primeiro funil.';}
+function trFunnelHint(){trUpdateStages();}
 function funnelForPapel(papel){var fs=DB.getObj(T(),"funnels",FUNNELS);var p=(papel||"").toLowerCase();
   var f=fs.find(function(x){return (x.papel||"").toLowerCase()===p;});
   if(!f&&(p.indexOf("plan")>=0))f=fs.find(function(x){return (x.papel||"").toLowerCase()==="closer";});
@@ -3040,10 +3048,49 @@ function doTransfer(id){const owner=document.getElementById("tr_owner").value;
   }
   const fs=DB.getObj(T(),"funnels",FUNNELS);
   const f=funnelForPapel(sel.papel)||fs[0];
-  DB.update(T(),"leads",id,{owner,funnelId:f.id,estagio:(f.stages[0]||{}).id,movedAt:Date.now()});
+  var _stg=((document.getElementById("tr_stage")||{}).value)||(f.stages[0]||{}).id;
+  if(!f.stages.some(function(s){return s.id===_stg;}))_stg=(f.stages[0]||{}).id;
+  /* grava o handoff: quem passou, pra quem, quando (pro acompanhamento "Leads que passei") */
+  DB.update(T(),"leads",id,{owner:owner,funnelId:f.id,estagio:_stg,movedAt:Date.now(),
+    transferredBy:(SESSION.sellerId||''),transferredByName:(SESSION.name||''),transferredTo:owner,transferredToName:(sel.nome||''),transferredAt:Date.now()});
   reassignActs(id,owner);
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Transferido p/ "+sellerName(owner)+" · funil "+f.name,ts:Date.now()});
-  closeModal();toast("Lead transferido p/ "+(sel.nome||owner));leadDetail(id);}
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Transferido p/ "+sellerName(owner)+" · funil "+f.name+" · etapa "+(stageName(_stg)||_stg)+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
+  closeModal();toast("Lead transferido p/ "+(sel.nome||owner)+" na etapa "+(stageName(_stg)||''));leadDetail(id);}
+/* ============================================================
+   LEADS QUE PASSEI, acompanhamento SDR -> Closer (sem ver o funil do closer)
+   ============================================================ */
+function _passTomorrow(){return new Date(Date.now()+864e5).toISOString().slice(0,10);}
+function _passDStr(s){return s?s.split('-').reverse().join('/'):'';}
+function myPassedLeads(){var me=SESSION&&SESSION.sellerId;if(!me)return [];return DB.get(T(),"leads").filter(function(l){return !l.deleted&&l.transferredBy===me;});}
+function passadoStatus(l){
+  var today=new Date().toISOString().slice(0,10);
+  var closer=sellerName(l.transferredTo||l.owner);
+  if(l.won)return {t:'🎉 Ganho (fechou!)',cls:'ok'};
+  if(l.estagio==='perdido')return {t:'✕ Perdido'+(l.lossReason?(' · '+esc(l.lossReason)):''),cls:'bad'};
+  var advanced=['apresent','proposta','negoc'].indexOf(l.estagio)>=0;
+  var meetDone=DB.get(T(),"activities").some(function(a){return a.leadId===l.id&&a.isMeeting&&a.done;});
+  if(l.reuniaoData){
+    if(l.reuniaoData>today)return {t:'📅 Reunião '+_passDStr(l.reuniaoData)+(l.reuniaoHora?' '+l.reuniaoHora:''),cls:'',soon:(l.reuniaoData<=_passTomorrow())};
+    if(advanced||meetDone)return {t:'✅ Reunião realizada',cls:'ok'};
+    return {t:'⏰ Reunião era '+_passDStr(l.reuniaoData)+', confirme com '+esc(closer),cls:'warn',followUp:true};
+  }
+  if(advanced)return {t:'✅ Reunião realizada',cls:'ok'};
+  return {t:'⏳ Com o '+esc(closer),cls:''};
+}
+function passadosBadgeCount(){try{return myPassedLeads().filter(function(l){var s=passadoStatus(l);return s.soon||s.followUp;}).length;}catch(e){return 0;}}
+function vPassados(){
+  var list=myPassedLeads();
+  var today=new Date().toISOString().slice(0,10),tmrw=_passTomorrow();
+  var soon=list.filter(function(l){return l.reuniaoData&&l.reuniaoData>=today&&l.reuniaoData<=tmrw&&!l.won&&l.estagio!=='perdido';});
+  var follow=list.filter(function(l){return passadoStatus(l).followUp;});
+  M().innerHTML=`<div class="view-title"><h1>📤 Leads que passei</h1><span class="pill pri">${list.length}</span></div>
+   <p class="view-sub">Os leads que você transferiu, e no que deram. Você acompanha o essencial (reunião, resultado) sem entrar no funil do closer.</p>
+   ${soon.length?`<div class="card" style="border:1px solid rgba(201,162,75,.55);background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);margin-bottom:12px"><b style="font-size:14px">🔔 Reunião chegando</b>${soon.map(function(l){return '<div class="mut" style="font-size:13px;margin-top:5px"><b>'+esc(l.nome)+'</b> · '+_passDStr(l.reuniaoData)+(l.reuniaoHora?' às '+l.reuniaoHora:'')+' com <b>'+esc(sellerName(l.transferredTo||l.owner))+'</b></div>';}).join('')}</div>`:''}
+   ${follow.length?`<div class="card" style="border:1px solid rgba(240,180,42,.55);background:rgba(240,180,42,.08);margin-bottom:12px"><b style="font-size:14px">👉 Follow-up (confirme se a reunião aconteceu)</b>${follow.map(function(l){return '<div class="mut" style="font-size:13px;margin-top:5px">Fale com <b>'+esc(sellerName(l.transferredTo||l.owner))+'</b>: a reunião do <b>'+esc(l.nome)+'</b> ('+_passDStr(l.reuniaoData)+') aconteceu?</div>';}).join('')}</div>`:''}
+   ${list.length?`<div class="card" style="overflow:auto"><table class="tbl"><thead><tr><th>Lead</th><th>Passei pra</th><th>Quando</th><th>Status</th><th></th></tr></thead><tbody>
+     ${list.slice().sort(function(a,b){return (b.transferredAt||0)-(a.transferredAt||0);}).map(function(l){var s=passadoStatus(l);return '<tr><td><b>'+esc(l.nome)+'</b></td><td>'+esc(sellerName(l.transferredTo||l.owner))+'</td><td class="mut" style="font-size:12px">'+(l.transferredAt?relTime(l.transferredAt)+' atrás':'—')+'</td><td><span class="pill '+(s.cls||'')+'" style="font-size:11px">'+s.t+'</span></td><td><button class="btn ghost xs" onclick="leadDetail(\''+l.id+'\')">abrir</button></td></tr>';}).join('')}
+   </tbody></table></div>`:'<div class="card" style="text-align:center;padding:30px"><div style="font-size:32px">📤</div><b>Você ainda não passou nenhum lead.</b><p class="mut" style="font-size:13px">Quando transferir um lead (ex.: pro closer, depois de marcar a reunião), ele aparece aqui pra você acompanhar sem ver o funil do closer.</p></div>'}`;
+}
 function battlecard(id){const l=DB.get(T(),"leads").find(x=>x.id===id);
   openModal(`<h3>🛡️ Battlecard, ${l.nome}</h3><small class="mut">${l.setor||""} · ${l.fantasia||""}</small>
    <div class="script mt"><b>Dor provável (${l.setor||'empresário'}):</b> isolamento na decisão, falta de rede qualificada, dificuldade de crescer.</div>
