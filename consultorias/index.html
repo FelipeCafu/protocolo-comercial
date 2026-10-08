@@ -3103,7 +3103,7 @@ function vBase(){
        <select class="in" id="bTemp" style="max-width:160px" onchange="vBaseRows()"><option value="">🌡️ Status: todos</option><option value="quente">🔥 Leads quentes</option><option value="frio">🧊 Leads frios</option></select>
        <select class="in" id="bTel" style="max-width:150px" onchange="vBaseRows()"><option value="">Telefone: todos</option><option value="com">Com telefone</option><option value="sem">Sem telefone</option></select>
        ${baseRamos().length?`<select class="in" id="bRamo" style="max-width:160px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
-       <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">Membro: todos</option><option value="sim">Só membros</option><option value="nao">Não-membros</option></select>
+       <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">${lx('Cliente')}: todos</option><option value="sim">Só ${lx('clientes')}</option><option value="nao">Não-${lx('clientes')}</option></select>
        <select class="in" id="bCrm" style="max-width:140px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
        <select class="in" id="bSort" style="max-width:150px" onchange="vBaseRows()"><option value="">Ordem: nome</option><option value="recent">Mais recente</option><option value="empresa">Empresa</option></select>
        <button class="btn ghost sm" onclick="baseClearFilters()">✕ Limpar filtros</button>
@@ -3114,7 +3114,7 @@ function vBase(){
      </div>
      <div style="overflow:auto;margin-top:10px;max-height:62vh"><table><thead><tr>
        <th style="width:26px"><input type="checkbox" id="bAll" onclick="baseToggleAll(this.checked)"></th>
-       <th>Nome</th><th>Empresa</th><th>Ramo</th><th>Telefone</th><th>E-mail</th><th>Origem / Evento</th><th>Membro</th><th>CRM</th><th></th>
+       <th>Nome</th><th>Empresa</th><th>Ramo</th><th>Telefone</th><th>E-mail</th><th>Origem / Evento</th><th>${lx('Cliente')}</th><th>CRM</th><th></th>
      </tr></thead><tbody id="baseRows"></tbody></table></div>
    </div>`;
   vBaseRows();
@@ -3160,7 +3160,7 @@ function vBaseRows(){
     <td><b>${esc(b.nome)}</b> ${tempBadgeMini(b)}${b.oldResp?`<br><small class="mut">👤 ${esc(b.oldResp)}</small>`:''}</td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
     <td><small>${esc(b.tel||'')}</small></td><td><small class="mut">${esc(b.email||'')}</small></td>
     <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}${b.oldStatus?`<br><span class="pill warn" style="font-size:9.5px;padding:1px 6px">${esc(b.oldStatus)}</span>`:''}</td>
-    <td>${b.membro==="sim"?'<span class="pill ok">membro</span>':'—'}</td>
+    <td>${b.membro==="sim"?'<span class="pill ok">'+lx('cliente')+'</span>':'—'}</td>
     <td>${b.inCrm?'<span class="pill ok">no CRM</span>':'—'}</td>
     <td><button class="btn xs" onclick="baseSend('${b.id}')">➡️ CRM</button></td></tr>`).join("")||`<tr><td colspan="10"><small class="mut">Nenhum contato encontrado.</small></td></tr>`;
   const el=document.getElementById("bCount");if(el)el.textContent=`${list.length} contato(s)${list.length>CAP?` · mostrando ${CAP}, refine a busca`:""} · ${BASE_SEL.size} selecionado(s)`;
@@ -4925,6 +4925,17 @@ const OBJ_SEED=[
  {id:"o6",obj:"Já participo de outro grupo (BNI etc.)",tras:"Dúvida, não vê diferença",resp:"Massa! Sinal de que você valoriza rede. O Líderes é diferente: é curado por donos do seu nível e foca em fazer negócio entre os membros.",cat:"duvida",by:"playbook"},
  {id:"o7",obj:"Não é meu momento",tras:"Momento, dor não virou prioridade",resp:"Entendo. Deixa eu te perguntar: o [dor que ele citou] costuma melhorar sozinho esperando? Às vezes o melhor momento é justamente quando aperta.",cat:"confusao",by:"playbook"}
 ];
+/* Objeções FICTÍCIAS do Protocolo Comercial (ambiente de TREINO). */
+const OBJ_SEED_TR=[
+ {id:"t1",obj:"Me manda por WhatsApp",tras:"Dúvida, quer se livrar sem dizer não",resp:"Mando sim! Mas em 30s no telefone eu te mostro melhor que qualquer texto e já vejo se faz sentido pra você. Posso?",cat:"duvida",by:"playbook"},
+ {id:"t2",obj:"Não tenho interesse",tras:"Confusão, não sabe do que se trata",resp:"Tranquilo. Só pra eu não te incomodar à toa: é organizar e dar previsibilidade pro comercial que não faz sentido, ou é o momento?",cat:"confusao",by:"playbook"},
+ {id:"t3",obj:"Tô sem tempo agora",tras:"Momento, mas pode ser fuga",resp:"Justamente por isso liguei rápido. Te tomo 2 minutos agora, ou prefere que eu te ligue hoje 17h ou amanhã 9h?",cat:"confusao",by:"playbook"},
+ {id:"t4",obj:"Quanto custa?",tras:"Dúvida, quer ancorar antes de ver valor",resp:"Depende do tamanho do seu comercial. Quem te mostra o plano certo é o especialista na reunião de diagnóstico, que é gratuita, porque depende do seu objetivo.",cat:"duvida",by:"playbook"},
+ {id:"t5",obj:"Já tenho um CRM / uso planilha",tras:"Dúvida, não vê diferença",resp:"Ótimo, sinal de que você valoriza organização. O Protocolo não é só a ferramenta: é o método e o acompanhamento semanal pra ela virar resultado. Vale ver a diferença numa conversa?",cat:"duvida",by:"playbook"},
+ {id:"t6",obj:"Preciso ver com meu sócio",tras:"Autoridade, decisor 2 fora da conversa",resp:"Perfeito, decisão de sócio se toma junto. Já reservo a conversa e a gente coloca ele também. Qual o melhor dia pra vocês dois?",cat:"autoridade",by:"playbook"},
+ {id:"t7",obj:"Meu time não vai usar",tras:"Medo de não dar certo na prática",resp:"Essa é justamente a parte que a gente resolve: implantação + treinamento do time + acompanhamento semanal pra pegar no tranco. Você não fica sozinho nisso.",cat:"medo",by:"playbook"},
+ {id:"t8",obj:"Não é meu momento",tras:"Momento, dor não virou prioridade",resp:"Entendo. Deixa eu te perguntar: o [gargalo que ele citou] costuma melhorar sozinho esperando? Às vezes o melhor momento é quando aperta.",cat:"confusao",by:"playbook"}
+];
 
 function acadPDF(){
  const m=objMatrix(),CAT={medo:"Medo",duvida:"Dúvida",confusao:"Confusão",necessidade:"Sem necessidade",valor:"Sem valor",pressa:"Sem pressa",confianca:"Sem confiança",autoridade:"Sem autoridade",ceticismo:"Ceticismo"};
@@ -5163,7 +5174,7 @@ function vRoteiro(){
   +((["icbari","lideres","b2if"].includes(T())&&(tab==="sdr"||(tab==="closer"&&ROT_CLO_ORIG[T()])))?icbOrigChips(ICB_ORIG):'')
   +cards;
 }
-function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:OBJ_SEED);}
+function objMatrix(){return DB.getObj(T(),"objMatrix",T()==="icbari"?ICB_OBJ:(T()==="treino"?OBJ_SEED_TR:OBJ_SEED));}
 function saveObjMatrix(m){DB.set(T(),"objMatrix",m);}
 function acadAddObj(){
  const o=(document.getElementById("mxObj").value||"").trim();
