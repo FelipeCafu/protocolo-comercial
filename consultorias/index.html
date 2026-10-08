@@ -5063,7 +5063,32 @@ const ROTEIRO_B2={
  ]
 };
 
-function roteiroData(){var t=T();if(t==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")return ROTEIRO_ICBARI;if(t==="b2if"&&typeof ROTEIRO_B2!=="undefined")return ROTEIRO_B2;return ROTEIRO_LIDERES;}
+/* ===== ROTEIRO FICTÍCIO, O Protocolo Comercial (ambiente de TREINO). 100% fake, nada de outras empresas. ===== */
+const ROTEIRO_TREINO={
+ "sdr":[
+  {"n":1,"title":"Antes de discar","t":"Pré-ligação · 30s","tec":"Preparação · mindset","s":"**Antes de ligar (10s):** respire, sorria, tom firme. Você representa o **Protocolo Comercial**, o método que coloca ordem e previsibilidade no time de vendas de outras empresas.\n\nTenha à mão: **nome, empresa e por onde o lead chegou** (anúncio, indicação, conteúdo).\n\n**ESPELHAMENTO (regra de ouro):** copie o ritmo da pessoa. Fala rápido, acompanhe; fala devagar, desacelere. Quanto mais parecido com ela, mais confiança.","do":"Deixe o CRM aberto no lead e saiba a origem antes de discar.","av":"Ligar no automático, sem energia, lendo robotizado."},
+  {"n":2,"title":"Primeiro a pessoa","t":"Introdução · 2 a 4 min","tec":"Rapport · autoridade","s":"**Abertura (nunca \"2 minutinhos\"):**\n\"Olá {NOME}, tudo bem? Aqui é {SDR}, do **Protocolo Comercial**. Prometo ser rápido, mais rápido que o tempo de você desligar. Posso te roubar um instante?\"\n\n**Rapport (uma pergunta de cada vez, e ouça):**\n\"{NOME}, me conta: o que a sua empresa faz?\" → ouça.\n\"E hoje você cuida do comercial, ou tem um time vendendo?\" → ouça.\n\"Há quanto tempo você toca esse negócio?\" → elogie com base no que ele disse.\n\n**Autoridade (encaixe natural):**\n\"É exatamente por isso que te liguei: o Protocolo Comercial ajuda empresas como a sua a transformar o comercial numa **máquina previsível**, com método, e não na sorte de um vendedor bom.\"","do":"Fale o nome 2–3x. Sorria (ouve-se no telefone). Uma pergunta por vez.","av":"\"Tem 2 minutos?\". Emendar perguntas sem ouvir. Ir direto ao pitch."},
+  {"n":3,"title":"Três intenções claras","t":"Transição · 40s","tec":"Micropacto de seriedade","s":"**Deixe 3 coisas claras (baixa a guarda):**\n\"{NOME}, antes de tudo, 3 combinados:\n**Um:** não estou aqui pra te empurrar nada, estou aqui pra te ajudar.\n**Dois:** primeiro quero entender o seu comercial, pra ver se faz sentido pros dois lados.\n**Três:** quero que você entenda o nosso trabalho pra decidir com clareza.\"\n\n**Micropacto:** \"Combinado?\" → **espere o \"combinado\".**","do":"Diga \"combinado?\" e faça SILÊNCIO até o sim. É o 1º compromisso.","av":"Emendar sem pausa, a pausa é que gera a concordância."},
+  {"n":4,"title":"O que o Protocolo faz","t":"Pitch curto · 2 min","tec":"Vender o método","s":"**Pitch curto, venda o MÉTODO:**\n\"{NOME}, o Protocolo Comercial não é curso. A gente **implanta um método de vendas dentro da sua empresa**, em 3 frentes:\n**Diagnóstico:** um raio-x do seu funil, onde você perde venda hoje.\n**Implementação:** CRM configurado, funil, playbooks de SDR, Closer e CS, metas e cadência de contato.\n**Acompanhamento:** a gente fica do seu lado, toda semana, até o comercial virar previsível.\"\n\n**Micropacto:** \"Faz sentido pra você ter o comercial funcionando assim?\"","do":"Fale com orgulho do método. O foco é previsibilidade, não \"motivação\".","av":"Despejar funcionalidade solta. Prometer milagre."},
+  {"n":5,"title":"Prova e resultado","t":"Prova · 1 min","tec":"Prova social","s":"**Prova (gera confiança):**\n\"E não é teoria, {NOME}: empresas que entraram no Protocolo saíram de um comercial bagunçado pra um time com meta, roteiro e CRM rodando, e passaram a **saber de onde vem cada venda**.\"\n\nSe tiver, conte **1 caso curto e específico** (setor parecido com o do lead).","do":"Especificidade convence: 1 exemplo real e curto do mesmo perfil.","av":"Inventar número. Falar \"vários clientes\" genérico."},
+  {"n":6,"title":"As perguntas que qualificam","t":"Qualificação · coração do SDR","tec":"Diagnóstico leve","s":"**Qualificação (aqui o SDR trabalha, sem fechar nada):**\nPergunte uma a uma, **anotando no CRM**:\n1) \"Hoje **quem vende** na sua empresa: é você, ou tem um time?\" → anote.\n2) \"Mais ou menos, **quanto a empresa fatura por mês**? Um mês puxando o outro.\" → anote.\n3) \"Qual o **seu maior gargalo** hoje: gerar lead, converter, ou manter cliente?\" → deixe falar.\n4) \"E qual a **sua meta** pros próximos meses? Você sente que chega nela do jeito que está?\"\n\n→ Só pergunte e ouça. Você está mapeando o perfil e a dor.","do":"Anote quem vende, faturamento, gargalo e meta. O Closer usa tudo.","av":"Fazer pitch aqui. Julgar a resposta. Agendar sem entender a dor."},
+  {"n":7,"title":"O cliente certo","t":"Filtro do perfil · na sua cabeça","tec":"Qualificar de volta","s":"**Filtro (enquanto ele fala):**\nÉ **dono ou gestor comercial** que decide? A empresa **já fatura e tem (ou quer) um time vendendo**? Quer **previsibilidade**, parar de depender de indicação e de vendedor-herói?\n\n**Não é perfil:** quem não tem nem quer time comercial, quem busca \"curso barato\", quem não decide.\n\n**Micropacto:** \"Pelo que você me contou, {NOME}, faz muito sentido a gente conversar com calma. Posso te mostrar como seria no seu caso?\"","do":"Bateu no perfil + urgência? Avance. Faltou peça? Qualifique de volta.","av":"Empurrar reunião pra quem não decide ou não tem comercial."},
+  {"n":8,"title":"Vamos marcar o diagnóstico?","t":"Agendamento","tec":"Pacto sim/não · agenda + e-mail","s":"**Agendar a reunião de diagnóstico:**\n\"{NOME}, pelo que você me contou, a gente consegue te ajudar bastante. Quero te mostrar isso com calma, junto de um dos nossos especialistas, numa conversa de uns 30 min, **online**.\n\nSó peço um combinado: no fim, quero um **sim** ('faz sentido') ou um **não** tranquilo. Posso contar com a sua sinceridade e presença?\"\n\nFeche com **duas opções:** \"**Quinta 10h ou sexta 16h**, qual encaixa melhor?\"\n\n**Fechar:** \"Fechado, {NOME}: {DIA}. Me passa seu **melhor e-mail** que já te mando o convite. Você vai receber lembrete 1 dia antes e no dia. Conto com você, certo?\"","do":"Ofereça 2 horários fechados. Capture e-mail. Ative o lembrete. Passe o contexto quente pro Closer.","av":"\"Me avisa quando puder\". Encerrar sem e-mail e sem data."}
+ ],
+ "closer":[
+  {"n":1,"title":"Fechar é conduzir","t":"Pré-reunião · mindset","tec":"Tom sereno","s":"Antes da reunião: **mente tranquila e tom sereno**. O silêncio é sua maior arma. Você não vai \"empurrar\", vai **conduzir uma decisão**.\n\n**Releia as anotações do SDR:** quem vende, faturamento, gargalo, meta e as palavras exatas do lead.\n\n**ESPELHAMENTO (regra de ouro):** copie o ritmo da pessoa durante toda a conversa.","do":"Chegue sabendo a dor do lead de cor. Fale menos que o cliente.","av":"Chegar acelerado, refazer o diagnóstico do zero, falar demais."},
+  {"n":2,"title":"Rapport e confirmação","t":"Introdução · 2 a 4 min","tec":"Confirmar o perfil","s":"**Primeiro a pessoa:**\n\"Olá {NOME}, tudo bem? Como foi o seu dia? (ouça) Que bom te receber. Pra aproveitar bem esse tempo, vou te entender a fundo e te mostrar como o Protocolo pode te ajudar. Pode ser?\"\n\n**Confirme o que o SDR anotou:**\n• \"Quem vende hoje é {QUEM}, certo?\"\n• \"O faturamento gira em torno de {X} por mês?\"\n• \"E o que mais te incomoda é {DOR}?\"\n• \"E isso é pra resolver agora, não ano que vem?\" → confirme cada ponto.\n\n**Micropacto (guarde pro fim):** \"Se tudo fizer sentido, e como a decisão é sua, eu consigo um sim ainda **hoje**? Combinado?\"","do":"Confirme perfil e dor em voz alta e pegue o \"combinado\" do sim de hoje.","av":"Ir pro pitch sem reconfirmar quem decide, a dor e o momento."},
+  {"n":3,"title":"Retomar antes de mostrar","t":"Retomada · 1 a 2 min","tec":"Usar o que o SDR levantou","s":"**Antes de apresentar, retome o que o SDR já ouviu:**\n\"{NOME}, deixa eu recuperar rapidinho pra não repetir: você disse que o momento hoje é {MOMENTO}, que o que mais trava é {DOR}, e que quer resolver {URGÊNCIA}. É isso?\" → ouça e ajuste nas palavras dele.\n\nRecrie os 3 combinados: não vim te vender, vim te entender, quero que você entenda.","do":"Use as palavras exatas que ele deu ao SDR.","av":"Apresentar sem retomar. Ignorar o contexto quente do SDR."},
+  {"n":4,"title":"Antes do valor, a credibilidade","t":"Pitch · autoridade","tec":"Procedência · prova","s":"**A história do Protocolo (procedência):**\n\"Deixa eu te contar rapidinho: o **Protocolo Comercial** nasceu com o **Felipe Reis**, de uma ideia simples, a maioria das empresas não vende pouco por falta de produto bom, vende pouco por **falta de método no comercial**.\n\nAí a gente montou um jeito de implantar esse método dentro da empresa do cliente: CRM, funil, playbook de cada papel, meta e acompanhamento. E a cada entrega, um resultado.\"\n\n**Regra:** nada de encher linguiça, cada frase é uma prova. Peça micropacto: \"faz sentido até aqui?\"","do":"Conte a origem com o nome do Felipe Reis e mostre provas reais a cada bloco.","av":"Falar de si sem prova. Alongar. Pular os micropactos."},
+  {"n":5,"title":"As 3 frentes do método","t":"Pitch · o método","tec":"Vender o método + o produto","s":"**Como o Protocolo funciona (conecte uma frente na outra):**\n• **Diagnóstico:** raio-x do funil, onde você perde venda. → \"e com isso claro, a gente parte pra…\"\n• **Implementação:** CRM configurado, funil, **playbooks de SDR, Closer e CS**, metas e cadência de contato. → \"e pra isso não virar gaveta, entra a…\"\n• **Acompanhamento:** ritmo semanal, BI do comercial e ajuste até bater a meta.\n\n**Fechamento do pilar:** \"Isso aqui resolveria o seu **{DOR}**, concorda?\"","do":"Ligue cada frente à dor específica que ele te contou.","av":"Listar funcionalidade solta, sem conectar à realidade dele."},
+  {"n":6,"title":"Imagine o comercial rodando","t":"Pitch · benefício","tec":"Projeção · benefício do benefício","s":"**Projeção (o benefício do benefício):**\n\"{NOME}, imagina daqui a alguns meses: você abre o CRM de manhã e **sabe exatamente** quantos leads entraram, quantas reuniões o time tem hoje e de onde vem cada venda. Sem depender da memória de ninguém.\"\n\n\"Como fica a sua cabeça sabendo que o comercial **anda sem você empurrar**? E a meta, deixa de ser torcida e vira conta?\"\n\n→ deixe ELE completar o cenário.","do":"Pinte o futuro com detalhe. Faça a pergunta e cale-se.","av":"Voltar pro racional cedo demais. Responder no lugar dele."},
+  {"n":7,"title":"O ambiente certo pro seu momento","t":"Pitch · produto","tec":"Enquadrar no plano (antes do preço)","s":"**Apresentar os planos (enquadre no momento):**\nO Protocolo tem 3 ambientes:\n• **Protocolo Start:** o básico pra organizar, CRM + funil + 1 playbook + metas.\n• **Protocolo Pro:** Start + playbooks de SDR e Closer + treinamento do time + acompanhamento quinzenal.\n• **Protocolo Completo:** tudo + implementação de SDR, Closer e CS + consultoria 1:1 semanal + BI comercial.\n\n**Você conduz:** \"Pelo que você me contou, o **{PLANO}** é o ambiente certo pro seu momento, porque te entrega exatamente o que ataca o seu {DOR}.\"\n\n**Micropacto (ainda SEM preço):** \"Tirando valor, **isso aqui é o que você procura?**\"","do":"Enquadre no plano do momento. Desperte o desejo ANTES do número.","av":"Jogar preço agora. Perguntar \"qual você quer?\" e deixar ele se rebaixar."},
+  {"n":8,"title":"Ancoragem e o número","t":"Fechamento · valor","tec":"Ancorar → silêncio","s":"**Ancoragem, depois o preço:**\n\"Pra montar isso por fora, {NOME}, contratando consultor, treinando time e arrumando CRM na tentativa e erro, fácil passar de **R$ 8 mil por mês**, e ainda demorando meses pra acertar.\"\n\n\"Deixa eu te perguntar: por tudo que te mostrei, **quanto você acha que vale?**\" → **FIQUE CALADO**, deixe ele dar o número.\n\n**Isolar o preço:** \"Se o valor coubesse no seu orçamento, a gente começaria hoje?\"\n\nAí diga o valor do **plano dele** (ex.: Protocolo Pro, adesão + 12x) e **cale-se**.","do":"Ancore alto e honesto, pergunte quanto ele pagaria e CALE-SE.","av":"Falar por cima do silêncio. Dar desconto antes da hora."},
+  {"n":9,"title":"Fecha ao vivo","t":"Fechamento","tec":"Argumenta › Melhora › Fecha","s":"**Fechamento (com as quebras):**\nOuça a objeção inteira, **1s de silêncio**, isole e reenquadre com o que ELE disse.\n\n**\"Vou pensar\":** \"O que mudou do começo pra cá? Você me disse que fazia sentido. Me diz: **qual parte** você precisa pensar? Porque eu sou a melhor pessoa pra tirar essa dúvida agora.\"\n\n**\"Preciso ver o financeiro\":** \"Entendo. Mas o que **continuar sem método** no comercial te custa por mês hoje? Adiar isso sai mais caro que resolver.\"\n\n**Melhora:** só então mexa em entrada/parcela/Pix, sempre com \"se eu conseguir, fechado?\".\n\n**Fecha ao vivo:** \"Fica melhor no **Pix ou cartão**? Já te mando o link aqui.\" → o cliente não sai da reunião sem fechar.","do":"Faça ele confirmar a condição. Mantenha o link pronto. Feche ao vivo.","av":"Refazer o pitch. Aceitar \"mando o Pix depois\". Falar demais na hora do link."},
+  {"n":10,"title":"Bem-vindo ao Protocolo","t":"Pós-venda","tec":"Comemore · próximos passos","s":"**Boas-vindas (comemore de verdade):**\n\"{NOME}, **parabéns pela decisão!** Você não comprou um sistema, você decidiu colocar o seu comercial pra funcionar de verdade.\"\n\nApresente os próximos passos: **onboarding**, agendamento do **diagnóstico** e a configuração do CRM. Faça ele se sentir dentro do Protocolo desde já.","do":"Comemore com energia. Mande o próximo passo na hora.","av":"Encerrar frio. Deixar o pós-venda no vácuo."}
+ ]
+};
+function roteiroData(){var t=T();if(t==="treino")return ROTEIRO_TREINO;if(t==="icbari"&&typeof ROTEIRO_ICBARI!=="undefined")return ROTEIRO_ICBARI;if(t==="b2if"&&typeof ROTEIRO_B2!=="undefined")return ROTEIRO_B2;return ROTEIRO_LIDERES;}
 /* array de slides do roteiro, considerando a ORIGEM do lead */
 var ROT_ORIG_AB={
  lideres:{
@@ -5132,8 +5157,8 @@ function vRoteiro(){
   +(allowed.indexOf('sdr')>=0?'<button class="btn '+(tab==='sdr'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'sdr\';vRoteiro()">📞 SDR · Qualificação</button>':'')
   +(allowed.indexOf('closer')>=0?'<button class="btn '+(tab==='closer'?'gold':'ghost')+' sm" onclick="ROTEIRO_TAB=\'closer\';vRoteiro()">🎯 Closer · Fechamento</button>':'')
   +'<div style="flex:1"></div>'
-  +(allowed.indexOf('sdr')>=0?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR · Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR · Repescagem</button>':''):'')
-  +(allowed.indexOf('closer')>=0?'<button class="btn ghost sm" onclick="window.open(\''+((T()==="lideres"&&ICB_ORIG==="retorno")?(apDir+'apresentacao-CLOSER-repescagem.html'):(apDir+'apresentacao-CLOSER.html?o='+ICB_ORIG))+'\',\'_blank\')">▶ Closer · Apresentação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer · Repescagem</button>':''):'')
+  +((allowed.indexOf('sdr')>=0&&T()!=="treino")?'<button class="btn ghost sm" onclick="window.open(\''+apDir+'apresentacao-SDR.html'+((T()==="icbari"||T()==="b2if")?'?o='+ICB_ORIG:'')+'\',\'_blank\')">▶ SDR · Qualificação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-SDR-repescagem.html\',\'_blank\')">♻️ SDR · Repescagem</button>':''):'')
+  +((allowed.indexOf('closer')>=0&&T()!=="treino")?'<button class="btn ghost sm" onclick="window.open(\''+((T()==="lideres"&&ICB_ORIG==="retorno")?(apDir+'apresentacao-CLOSER-repescagem.html'):(apDir+'apresentacao-CLOSER.html?o='+ICB_ORIG))+'\',\'_blank\')">▶ Closer · Apresentação</button>'+(T()==="lideres"?'<button class="btn ghost sm" onclick="window.open(\'apresentacoes/apresentacao-CLOSER-repescagem.html\',\'_blank\')">♻️ Closer · Repescagem</button>':''):'')
   +'</div>'
   +((["icbari","lideres","b2if"].includes(T())&&(tab==="sdr"||(tab==="closer"&&ROT_CLO_ORIG[T()])))?icbOrigChips(ICB_ORIG):'')
   +cards;
@@ -5409,7 +5434,7 @@ function vScripts(){
   const tabs=scriptTabsFor();
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=(isAdmin()?"visao":SESSION.role);
   if(!tabs.find(t=>t[0]===SCRIPT_TAB))SCRIPT_TAB=tabs[0][0];
-  const SC=T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:(T()==="icbari"?{visao:scICP_ICB,sdr:scSDR_ICB,bot:scBOT_ICB,closer:scCLO_ICB,cs:scCS_ICB}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS});
+  const SC=T()==="treino"?{visao:scICP_TR,sdr:scSDR_TR,bot:scBOT_TR,closer:scCLO_TR,cs:scCS_TR}:(T()==="b2if"?{visao:scICP_B2,sdr:scSDR_B2,bot:scBOT_B2,closer:scCLO_B2,cs:scCS_B2}:(T()==="icbari"?{visao:scICP_ICB,sdr:scSDR_ICB,bot:scBOT_ICB,closer:scCLO_ICB,cs:scCS_ICB}:{visao:scICP,sdr:scSDR,bot:scBOT,closer:scCLO,cs:scCS}));
   M().innerHTML=`
    ${srToggle('scripts')}<div class="view-title"><h1>Script de Vendas</h1>${isAdmin()?'':`<span class="pill pri">Playbook do seu papel: ${roleLabel(effRole())}</span>`}</div>
    <p class="view-sub">${isAdmin()?`Playbook completo da ${BRANDS[T()].name}: ICP, produtos e como conduzir cada etapa.`:"Você acessa o conhecimento da empresa e o playbook do seu papel."}</p>
@@ -5647,6 +5672,112 @@ function scCS(){return `
      <div class="script">"[nome], que resultado incrível! 🎉 Duas coisas: (1) posso registrar isso como um depoimento? (2) você conhece 1 ou 2 empresários que mereciam viver o que você está vivendo aqui? Faço questão de cuidar deles."</div>
      <p class="mut" style="font-size:12.5px;margin:6px 0 0">Indicação → cria lead no CRM (funil Prospecção) e devolve pro SDR. O ciclo se fecha. 🔁</p></div>
 
+ </div></div>`;
+}
+
+/* ================= PLAYBOOK FICTÍCIO, O PROTOCOLO COMERCIAL (TREINO) =================
+   100% fake. Nada de outras empresas, nenhum nome real além de Felipe Reis. */
+function scICP_TR(){
+ var p=DB.get(T(),"products")||[];
+ function card(prod,cor){if(!prod)return '';return '<div class="card" style="border-top:3px solid '+cor+'"><h2 style="margin:0 0 4px;font-size:15px">'+esc(prod.nome)+', R$ '+(prod.preco||0).toLocaleString('pt-BR')+'</h2><small class="mut">adesão + '+(prod.parcelas||12)+'x</small><ul style="font-size:13px;line-height:1.7;padding-left:18px;margin:10px 0 0">'+(prod.beneficios||[]).map(function(b){return '<li>'+esc(b)+'</li>';}).join("")+'</ul></div>';}
+ return `
+ <div class="card"><h2 style="margin:0 0 6px;font-size:15px">O que o Protocolo Comercial vende</h2>
+   <p style="font-size:13.5px;line-height:1.7;margin:0">Não vendemos curso. A gente <b>implanta um método de vendas dentro da empresa do cliente</b>: CRM configurado, funil, playbooks de SDR, Closer e CS, metas e acompanhamento, até o comercial virar uma <b>máquina previsível</b>. Ideia do fundador, <b>Felipe Reis</b>: "a maioria das empresas não vende pouco por falta de produto, vende pouco por falta de método no comercial."</p></div>
+ <div class="card mt" style="border-left:3px solid var(--brand-accent)"><h2 style="margin:0 0 6px;font-size:15px">As 3 frentes do método</h2>
+   <div class="flex wrap" style="gap:10px;align-items:center">
+     ${[["1","DIAGNÓSTICO","raio-x do funil: onde você perde venda hoje"],["2","IMPLEMENTAÇÃO","CRM, funil, playbooks de SDR/Closer/CS, metas e cadência"],["3","ACOMPANHAMENTO","ritmo semanal, BI do comercial e ajuste até bater a meta"]].map(([n,h,d])=>`<div class="card" style="flex:1;min-width:180px"><b style="color:var(--brand-accent)">${n}. ${h}</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">${d}</p></div>`).join("")}</div></div>
+ <div class="section-h"><h2>Os planos (ambientes)</h2><div class="line"></div></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+   ${card(p[0],'#FF6B2B')}${card(p[1],'#ff8c54')}${card(p[2],'#e7b53c')}</div>
+ <div class="section-h"><h2>ICP, cliente ideal</h2><div class="line"></div></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+   ${[["✅ Quem é","Dono ou gestor comercial de empresa que já fatura (~R$50 mil/mês ou mais), vende por time/consultores e quer previsibilidade. Atendimento online, qualquer lugar do Brasil."],
+      ["🎯 Momento","Cresceu e o comercial virou bagunça · depende de indicação e de vendedor-herói · quer meta virando conta, não torcida."],
+      ["🚫 Não é ICP","Quem não tem nem quer time comercial, quem busca 'curso barato', quem não decide."]].map(([h,pp])=>`<div class="card persona"><b style="color:var(--brand-accent)">${h}</b><p style="font-size:13px;margin:8px 0 0">${pp}</p></div>`).join("")}</div>
+ <div class="section-h"><h2>Personas & dores</h2><div class="line"></div></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+   ${[["🧍 O dono que vende sozinho","Faz tudo: prospecta, fecha e entrega. Dor: o comercial para quando ele para.","Protocolo Start + playbook"],
+      ["🧩 O time sem método","Tem vendedores, mas cada um faz de um jeito. Dor: resultado imprevisível.","Protocolo Pro + treinamento"],
+      ["📉 O que perde no funil","Entra lead e some. Dor: não sabe onde perde a venda.","Diagnóstico + CRM"],
+      ["🚀 O que quer escalar","Quer crescer sem depender de herói. Dor: falta estrutura pra dobrar.","Protocolo Completo + 1:1"]].map(([h,d,s])=>`<div class="card"><b>${h}</b><p class="mut" style="font-size:12.5px;margin:6px 0">${d}</p><span class="pill pri">${s}</span></div>`).join("")}</div>`;
+}
+function scBOT_TR(){return `
+ <div class="card"><h2 style="margin:0 0 6px;font-size:15px">🤖 Bot de Qualificação (WhatsApp), fluxo</h2>
+   <p class="mut" style="font-size:13px">Fluxo automático que pré-qualifica pelo ICP antes de passar pro SDR humano. Cada resposta pontua o lead.</p></div>
+ <div class="card mt"><div class="script"><b>Bot:</b> Olá! Aqui é o Protocolo Comercial 👋 A gente ajuda empresas a transformar o comercial numa máquina previsível. Posso fazer 4 perguntinhas rápidas? (1) Você é <b>dono ou gestor comercial</b> da empresa? <i>[Sim=+30 / Não→pede o contato de quem decide]</i></div>
+   <div class="script"><b>Bot:</b> (2) Qual o <b>ramo</b> da empresa? <i>[livre]</i></div>
+   <div class="script"><b>Bot:</b> (3) Faturamento aproximado por mês? <i>[até 50k=+10 / 50k–200k=+20 / 200k+=+30]</i></div>
+   <div class="script"><b>Bot:</b> (4) Hoje seu maior desafio é: A) gerar leads · B) converter/fechar · C) manter cliente/recorrência? <i>[qualquer=+15, marca a dor]</i></div>
+   <div class="script"><b>Bot:</b> Perfeito! Faz muito sentido você conhecer o Protocolo. Prefere falar com um especialista <b>hoje 15h ou amanhã 10h</b>? <i>[agenda → cria lead no CRM no funil SDR]</i></div></div>
+ <div class="card mt"><h2 style="margin:0 0 6px;font-size:15px">Regra de roteamento</h2>
+   <p class="mut" style="font-size:13px">Score <b>≥ 60</b> → agenda direto com Closer (lead quente). <b>30–59</b> → SDR nutre e qualifica. <b>&lt; 30 ou não decide</b> → nutrição/conteúdo + pedir o contato de quem decide. Tudo cai no CRM com temperatura e score.</p></div>`;
+}
+function scSDR_TR(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 SCRIPT DO SDR, siga de cima para baixo</h2><span class="pill pri">Qualificar & agendar, NÃO fechar</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>conduz com perguntas</b> (fale 30%, ouça 70%), vende a <b>REUNIÃO de diagnóstico</b> (nunca o preço) e <b>anota tudo no CRM</b>.</p>
+   <div class="flex wrap mt" style="gap:20px"><div><div style="font-size:19px;font-weight:800">40-60</div><div class="eyebrow mut">tentativas/dia</div></div><div><div style="font-size:19px;font-weight:800">8-12</div><div class="eyebrow mut">conexões/dia</div></div><div><div style="font-size:19px;font-weight:800">2-3</div><div class="eyebrow mut">reuniões/dia</div></div><div><div style="font-size:19px;font-weight:800">≤20%</div><div class="eyebrow mut">falta alvo</div></div></div></div>
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="1"><h3>Abertura (pela origem do lead)</h3>
+     <div class="script">"Oi <b>[nome]</b>, aqui é o/a [SDR] do <b>Protocolo Comercial</b>. Vi que você chegou por [anúncio / indicação / conteúdo]. Prometo ser rápido, nem um cafezinho de tempo. Deixa eu já te entender melhor…"</div>
+     <span class="go">↓ EMENDE DIRETO NO PASSO 2 (não espere "pode falar?")</span></div>
+   <div class="step" data-n="2"><h3>Pré-qualificação (perguntas encadeadas)</h3>
+     <div class="script">"Só pra eu te situar: você é o <b>dono / gestor comercial</b>, né?" → "E o que a empresa <b>faz</b>?" → "Hoje <b>quem vende</b>: é você ou tem um time?" → "Como você sente o comercial: organizado ou meio na correria?"</div>
+     <span class="go">↓ Não decide? Peça o contato de quem decide. É perfil? Vá pro passo 3.</span></div>
+   <div class="step" data-n="3"><h3>Diagnóstico leve (conversa, não interrogatório)</h3>
+     <div class="script"><b>Situação:</b> "Como funciona a venda hoje, da chegada do lead até fechar?"</div>
+     <div class="script"><b>Problema:</b> "E qual o maior gargalo: gerar lead, converter, ou manter cliente?"</div>
+     <div class="script"><b>Implicação:</b> "Isso te custa o quê por mês, venda perdida, tempo, previsibilidade?" <i>(aqui ele costuma soltar o faturamento)</i></div>
+     <div class="script"><b>Necessidade:</b> "Se o comercial rodasse com método e CRM, sem depender de herói, o que mudaria pra você?"</div>
+     <span class="go">↓ Ele reconheceu a dor e quer mudar? Vá pro passo 4.</span></div>
+   <div class="step" data-n="4"><h3>Agendar a reunião de diagnóstico</h3>
+     <div class="script">"[nome], faz muito sentido a gente conversar com calma. Vou te colocar com um especialista numa conversa de 30 min, online. Só combino uma coisa: no fim quero um <b>sim</b> ou um <b>não</b> tranquilo. <b>Quinta 10h ou sexta 16h?</b>"</div>
+     <div class="script"><b>Confirmar:</b> "Fechado! Me passa seu <b>melhor e-mail</b> que já mando o convite. Você recebe lembrete 1 dia antes e no dia."</div>
+     <span class="go">↓ Registre tudo no lead (dor, faturamento, meta) e passe o contexto pro Closer.</span></div>
+ </div></div>`;
+}
+function scCLO_TR(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">🎯 SCRIPT DO CLOSER, conduzir a decisão</h2><span class="pill pri">Fechar na reunião</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Você <b>retoma</b> o que o SDR levantou, apresenta o método, enquadra no plano certo e <b>fecha ao vivo</b>. Fale menos que o cliente.</p></div>
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="1"><h3>Rapport + confirmar o perfil</h3>
+     <div class="script">"Olá [nome], tudo bem? (ouça) Pra aproveitar bem esse tempo, vou te entender a fundo. Confirma rapidinho: quem vende hoje é [quem]? O faturamento gira em torno de [X]/mês? E o que mais trava é [dor]? É pra resolver agora?"</div>
+     <div class="script"><b>Micropacto:</b> "Se tudo fizer sentido e a decisão é sua, consigo um sim ainda <b>hoje</b>? Combinado?"</div>
+     <span class="go">↓ Confirmou? Vá pro passo 2.</span></div>
+   <div class="step" data-n="2"><h3>Apresentar o método (as 3 frentes)</h3>
+     <div class="script"><b>Diagnóstico → Implementação → Acompanhamento.</b> Conecte cada frente à dor que ele te deu: "isso aqui resolveria o seu [dor], concorda?"</div>
+     <span class="go">↓ Desperte o desejo ANTES do preço.</span></div>
+   <div class="step" data-n="3"><h3>Enquadrar no plano</h3>
+     <div class="script">"Pelo que você me contou, o <b>[Protocolo Start / Pro / Completo]</b> é o ambiente certo pro seu momento." → <b>Micropacto (sem preço):</b> "Tirando valor, é isso que você procura?"</div>
+     <span class="go">↓ Pegou o sim? Ancore e diga o número.</span></div>
+   <div class="step" data-n="4"><h3>Ancoragem + preço</h3>
+     <div class="script">"Montar isso por fora passa fácil de R$ 8 mil/mês e ainda demora pra acertar. Por tudo que te mostrei, quanto você acha que vale?" → <b>SILÊNCIO</b>. Depois diga o valor do plano e <b>cale-se</b>.</div>
+     <span class="go">↓ Reagiu? Trate objeção e feche.</span></div>
+   <div class="step" data-n="5"><h3>Fechamento (Argumenta › Melhora › Fecha)</h3>
+     <div class="script"><b>"Vou pensar":</b> "Qual parte você precisa pensar? Eu sou a melhor pessoa pra tirar essa dúvida agora."</div>
+     <div class="script"><b>"Ver financeiro":</b> "O que continuar sem método te custa por mês? Adiar sai mais caro."</div>
+     <div class="script"><b>Fecha ao vivo:</b> "Fica melhor no Pix ou cartão? Já te mando o link aqui." → o cliente não sai sem fechar.</div>
+     <span class="go">↓ Fechou? Comemore e passe pro CS.</span></div>
+ </div></div>`;
+}
+function scCS_TR(){return `
+ <div class="card" style="border-left:3px solid var(--brand-primary-2)"><div class="flex between wrap"><h2 style="margin:0;font-size:15px">💚 SCRIPT DO CS, a venda começa depois do sim</h2><span class="pill pri">Ativar, reter e expandir</span></div>
+   <p style="font-size:13px;margin:10px 0 0;line-height:1.6">Seu trabalho é fazer o cliente <b>usar o Protocolo</b> e ter resultado, pra renovar e indicar.</p></div>
+ <div class="card mt"><div class="rot">
+   <div class="step" data-n="1"><h3>Onboarding, primeiras 48h</h3>
+     <div class="script"><b>Ligação de boas-vindas (D0):</b> "[nome], seja muito bem-vindo ao Protocolo! Vamos começar agendando o seu <b>diagnóstico</b> e configurando o CRM da sua empresa."</div>
+     <span class="go">↓ Siga a régua de sucesso (passo 2).</span></div>
+   <div class="step" data-n="2"><h3>Régua de sucesso, 30 / 60 / 90 dias</h3>
+     <div class="script"><b>D7:</b> CRM configurado e time com acesso? · <b>D30:</b> playbook rodando e 1ª vitória registrada · <b>D60:</b> meta sendo acompanhada no BI · <b>D90:</b> resultado + plano de expansão.</div>
+     <span class="go">↓ Monitore a saúde do cliente (passo 3).</span></div>
+   <div class="step" data-n="3"><h3>Health Score, aja pela cor</h3>
+     <div class="flex wrap" style="gap:12px">
+       <div class="card" style="flex:1;min-width:170px;border-top:3px solid var(--brand-ok)"><b>🟢 Saudável</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">Usa o CRM, bate meta. Peça indicação.</p></div>
+       <div class="card" style="flex:1;min-width:170px;border-top:3px solid var(--brand-warn)"><b>🟡 Atenção</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">Parou de usar. Ligue, reative o ritmo.</p></div>
+       <div class="card" style="flex:1;min-width:170px;border-top:3px solid var(--brand-bad)"><b>🔴 Risco</b><p class="mut" style="font-size:12.5px;margin:6px 0 0">Sumiu. Resgate com reunião de valor.</p></div></div>
+     <span class="go">↓ Construa a renovação (passo 4).</span></div>
+   <div class="step" data-n="4"><h3>Revisão de valor & expansão</h3>
+     <div class="script">"[nome], faz [X] meses com a gente. Bora revisar o que já melhorou no comercial e ver o próximo passo?" → cliente engajado no <b>Start</b>? Mostre o <b>Pro</b>. No <b>Pro</b>? Mostre o <b>Completo</b>.</div>
+     <span class="go">↓ Cliente feliz vira promotor: peça indicação e registre no CRM.</span></div>
  </div></div>`;
 }
 
@@ -5929,7 +6060,7 @@ function treinoAula(){
      <ul class="mut" style="font-size:13px;line-height:1.9;padding-left:18px;margin:0">
        <li><b>Empresa/ICP:</b> missão, personas, público</li>
        <li><b>Produtos:</b> ${prodsT().map(p=>planShort(p.id)+" "+money(p.recorrencia)+"/mês").join(" vs ")}</li>
-       <li><b>Diferenciais:</b> ${T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, sem comissão de produto (sem conflito de interesse)":"Sociedade dos 12, O MAPA, networking, High Table"}</li>
+       <li><b>Diferenciais:</b> ${T()==="treino"?"método implantado dentro da empresa, CRM + playbooks de SDR/Closer/CS, acompanhamento semanal até bater a meta":(T()==="b2if"?"jornada R0–R4, Banco de Soluções, Café Consigo, sem comissão de produto (sem conflito de interesse)":"Sociedade dos 12, O MAPA, networking, High Table")}</li>
        <li><b>SPIN + BANT</b> · cadência por papel · objeções e fechamento</li></ul>
      <div class="flex" style="gap:8px;margin-top:12px"><button class="btn gold sm" onclick="ACAD_TAB='material';go('academy')">📚 Material de estudo completo →</button><button class="btn ghost sm" onclick="go('scripts')">Script & Roteiro →</button></div></div>`;
 }
