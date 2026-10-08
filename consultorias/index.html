@@ -701,7 +701,7 @@ const DB={
   set(t,c,v){localStorage.setItem(this.key(t,c),JSON.stringify(v));if(window.__cloudPush)window.__cloudPush(t,c,v);},
   getObj(t,c,d){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??d}catch(e){return d}},
   push(t,c,i){const a=this.get(t,c);a.unshift(i);this.set(t,c,a);return i;},
-  update(t,c,id,p){const a=this.get(t,c);const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]={...a[i],...p};this.set(t,c,a);}return a[i];},
+  update(t,c,id,p){const a=this.get(t,c);const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]={...a[i],...p,...(c==='leads'?{_rev:Date.now()}:{})};this.set(t,c,a);}return a[i];},
   remove(t,c,id){this.set(t,c,this.get(t,c).filter(x=>x.id!==id));},
   uid(){return 'id'+Math.random().toString(36).slice(2,9)}
 };
@@ -715,12 +715,20 @@ function initCloud(){try{if(window.supabase){sb=window.supabase.createClient(SB_
 /* BLINDAGEM: salva por REGISTRO (merge por id), ninguem apaga o dado do outro. Fallback seguro. */
 var _pushQ={};
 function _mergeById(remote,local){var s=new Set((local||[]).filter(function(x){return x&&x.id!=null;}).map(function(x){return x.id;}));var ro=(remote||[]).filter(function(x){return x&&x.id!=null&&!s.has(x.id);});return (local||[]).concat(ro);}
+/* LEADS: fusão por "último a mexer vence" (movedAt/_rev). Impede que uma aba velha reverta a etapa de um lead. */
+function _leadRev(x){return Math.max((x&&x._rev)||0,(x&&x.movedAt)||0,(x&&x.criadoEm)||0);}
+function _mergeLeads(remote,local){var m={},order=[];
+  function take(x){if(!x||x.id==null)return;if(!(x.id in m)){order.push(x.id);m[x.id]=x;}else if(_leadRev(x)>=_leadRev(m[x.id]))m[x.id]=x;}
+  (remote||[]).forEach(take);(local||[]).forEach(take);
+  var out=order.map(function(id){return m[id];});
+  (local||[]).forEach(function(x){if(x&&x.id==null)out.push(x);});
+  return out;}
 function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;
  if(!Array.isArray(v)){try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r){if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}return;}
  var key=t+"|"+c;
  var run=function(){return sb.from("pc_store").select("data").eq("tenant",t).eq("col",c).maybeSingle().then(function(r){
    var remote=(r&&r.data&&Array.isArray(r.data.data))?r.data.data:[];
-   var merged=_mergeById(remote,v);
+   var merged=(c==="leads")?_mergeLeads(remote,v):_mergeById(remote,v);
    try{localStorage.setItem(DB.key(t,c),JSON.stringify(merged));}catch(e){}
    return sb.from("pc_store").upsert({tenant:t,col:c,data:merged,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r2){if(r2&&r2.error)console.warn("push",c,r2.error.message);});
  }).catch(function(e){console.warn("push-skip: leitura remota falhou, NÃO sobrescrevo (anti-perda)",c,e&&e.message);setCloudBadge&&setCloudBadge("local");});};
@@ -2390,19 +2398,10 @@ function vExec(){
 }
 /* ===== CRM & FUNIS ===== */
 function healLeadStages(){
-  /* Conserta leads "fantasma": entram na contagem do funil mas não aparecem em coluna nenhuma
-     porque o estágio não existe naquele funil (dados antigos, mudança de funil, importação). */
-  var fs=DB.getObj(T(),"funnels",FUNNELS);if(!fs||!fs.length)return;
-  var leads=DB.get(T(),"leads");var changed=false;var logs=[];
-  leads.forEach(function(l){
-    if(l.deleted)return;
-    var f=fs.find(function(x){return x.id===l.funnelId;});
-    if(!f){var _eOld=l.estagio;f=fs[0];l.funnelId=f.id;l.estagio=(f.stages[0]||{}).id;l.movedAt=l.movedAt||Date.now();changed=true;logs.push({id:l.id,txt:"⚙ Correção automática: funil inexistente, movido p/ "+f.name+" ("+(f.stages[0]||{}).name+")"});return;}
-    if(!f.stages.some(function(s){return s.id===l.estagio;})){var _eo=l.estagio;l.estagio=(f.stages[0]||{}).id;changed=true;logs.push({id:l.id,txt:"⚙ Correção automática: etapa '"+(_eo||'?')+"' não existe no funil, ajustada p/ "+((f.stages[0]||{}).name||'')});}
-  });
-  if(changed){DB.set(T(),"leads",leads);
-    if(logs.length){var h=DB.get(T(),"history");logs.forEach(function(x){h.unshift({id:DB.uid(),leadId:x.id,tipo:"sistema",txt:x.txt,ts:Date.now()});});DB.set(T(),"history",h);}
-  }
+  /* DESATIVADO: o sistema NÃO altera a etapa de nenhum lead, nunca (regra do Felipe).
+     Leads com etapa "órfã" (funil foi editado) continuam visíveis: o renderKanban mostra eles
+     na 1ª coluna só para exibição, sem gravar nenhuma mudança. */
+  return;
 }
 function crmVisibleCount(fid){
   /* conta só o que o usuário REALMENTE vê no kanban (mesmo dono/filtro), pra o número nunca mentir */
@@ -2514,8 +2513,10 @@ function renderKanban(){
   else if(CRM_SELLER!=="all")leads=leads.filter(l=>l.owner===CRM_SELLER);
   if(q)leads=leads.filter(l=>(l.nome+(l.fantasia||"")+(l.razaoSocial||"")+((l.contato||{}).email||"")).toLowerCase().includes(q));
   const now=Date.now();
-  document.getElementById("kanban").innerHTML=funnel.stages.filter(s=>!CLOSED_STAGES.includes(s.id)).map(s=>{
-    const ls=leads.filter(l=>l.estagio===s.id);const val=ls.reduce((a,l)=>a+(l.valor||0),0);
+  const _allStageIds=new Set(funnel.stages.map(s=>s.id));
+  const _visStages=funnel.stages.filter(s=>!CLOSED_STAGES.includes(s.id));
+  document.getElementById("kanban").innerHTML=_visStages.map((s,_idx)=>{
+    const ls=leads.filter(l=>l.estagio===s.id||(_idx===0&&!_allStageIds.has(l.estagio)));const val=ls.reduce((a,l)=>a+(l.valor||0),0);
     return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const as=actStatus(l.id);
@@ -2551,14 +2552,9 @@ function moveLeadStage(id,stage){
   DB.update(T(),"leads",id,{estagio:stage,movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"etapa",txt:"Etapa: "+(_de?stageName(_de)+" → ":"")+stageName(stage)+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
   toast("Lead → "+stageName(stage));
+  /* Mudar de etapa NÃO gera atividade automática (regra do Felipe). A ÚNICA exceção é "reunião agendada",
+     que abre o fluxo de reunião (com os lembretes). Qualquer outra etapa: nada é criado. */
   if(stage==="agendou"){meetingModal(id);}
-  else if(!["ganho","perdido","churn"].includes(stage)){
-    var acts=DB.get(T(),"activities");
-    if(!acts.some(function(a){return a.leadId===id&&!a.done;})){
-      var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
-      DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:"ligação",titulo:"Dar sequência: "+stageName(stage),data:new Date().toISOString().slice(0,10),done:false,owner:l.owner});
-    }
-  }
 }
 function autoScheduleNoShow(id){
   const l=DB.get(T(),"leads").find(x=>x.id===id);if(!l||l.noShowDone)return;
@@ -2570,20 +2566,9 @@ function autoScheduleNoShow(id){
   toast("Rotina anti-falta agendada ✅");
 }
 function iniciarCadencia(id){
-  var lead=DB.get(T(),"leads").find(function(x){return x.id===id;});if(!lead)return;
-  var cad=DB.getObj(T(),"cadences",{});var sdr=cad.sdr||[];
-  if(!sdr.length){toast("Sem cadência configurada","warn");return;}
-  /* Pode ter outras atividades abertas: a cadência apenas acrescenta o próximo toque, sem bloquear. */
-  var now=Date.now();var acts=DB.get(T(),"activities");
-  /* 1 atividade por vez: cria só o PRIMEIRO toque da cadência; os próximos entram ao concluir */
-  var day0=sdr[0]||{};var t=(day0.toques||[])[0];
-  if(!t){toast("Sem toque configurado na cadência","warn");return;}
-  var tipo=t.canal==="ligação"?"ligação":t.canal==="wa"?"wa":t.canal==="email"?"email":t.canal==="visita"?"visita":"msg";
-  var dstr=new Date(now+(day0.dia||0)*864e5).toISOString().slice(0,10);
-  acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:"D"+(day0.dia||0)+" ["+t.h+"] "+t.cond,data:dstr,hora:(/^\d{1,2}:\d{2}$/.test(t.h||'')?t.h:''),done:false,owner:lead.owner,cad:true});
-  DB.set(T(),"activities",acts);
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência SDR iniciada (1º toque). Os próximos entram ao concluir cada um.",ts:Date.now()});
-  toast("1º toque da cadência agendado ✅");leadDetail(id);
+  /* DESATIVADO de propósito: a cadência será estruturada depois. O botão continua no CRM,
+     mas ao clicar NÃO cria atividade nem altera nada. Nenhum efeito. */
+  toast("Cadência em construção, em breve 👷");
 }
 /* ============================================================
    HORAS ÚTEIS + LEMBRETES DE REUNIÃO (todas as empresas)
@@ -2679,10 +2664,11 @@ function indicacoesDo(id){var src=DB.get(T(),"leads").find(function(x){return x.
  [0,1,2].forEach(function(i){var nome=(document.getElementById("ind_nome"+i).value||'').trim();var tel=(document.getElementById("ind_tel"+i).value||'').trim();
    if(!nome)return;var lid=DB.uid();
    leads.unshift({id:lid,nome:nome,contato:{nome:nome,tel:tel,email:""},origem:"Indicação de "+(src.nome||''),funnelId:sdrF.id,estagio:st0,temp:"quente",valor:0,score:80,owner:own,criadoEm:Date.now(),movedAt:Date.now(),notas:"Indicado por "+(src.nome||'')+((src.contato&&src.contato.tel)?(" ("+src.contato.tel+")"):""),indicadoPor:id});
-   acts.unshift({id:DB.uid(),leadId:lid,tipo:"ligação",titulo:"Ligar agora, indicação quente de "+(src.nome||''),data:hoje,done:false,owner:own});n++;
+   n++;
  });
  if(!n){toast("Preencha ao menos um nome","warn");return;}
- DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);
+ /* NÃO cria atividade automática (regra: sistema não gera atividade). O vendedor agenda o 1º contato. */
+ DB.set(T(),"leads",leads);
  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🤝 "+n+" indicação(ões) viraram lead novo",ts:Date.now()});
  closeModal();toast(n+" lead(s) de indicação criado(s) ✅");leadDetail(id);
 }
@@ -3077,6 +3063,13 @@ function leadModal(){
 }
 function saveNewLead(){
   const g=x=>{var e=document.getElementById(x);return e?e.value:"";};const nome=g("f_nome");if(!nome){toast("Informe o nome","bad");return;}
+  /* anti-duplicado: mesmo NOME + mesmo TELEFONE já existente (no CRM ou na Base) -> avisa e pede confirmação */
+  var _telDup=(g("f_tel")||"").replace(/\D/g,"");var _nomeDup=nome.trim().toLowerCase();
+  if(_telDup.length>=8){
+    var _dup=DB.get(T(),"leads").some(function(l){return !l.deleted&&((l.contato||{}).tel||"").replace(/\D/g,"")===_telDup&&(l.nome||"").trim().toLowerCase()===_nomeDup;})
+      ||DB.get(T(),"base").some(function(b){return (b.tel||"").replace(/\D/g,"")===_telDup&&(b.nome||"").trim().toLowerCase()===_nomeDup;});
+    if(_dup&&!confirm("Já existe um lead/contato com o nome \""+nome+"\" e esse telefone. Quer criar assim mesmo? (vai ficar duplicado)"))return;
+  }
   const funnels=DB.getObj(T(),"funnels",FUNNELS);const fid=g("f_funnel");const f=funnels.find(x=>x.id===fid)||funnels[0];
   const estagio=g("f_estagio")||(f.stages[0]||{}).id;
   const id=DB.uid();
