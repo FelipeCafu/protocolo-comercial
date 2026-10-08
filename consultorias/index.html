@@ -2757,6 +2757,7 @@ function leadDetail(id){
   const funnel=funnelOf(l.estagio)||DB.getObj(T(),"funnels",FUNNELS).find(f=>f.id===l.funnelId)||DB.getObj(T(),"funnels",FUNNELS)[0];
   const stages=funnel.stages;const curIdx=stages.findIndex(s=>s.id===l.estagio);
   const sellers=DB.get(T(),"sellers");
+  const _lb=DB.get(T(),"base").find(x=>x.id===l.baseId)||DB.get(T(),"base").find(x=>x.crmLeadId===l.id)||{};
   const tempoEtapa=relTime(l.movedAt||l.criadoEm),tempoFunil=relTime(l.criadoEm);
   const sla=stages[curIdx];const late=actStatus(l.id)==='late'; /* "atrasada" = atividade, não SLA */
   const _slaDL=slaThresholdDays(sla);const _bzL=_slaBizDaysSince(l.movedAt||l.criadoEm);const slaLateL=_slaDL>0&&_bzL>_slaDL;
@@ -2778,6 +2779,7 @@ function leadDetail(id){
    ${l.estagio!=='perdido'?leadBriefing(l):''}
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(', <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
+   ${l.pinnedNote?`<div class="card" style="border:1px solid rgba(201,162,75,.6);background:linear-gradient(160deg,rgba(201,162,75,.14),transparent);margin:0 0 10px;padding:11px 15px"><div class="flex between" style="gap:10px;align-items:center;flex-wrap:wrap"><div style="font-size:13.5px;line-height:1.45"><b style="color:var(--brand-accent)">📌 Fixo:</b> ${esc(l.pinnedNote)}</div><button class="btn ghost xs" onclick="removePinnedNote('${l.id}')" title="Remover">✕</button></div></div>`:''}
    ${(function(){var open=DB.get(T(),"activities").some(function(a){return a.leadId===l.id&&!a.done;});return (!["perdido","ganho","churn"].includes(l.estagio)&&!open)?'<div class="card" style="border-color:rgba(240,180,42,.55);background:rgba(240,180,42,.08);margin:0 0 10px"><b style="color:var(--brand-warn)">⚠ Este lead está sem próxima atividade.</b> <span class="mut" style="font-size:13px">Nenhum lead pode ficar sem próximo passo, agende uma atividade abaixo (📋 Atividade).</span></div>':'';})()}
    <div class="ld-grid">
      <div>
@@ -2793,6 +2795,9 @@ function leadDetail(id){
          <label class="fl">Nome</label><input class="in" id="ld_cnome" value="${(l.contato||{}).nome||l.nome||''}">
          <div class="row mt8"><div><label class="fl">Telefone</label><input class="in" id="ld_ctel" value="${(l.contato||{}).tel||''}"></div>
            <div><label class="fl">E-mail</label><input class="in" id="ld_cemail" value="${(l.contato||{}).email||''}"></div></div>
+         ${T()!=="icbari"?`<div class="row mt8"><div><label class="fl">Empresa</label><input class="in" id="ld_empresa" value="${esc(l.empresa||_lb.empresa||'')}"></div><div><label class="fl">Ramo</label><input class="in" id="ld_ramo" value="${esc(l.ramo||_lb.ramo||'')}"></div></div>
+         <div class="row mt8"><div><label class="fl">Cargo / função</label><input class="in" id="ld_cargo" value="${esc(l.cargo||_lb.cargo||'')}"></div><div><label class="fl">Origem</label><input class="in" id="ld_origem" value="${esc(l.origem||(_lb.origens&&_lb.origens[0])||'')}"></div></div>
+         <label class="fl mt8">Já é ${lx('cliente')}?</label><select class="in" id="ld_membro"><option value="" ${(_lb.membro!=='sim')?'selected':''}>Não, ainda é lead</option><option value="sim" ${(_lb.membro==='sim')?'selected':''}>Sim, já é ${lx('cliente')}</option></select>`:''}
          ${T()==="icbari"?`<div class="row mt8"><div><label class="fl">Procedimento que quer fazer</label><input class="in" id="ld_proc" value="${esc(l.procedimento||'')}"></div><div><label class="fl">Plano de saúde</label><input class="in" id="ld_plano" value="${esc(l.plano||'')}"></div></div>
          <label class="fl mt8">Valor do procedimento (R$)</label><input class="in" id="ld_valor" type="number" value="${l.valor||0}">`:`<label class="fl mt8">Valor (R$)</label><input class="in" id="ld_valor" type="number" value="${l.valor||0}">`}
          <button class="btn sm mt" onclick="saveLeadDetail('${l.id}')">💾 Salvar cadastro</button>
@@ -2826,7 +2831,10 @@ function ldActivityForm(l){
     ${atMentionChips('ac_obs')}
     <div class="flex between mt"><small class="mut">🎙️ áudio disponível na versão de produção</small><button class="btn sm" onclick="addActivity('${l.id}')">📅 Agendar atividade</button></div>`;
 }
-function ldNoteForm(l){return `<textarea class="in" id="nt_txt" rows="4" placeholder="Escreva uma anotação sobre este lead…"></textarea>
+function ldNoteForm(l){return `
+   ${l.pinnedNote?`<div class="card" style="border:1px solid rgba(201,162,75,.5);background:rgba(201,162,75,.08);padding:9px 12px;margin:0 0 10px"><div class="flex between" style="gap:8px;align-items:flex-start"><div style="font-size:12.5px;line-height:1.45"><b>📌 Anotação fixa:</b> ${esc(l.pinnedNote)}</div><button class="btn ghost xs" onclick="removePinnedNote('${l.id}')" title="Remover a anotação fixa">✕</button></div></div>`:''}
+   <textarea class="in" id="nt_txt" rows="4" placeholder="Escreva uma anotação sobre este lead…"></textarea>
+   <label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;cursor:pointer;color:var(--brand-muted)"><input type="checkbox" id="nt_pin"> 📌 <b>Fixar</b> esta anotação (fica sempre visível no topo do lead, ex.: "só atende ao meio-dia", "prefere WhatsApp")</label>
    <button class="btn sm mt" onclick="addNote('${l.id}')">Salvar anotação</button>`;}
 function ldFileForm(l){return `<div class="card" style="border:1px dashed var(--brand-line);text-align:center;padding:26px;cursor:pointer" onclick="toast('Upload disponível na versão de produção')"><div style="font-size:28px">📎</div><div class="mut" style="font-size:13px;margin-top:6px">Anexar proposta, contrato ou documento</div></div>`;}
 function ldFocus(l){
@@ -2914,15 +2922,33 @@ function concludeActDo(aid,ctx){
 }
 function doneActivity(aid,lid){concludeAct(aid,"lead");}
 function addNote(id){const txt=document.getElementById("nt_txt").value.trim();if(!txt)return;
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"Anotação: "+txt,ts:Date.now()});toast("Anotação salva");LD_TAB="atividade";leadDetail(id);}
+  var pin=!!(document.getElementById("nt_pin")&&document.getElementById("nt_pin").checked);
+  if(pin){DB.update(T(),"leads",id,{pinnedNote:txt});DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"📌 Anotação fixada: "+txt,ts:Date.now()});toast("Anotação fixada no topo 📌");}
+  else{DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"Anotação: "+txt,ts:Date.now()});toast("Anotação salva");}
+  LD_TAB="anotacao";leadDetail(id);}
+function removePinnedNote(id){DB.update(T(),"leads",id,{pinnedNote:""});DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"📌 Anotação fixa removida",ts:Date.now()});toast("Anotação fixa removida");leadDetail(id);}
 function checkin(id){DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"📍 Check-in de visita (GPS capturado)",ts:Date.now()});toast("Check-in registrado com GPS");leadDetail(id);}
 function saveLeadDetail(id){
   const g=x=>{var e=document.getElementById(x);return e?e.value:undefined;};
   var patch={valor:+g("ld_valor")||0,contato:{nome:g("ld_cnome"),tel:g("ld_ctel"),email:g("ld_cemail")}};
   if(document.getElementById("ld_proc"))patch.procedimento=g("ld_proc");
   if(document.getElementById("ld_plano"))patch.plano=g("ld_plano");
+  if(document.getElementById("ld_empresa"))patch.empresa=g("ld_empresa");
+  if(document.getElementById("ld_ramo"))patch.ramo=g("ld_ramo");
+  if(document.getElementById("ld_cargo"))patch.cargo=g("ld_cargo");
+  if(document.getElementById("ld_origem"))patch.origem=g("ld_origem");
   DB.update(T(),"leads",id,patch);
-  toast("Cadastro salvo");
+  /* sincroniza com a Base, preenchendo as lacunas (empresa, ramo, cargo, telefone, e-mail, já é cliente) */
+  var lead=DB.get(T(),"leads").find(x=>x.id===id)||{};
+  var base=DB.get(T(),"base");var b=base.find(x=>x.id===lead.baseId)||base.find(x=>x.crmLeadId===id);
+  if(b){
+    if(patch.contato.tel)b.tel=patch.contato.tel; if(patch.contato.email)b.email=patch.contato.email;
+    if(patch.contato.nome)b.nome=patch.contato.nome;
+    if(patch.empresa!=null)b.empresa=patch.empresa; if(patch.ramo!=null)b.ramo=patch.ramo; if(patch.cargo!=null)b.cargo=patch.cargo;
+    if(document.getElementById("ld_membro"))b.membro=g("ld_membro");
+    DB.set(T(),"base",base);
+  }
+  toast("Cadastro salvo ✓");leadDetail(id);
 }
 function winLead(id){moveLeadStage(id,'ganho');DB.update(T(),"leads",id,{funnelId:'closer'});toast("🎉 Lead marcado como GANHO ("+lx('cliente')+")!");leadDetail(id);}
 function loseLead(id){
@@ -3039,6 +3065,8 @@ function leadModal(){
    `:`
    <div class="row mt"><div><label class="fl">Nome</label><input class="in" id="f_nome"></div><div><label class="fl">Telefone</label><input class="in" id="f_tel"></div></div>
    <div class="row mt"><div><label class="fl">E-mail</label><input class="in" id="f_email"></div><div><label class="fl">Origem</label><input class="in" id="f_origem" value="Instagram"></div></div>
+   <div class="row mt"><div><label class="fl">Empresa</label><input class="in" id="f_empresa"></div><div><label class="fl">Ramo</label><input class="in" id="f_ramo" placeholder="ex.: varejo, serviços, indústria"></div></div>
+   <div class="row mt"><div><label class="fl">Cargo / função</label><input class="in" id="f_cargo" placeholder="ex.: dono, sócio, gestor comercial"></div><div><label class="fl">Já é ${lx('cliente')}?</label><select class="in" id="f_membro"><option value="">Não, é um lead novo</option><option value="sim">Sim, já é ${lx('cliente')}</option></select></div></div>
    <div class="row mt"><div><label class="fl">Funil</label>${funSel}</div>
      ${T()==="lideres"?`<div><label class="fl">Plano provável</label><select class="in" id="f_plano"><option>Evolução</option><option selected>Referência</option><option>Legado</option><option>A definir</option></select></div>
      <div><label class="fl">Probabilidade</label><select class="in" id="f_prob"><option>Baixa</option><option selected>Média</option><option>Alta</option></select></div>`:`<div><label class="fl">Valor (R$)</label><input class="in" id="f_valor" type="number" value="698"></div>`}
@@ -3057,14 +3085,16 @@ function saveNewLead(){
   const _prob=document.getElementById("f_prob")?g("f_prob"):"";
   const _proc=document.getElementById("f_proc")?g("f_proc"):"";
   const tel=g("f_tel"),email=g("f_email"),temp=g("f_temp")||"morno",owner=g("f_owner"),origem=g("f_origem");
-  /* cria/vincula também na BASE (o lead tem que aparecer nos dois lugares) */
+  const empresa=g("f_empresa"),ramo=g("f_ramo"),cargo=g("f_cargo"),membro=g("f_membro");
+  /* cria/vincula também na BASE (o lead tem que aparecer nos dois lugares, preenchendo as lacunas da base) */
   var base=DB.get(T(),"base");var dig=(tel||"").replace(/\D/g,"");
   var bexist=dig?base.find(function(b){return (b.tel||"").replace(/\D/g,"")===dig&&dig.length>=8;}):null;
   var bid;
-  if(bexist){bid=bexist.id;bexist.inCrm=true;bexist.crmLeadId=id;if(!bexist.owner)bexist.owner=owner;if(!bexist.temp)bexist.temp=temp;}
-  else{bid=DB.uid();base.unshift({id:bid,nome:nome,empresa:"",tel:tel,email:email,ramo:"",origens:[origem||"Manual"],obs:"",temp:temp,inCrm:true,crmLeadId:id,owner:owner,createdBy:(SESSION.name||"")});}
+  if(bexist){bid=bexist.id;bexist.inCrm=true;bexist.crmLeadId=id;if(!bexist.owner)bexist.owner=owner;if(!bexist.temp)bexist.temp=temp;
+    if(empresa&&!bexist.empresa)bexist.empresa=empresa;if(ramo&&!bexist.ramo)bexist.ramo=ramo;if(cargo&&!bexist.cargo)bexist.cargo=cargo;if(email&&!bexist.email)bexist.email=email;if(membro)bexist.membro=membro;}
+  else{bid=DB.uid();base.unshift({id:bid,nome:nome,empresa:empresa||"",tel:tel,email:email,ramo:ramo||"",cargo:cargo||"",membro:membro||"",origens:[origem||"Manual"],obs:"",temp:temp,inCrm:true,crmLeadId:id,owner:owner,createdBy:(SESSION.name||"")});}
   DB.set(T(),"base",base);
-  DB.push(T(),"leads",{id,baseId:bid,nome,procedimento:_proc,origem:origem,
+  DB.push(T(),"leads",{id,baseId:bid,nome,empresa:empresa||"",ramo:ramo||"",cargo:cargo||"",procedimento:_proc,origem:origem,
     funnelId:fid,estagio:estagio,valor:_val,plano:_plano,prob:_prob,temp:temp,owner:owner,score:50,
     contato:{nome,tel:tel,email:email},criadoEm:Date.now(),movedAt:Date.now()});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"Lead criado (no CRM e na Base)",ts:Date.now()});
