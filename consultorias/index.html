@@ -3170,12 +3170,13 @@ function saveNewLead(){
 function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function baseOrigens(){const s=new Set();DB.get(T(),"base").forEach(b=>(b.origens||[]).forEach(o=>o&&s.add(o)));return[...s].sort();}
 function baseRamos(){const s=new Set();DB.get(T(),"base").forEach(b=>b.ramo&&s.add(b.ramo));return[...s].sort();}
+function baseLossReasons(){const s=new Set();DB.get(T(),"leads").forEach(l=>{if(l.estagio==='perdido'&&l.lossReason)s.add(l.lossReason);});return[...s].sort();}
 function baseStatuses(){const s=new Set();DB.get(T(),"base").forEach(b=>b.oldStatus&&s.add(b.oldStatus));return[...s].sort();}
 function baseResps(){const s=new Set();DB.get(T(),"base").forEach(b=>b.oldResp&&s.add(b.oldResp));return[...s].sort();}
 function baseYears(b){const t=String(b.obs||"")+" "+String(b.oldStatus||"");const ys=new Set();(t.match(/20\d{2}/g)||[]).forEach(y=>ys.add(y));(t.match(/\d{1,2}\/\d{1,2}\/(\d{2})(?!\d)/g)||[]).forEach(m=>{const yy=m.slice(-2);ys.add((yy>="90"?"19":"20")+yy);});return ys;}
 function baseMaxYear(b){let mx="";baseYears(b).forEach(y=>{if(y>mx)mx=y;});return mx;}
 function baseAllYears(){const s=new Set();DB.get(T(),"base").forEach(b=>baseYears(b).forEach(y=>s.add(y)));return[...s].sort().reverse();}
-function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bResultado","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
+function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bResultado","bMotivo","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
 function baseReativar(){const e=document.getElementById("bSearch");if(e){e.value="perdido";vBaseRows();e.scrollIntoView({behavior:"smooth",block:"center"});}}
 let BASE_SEL=new Set();
 function vBase(){
@@ -3197,6 +3198,7 @@ function vBase(){
        <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">${lx('Cliente')}: todos</option><option value="sim">Só ${lx('clientes')}</option><option value="nao">Não-${lx('clientes')}</option></select>
        <select class="in" id="bCrm" style="max-width:140px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
        <select class="in" id="bResultado" style="max-width:150px" onchange="vBaseRows()"><option value="">Resultado: todos</option><option value="ganho">🏆 Ganhos</option><option value="perdido">✕ Perdidos</option></select>
+       ${baseLossReasons().length?`<select class="in" id="bMotivo" style="max-width:180px" onchange="vBaseRows()"><option value="">Motivo da perda: todos</option>${baseLossReasons().map(function(m){return '<option>'+esc(m)+'</option>';}).join("")}</select>`:''}
        <select class="in" id="bSort" style="max-width:150px" onchange="vBaseRows()"><option value="">Ordem: nome</option><option value="recent">Mais recente</option><option value="empresa">Empresa</option></select>
        <button class="btn ghost sm" onclick="baseClearFilters()">✕ Limpar filtros</button>
      </div>
@@ -3220,10 +3222,13 @@ function baseFiltered(){
   const tmp=document.getElementById("bTemp")?.value||"";
   const sort=document.getElementById("bSort")?.value||"";
   const res=document.getElementById("bResultado")?.value||"";
-  /* resultado (ganho/perdido) vem do lead vinculado no CRM */
+  const mot=document.getElementById("bMotivo")?.value||"";
+  /* resultado (ganho/perdido) e motivo da perda vêm do lead vinculado no CRM */
   var _leadsAll=DB.get(T(),"leads"),_lById={},_lByBase={};
   _leadsAll.forEach(function(l){_lById[l.id]=l;if(l.baseId)_lByBase[l.baseId]=l;});
-  function _resultOf(b){var l=(b.crmLeadId&&_lById[b.crmLeadId])||_lByBase[b.id]||null;if(!l)return'';if(l.won===true||l.estagio==='ganho')return'ganho';if(l.estagio==='perdido')return'perdido';return'';}
+  function _leadOf(b){return (b.crmLeadId&&_lById[b.crmLeadId])||_lByBase[b.id]||null;}
+  function _resultOf(b){var l=_leadOf(b);if(!l)return'';if(l.won===true||l.estagio==='ganho')return'ganho';if(l.estagio==='perdido')return'perdido';return'';}
+  function _lossOf(b){var l=_leadOf(b);return (l&&l.estagio==='perdido')?(l.lossReason||''):'';}
   const out=DB.get(T(),"base").filter(b=>{
     /* time (não-gestor) vê: base de treino + os contatos que ELE criou/é dono (ex.: novo lead que ele cadastrou) */
     var _mine=(b.owner&&b.owner===SESSION.sellerId)||(b.createdBy&&b.createdBy===(SESSION.name||""));
@@ -3245,6 +3250,7 @@ function baseFiltered(){
     if(crm==="fora" && b.inCrm)return false;
     if(crm==="dentro" && !b.inCrm)return false;
     if(res && _resultOf(b)!==res)return false;
+    if(mot && _lossOf(b)!==mot)return false;
     return true;});
   if(sort==="empresa")out.sort((a,b)=>(a.empresa||"~").localeCompare(b.empresa||"~","pt"));
   else if(sort==="recent")out.sort((a,b)=>(baseMaxYear(b)||"").localeCompare(baseMaxYear(a)||""));
@@ -3326,8 +3332,9 @@ function baseNovoDo(){
 }
 
 /* ===== IMPORTAR CLIENTES NA BASE (planilha Excel/CSV/colar), todas as empresas ===== */
-var BASE_IMP=null;var BASE_IMP_DEST='base';
+var BASE_IMP=null;var BASE_IMP_DEST='base';var BASE_IMP_DUPS=false;
 function baseImpSetDest(d){BASE_IMP_DEST=d;baseImpRender();}
+function baseImpToggleDups(v){BASE_IMP_DUPS=!!v;baseImpRender();}
 function baseImportOpen(){
   BASE_IMP=null;BASE_IMP_DEST='base';
   openModal(`<h3>📥 Importar ${lx("Clientes")} para a Base</h3>
@@ -3383,14 +3390,15 @@ function baseImpGuess(headers,rows){
 }
 function _bImpScan(){
   var map=BASE_IMP.map,rows=BASE_IMP.rows,base=DB.get(T(),"base");
-  var exT={},exN={};base.forEach(function(b){var t=_telDig(b.tel);if(t)exT[t]=1;var n=(b.nome||'').trim().toLowerCase();if(n)exN[n]=1;});
-  var sT={},sN={},o={novos:0,dup:0,vazio:0,total:rows.length,sample:[],items:[]};
+  /* DUPLICADO = mesmo NOME *E* mesmo TELEFONE (regra do Felipe). Sem os dois, não dá pra afirmar que é repetido -> é novo. */
+  var exK={};base.forEach(function(b){var t=_telDig(b.tel),n=(b.nome||'').trim().toLowerCase();if(t&&n)exK[t+'|'+n]=1;});
+  var sK={},o={novos:0,dup:0,vazio:0,total:rows.length,sample:[],items:[],dupItems:[]};
   rows.forEach(function(r){
     var nome=String(map.nome>=0?(r[map.nome]||''):'').trim(),emp=String(map.empresa>=0?(r[map.empresa]||''):'').trim(),tel=String(map.tel>=0?(r[map.tel]||''):'').trim(),email=String(map.email>=0?(r[map.email]||''):'').trim(),ramo=String(map.ramo>=0?(r[map.ramo]||''):'').trim(),orig=String(map.orig>=0?(r[map.orig]||''):'').trim();
-    var td=_telDig(tel),nl=nome.toLowerCase(),st;
+    var td=_telDig(tel),nl=nome.toLowerCase(),key=(td&&nl)?(td+'|'+nl):'',st,rec={nome:nome,empresa:emp,tel:tel,email:email,ramo:ramo,orig:orig};
     if(!nome&&!emp&&!tel){o.vazio++;st='vazio';}
-    else if((td&&(exT[td]||sT[td]))||(!td&&nl&&(exN[nl]||sN[nl]))){o.dup++;st='dup';}
-    else{o.novos++;st='novo';if(td)sT[td]=1;if(nl)sN[nl]=1;o.items.push({nome:nome,empresa:emp,tel:tel,email:email,ramo:ramo,orig:orig});}
+    else if(key&&(exK[key]||sK[key])){o.dup++;st='dup';o.dupItems.push(rec);}
+    else{o.novos++;st='novo';if(key)sK[key]=1;o.items.push(rec);}
     if(o.sample.length<6)o.sample.push({nome:nome,empresa:emp,tel:tel,st:st});
   });
   return o;
@@ -3403,37 +3411,38 @@ function baseImpRender(){
   function sel(l,f){return '<div style="min-width:118px"><label class="mut" style="font-size:11px;display:block">'+l+'</label><select class="in" onchange="baseImpSetMap(\''+f+'\',this.value)"><option value="-1"'+(map[f]<0?' selected':'')+'>—</option>'+_bImpOpts(map[f])+'</select></div>';}
   el.innerHTML='<div style="margin-top:12px;border-top:1px solid var(--line,rgba(0,0,0,.1));padding-top:10px">'
    +'<div class="flex wrap" style="gap:8px">'+sel('Nome','nome')+sel('Empresa','empresa')+sel('Telefone','tel')+sel('E-mail','email')+sel('Ramo','ramo')+sel('Origem','orig')+'</div>'
-   +'<div class="flex wrap" style="gap:8px;margin-top:10px;font-size:12.5px"><span class="pill ok">'+st.novos+' novo(s)</span><span class="pill">'+st.dup+' já na base</span>'+(st.vazio?'<span class="pill">'+st.vazio+' vazio(s)</span>':'')+'</div>'
+   +'<div class="flex wrap" style="gap:8px;margin-top:10px;font-size:12.5px"><span class="pill ok">'+st.novos+' novo(s)</span><span class="pill">'+st.dup+' já existe(m) (mesmo nome e telefone)</span>'+(st.vazio?'<span class="pill">'+st.vazio+' vazio(s)</span>':'')+'</div>'
+   +(st.dup?'<label style="display:block;font-size:12px;margin-top:8px;cursor:pointer;color:var(--brand-warn)"><input type="checkbox" '+(BASE_IMP_DUPS?'checked':'')+' onchange="baseImpToggleDups(this.checked)"> ⚠️ Importar também os '+st.dup+' que já existem (vão ficar duplicados)</label>':'')
    +'<div style="overflow:auto;max-height:26vh;margin-top:8px"><table><thead><tr><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Situação</th></tr></thead><tbody>'
    +st.sample.map(function(s){var tg=s.st==='novo'?'<span class="pill ok">novo</span>':(s.st==='dup'?'<span class="pill">repetido</span>':'<span class="pill">vazio</span>');return '<tr><td>'+esc(s.nome||'—')+'</td><td>'+esc(s.empresa||'—')+'</td><td>'+esc(s.tel||'—')+'</td><td>'+tg+'</td></tr>';}).join('')
    +'</tbody></table></div>'
    +'<div style="margin-top:12px;border-top:1px solid var(--line,rgba(0,0,0,.1));padding-top:10px"><b style="font-size:13px">Esses contatos são…</b>'
    +'<label style="display:block;font-size:12.5px;margin-top:7px;cursor:pointer"><input type="radio" name="bimpDest" '+(BASE_IMP_DEST==="crm"?"checked":"")+' onchange="baseImpSetDest(\'crm\')"> 🔥 <b>Leads novos / quentes</b> → vão <b>direto pro CRM</b> (Novo Lead, funil SDR)</label>'
    +'<label style="display:block;font-size:12.5px;margin-top:5px;cursor:pointer"><input type="radio" name="bimpDest" '+(BASE_IMP_DEST!=="crm"?"checked":"")+' onchange="baseImpSetDest(\'base\')"> ❄️ <b>Lista antiga / fria</b> → vão para a '+lx("Base de Clientes")+'</label></div>'
-   +'<div class="flex between mt" style="align-items:center;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" '+(st.novos?'':'disabled')+' onclick="baseImpDo()">'+(BASE_IMP_DEST==="crm"?('🔥 Importar '+st.novos+' p/ o CRM'):('Importar '+st.novos+' p/ a Base'))+'</button></div></div>';
+   +'<div class="flex between mt" style="align-items:center;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" '+((st.novos+(BASE_IMP_DUPS?st.dup:0))?'':'disabled')+' onclick="baseImpDo()">'+(BASE_IMP_DEST==="crm"?('🔥 Importar '+(st.novos+(BASE_IMP_DUPS?st.dup:0))+' p/ o CRM'):('Importar '+(st.novos+(BASE_IMP_DUPS?st.dup:0))+' p/ a Base'))+'</button></div></div>';
 }
 function baseImpDo(){
   if(!BASE_IMP){return;}var st=_bImpScan();
-  if(!st.novos){toast("Nenhum contato novo para importar"+(st.dup?" ("+st.dup+" repetidos)":""),"warn");return;}
+  var items=st.items.concat(BASE_IMP_DUPS?st.dupItems:[]); /* só os novos, ou + os repetidos se o Felipe marcou "importar mesmo assim" */
+  if(!items.length){toast("Nenhum contato novo para importar"+(st.dup?" ("+st.dup+" já existem)":""),"warn");return;}
   if(BASE_IMP_DEST==="crm"){ /* leads quentes → direto no CRM, funil SDR, Novo Lead */
     var funnels=DB.getObj(T(),"funnels",FUNNELS);var f=funnels.find(function(x){return x.papel==="SDR";})||funnels[0];var stg=(f.stages[0]||{}).id;
-    var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),hist=DB.get(T(),"history");
-    var exT={},exN={};leads.forEach(function(l){var t=_telDig((l.contato||{}).tel);if(t)exT[t]=1;var n=(l.nome||'').trim().toLowerCase();if(n)exN[n]=1;});
-    var hoje=new Date().toISOString().slice(0,10),n=0,dup2=0;
-    st.items.forEach(function(it){var td=_telDig(it.tel),nl=(it.nome||'').toLowerCase();
-      if((td&&exT[td])||(!td&&nl&&exN[nl])){dup2++;return;}
+    var leads=DB.get(T(),"leads"),hist=DB.get(T(),"history");
+    var exK={};leads.forEach(function(l){var t=_telDig((l.contato||{}).tel),n=(l.nome||'').trim().toLowerCase();if(t&&n)exK[t+'|'+n]=1;});
+    var n=0,dup2=0;
+    items.forEach(function(it){var td=_telDig(it.tel),nl=(it.nome||'').toLowerCase(),key=(td&&nl)?(td+'|'+nl):'';
+      if(!BASE_IMP_DUPS && key && exK[key]){dup2++;return;} /* mesmo nome+telefone já no CRM: ignora, a não ser que tenha marcado importar mesmo assim */
       var lid=DB.uid();
       leads.unshift({id:lid,nome:it.nome||"(sem nome)",fantasia:"",razaoSocial:it.empresa||"",setor:it.ramo||"",contato:{nome:it.nome,tel:it.tel||"",email:it.email||""},origem:it.orig||"Importação",funnelId:f.id,estagio:stg,temp:"quente",valor:0,score:80,owner:"",criadoEm:Date.now(),movedAt:Date.now(),notas:"Lead importado (quente)"});
-      acts.unshift({id:DB.uid(),leadId:lid,tipo:"ligação",titulo:"Ligar agora, lead quente",data:hoje,done:false,owner:""});
       hist.unshift({id:DB.uid(),leadId:lid,tipo:"sistema",txt:"Lead importado (quente) direto no CRM",ts:Date.now()});
-      if(td)exT[td]=1;if(nl)exN[nl]=1;n++;});
-    DB.set(T(),"leads",leads);DB.set(T(),"activities",acts);DB.set(T(),"history",hist);
+      if(key)exK[key]=1;n++;});
+    DB.set(T(),"leads",leads);DB.set(T(),"history",hist);
     closeModal();toast(n+" lead(s) quente(s) no CRM"+(dup2?" · "+dup2+" já existiam":""));renderSidebar();go('crm');return;
   }
   var base=DB.get(T(),"base");
-  st.items.forEach(function(it){base.unshift({id:DB.uid(),nome:it.nome||"(sem nome)",empresa:it.empresa||"",tel:it.tel||"",email:it.email||"",cpf:"",cargo:"",instagram:"",membro:"",ramo:it.ramo||"",origens:[it.orig||"Importação"],obs:"",inCrm:false});});
+  items.forEach(function(it){base.unshift({id:DB.uid(),nome:it.nome||"(sem nome)",empresa:it.empresa||"",tel:it.tel||"",email:it.email||"",cpf:"",cargo:"",instagram:"",membro:"",ramo:it.ramo||"",origens:[it.orig||"Importação"],obs:"",inCrm:false});});
   DB.set(T(),"base",base);closeModal();
-  toast(st.novos+" contato(s) adicionados à Base"+(st.dup?" · "+st.dup+" repetidos ignorados":""));vBase();
+  toast(items.length+" contato(s) na Base"+((!BASE_IMP_DUPS&&st.dup)?(" · "+st.dup+" já existentes ignorados"):""));vBase();
 }
 
 /* ===== IMPORTAR LEADS DE TRÁFEGO (ICBARI), entram direto no CRM (quentes) ===== */
