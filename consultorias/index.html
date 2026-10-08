@@ -2332,7 +2332,7 @@ function vExec(){
   const mrr=members.filter(m=>m.status!=="churn").reduce((s,m)=>s+(m.mrr||0),0),arr=mrr*12;
   const npsV=members.map(m=>m.nps).filter(n=>n!=null);
   const nps=npsV.length?Math.round(npsV.reduce((a,b)=>a+b,0)/npsV.length*10)/10:0;
-  const ganhos=leads.filter(l=>l.estagio==="ganho").length,perdidos=leads.filter(l=>l.estagio==="perdido").length;
+  const ganhos=leads.filter(l=>l.won===true||l.estagio==="ganho").length,perdidos=leads.filter(l=>l.estagio==="perdido").length;
   const conv=(ganhos+perdidos)?Math.round(ganhos/(ganhos+perdidos)*100):0;
   const naMeta=sellers.filter(s=>s.realizado>=s.meta).length;
   const ring=Math.min(pctMeta,100);
@@ -2660,17 +2660,19 @@ function indicacoesModal(id){var l=DB.get(T(),"leads").find(function(x){return x
 function indicacoesDo(id){var src=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
  var fs=DB.getObj(T(),"funnels",FUNNELS);var sdrF=fs.find(function(f){return (f.papel||'').toLowerCase()==='sdr';})||fs[0];var st0=((sdrF.stages||[])[0]||{}).id||'novo';
  var own=SESSION.sellerId||src.owner||"";
- var leads=DB.get(T(),"leads"),acts=DB.get(T(),"activities"),n=0,hoje=new Date().toISOString().slice(0,10);
+ var leads=DB.get(T(),"leads"),base=DB.get(T(),"base"),n=0;
  [0,1,2].forEach(function(i){var nome=(document.getElementById("ind_nome"+i).value||'').trim();var tel=(document.getElementById("ind_tel"+i).value||'').trim();
-   if(!nome)return;var lid=DB.uid();
-   leads.unshift({id:lid,nome:nome,contato:{nome:nome,tel:tel,email:""},origem:"Indicação de "+(src.nome||''),funnelId:sdrF.id,estagio:st0,temp:"quente",valor:0,score:80,owner:own,criadoEm:Date.now(),movedAt:Date.now(),notas:"Indicado por "+(src.nome||'')+((src.contato&&src.contato.tel)?(" ("+src.contato.tel+")"):""),indicadoPor:id});
+   if(!nome)return;var lid=DB.uid();var bid=DB.uid();
+   /* vai pros DOIS: CRM e Base. Marca needInfo pra lembrar de completar os dados (chega só com nome+telefone). */
+   base.unshift({id:bid,nome:nome,empresa:"",tel:tel,email:"",ramo:"",cargo:"",membro:"",origens:["Indicação de "+(src.nome||'')],obs:"",temp:"quente",inCrm:true,crmLeadId:lid,owner:own,createdBy:(SESSION.name||"")});
+   leads.unshift({id:lid,baseId:bid,nome:nome,contato:{nome:nome,tel:tel,email:""},origem:"Indicação de "+(src.nome||''),funnelId:sdrF.id,estagio:st0,temp:"quente",valor:0,score:80,owner:own,criadoEm:Date.now(),movedAt:Date.now(),needInfo:true,notas:"Indicado por "+(src.nome||'')+((src.contato&&src.contato.tel)?(" ("+src.contato.tel+")"):""),indicadoPor:id});
    n++;
  });
  if(!n){toast("Preencha ao menos um nome","warn");return;}
- /* NÃO cria atividade automática (regra: sistema não gera atividade). O vendedor agenda o 1º contato. */
- DB.set(T(),"leads",leads);
- DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🤝 "+n+" indicação(ões) viraram lead novo",ts:Date.now()});
- closeModal();toast(n+" lead(s) de indicação criado(s) ✅");leadDetail(id);
+ /* NÃO cria atividade automática (regra: sistema não gera atividade). O vendedor agenda o 1º contato e completa os dados. */
+ DB.set(T(),"leads",leads);DB.set(T(),"base",base);
+ DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🤝 "+n+" indicação(ões) viraram lead novo (CRM + Base), aguardando completar os dados",ts:Date.now()});
+ closeModal();toast(n+" indicação(ões) no CRM e na Base ✅ Complete os dados ao ligar.");leadDetail(id);
 }
 /* ============================================================
    RELATÓRIO DE FIM DE DIA (18h) — SDR e Closer, todas as empresas
@@ -2766,6 +2768,7 @@ function leadDetail(id){
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(', <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
    ${l.pinnedNote?`<div class="card" style="border:1px solid rgba(201,162,75,.6);background:linear-gradient(160deg,rgba(201,162,75,.14),transparent);margin:0 0 10px;padding:11px 15px"><div class="flex between" style="gap:10px;align-items:center;flex-wrap:wrap"><div style="font-size:13.5px;line-height:1.45"><b style="color:var(--brand-accent)">📌 Fixo:</b> ${esc(l.pinnedNote)}</div><button class="btn ghost xs" onclick="removePinnedNote('${l.id}')" title="Remover">✕</button></div></div>`:''}
+   ${l.needInfo?`<div class="card" style="border:1px solid rgba(91,116,214,.55);background:linear-gradient(160deg,rgba(91,116,214,.12),transparent);margin:0 0 10px;padding:10px 14px"><div style="font-size:13px">📝 <b>Complete os dados deste lead.</b> <span class="mut">Veio de indicação, só com nome e telefone. Ao ligar, preencha empresa, e-mail e ramo ali embaixo e salve o cadastro.</span></div></div>`:''}
    ${(function(){var open=DB.get(T(),"activities").some(function(a){return a.leadId===l.id&&!a.done;});return (!["perdido","ganho","churn"].includes(l.estagio)&&!open)?'<div class="card" style="border-color:rgba(240,180,42,.55);background:rgba(240,180,42,.08);margin:0 0 10px"><b style="color:var(--brand-warn)">⚠ Este lead está sem próxima atividade.</b> <span class="mut" style="font-size:13px">Nenhum lead pode ficar sem próximo passo, agende uma atividade abaixo (📋 Atividade).</span></div>':'';})()}
    <div class="ld-grid">
      <div>
@@ -2790,7 +2793,7 @@ function leadDetail(id){
          <button class="btn ghost sm mt" onclick="delLead('${l.id}')">Excluir lead</button>
        </div>
        <div class="card mt"><h2 style="margin:0 0 6px;font-size:14px">💳 Pagamentos / mensalidade</h2>
-         <p class="mut" style="font-size:12.5px;margin:0">Aparece aqui quando o lead vira ${lx('cliente')} (recorrência). Hoje: <b>${["ganho"].includes(l.estagio)?lx('cliente')+" ativo":"—"}</b>.</p></div>
+         <p class="mut" style="font-size:12.5px;margin:0">Aparece aqui quando o lead vira ${lx('cliente')} (recorrência). Hoje: <b>${(l.won===true||l.estagio==='ganho')?lx('cliente')+" ativo":"—"}</b>.</p></div>
      </div>
      <div>
        <div class="card">
@@ -2923,6 +2926,7 @@ function saveLeadDetail(id){
   if(document.getElementById("ld_ramo"))patch.ramo=g("ld_ramo");
   if(document.getElementById("ld_cargo"))patch.cargo=g("ld_cargo");
   if(document.getElementById("ld_origem"))patch.origem=g("ld_origem");
+  patch.needInfo=false; /* ao salvar o cadastro, some o aviso de "completar dados" da indicação */
   DB.update(T(),"leads",id,patch);
   /* sincroniza com a Base, preenchendo as lacunas (empresa, ramo, cargo, telefone, e-mail, já é cliente) */
   var lead=DB.get(T(),"leads").find(x=>x.id===id)||{};
@@ -2936,7 +2940,26 @@ function saveLeadDetail(id){
   }
   toast("Cadastro salvo ✓");leadDetail(id);
 }
-function winLead(id){moveLeadStage(id,'ganho');DB.update(T(),"leads",id,{funnelId:'closer'});toast("🎉 Lead marcado como GANHO ("+lx('cliente')+")!");leadDetail(id);}
+function winLead(id){
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+  var fs=DB.getObj(T(),"funnels",FUNNELS);
+  var csF=fs.find(function(f){return (f.papel||'').toLowerCase()==='cs'||f.id==='cs';});
+  var csSeller=DB.get(T(),"sellers").find(function(s){return (s.papel||'').toLowerCase()==='cs';});
+  var patch={won:true,wonAt:Date.now(),wonBy:l.owner,movedAt:Date.now()};
+  if(csF){
+    patch.funnelId=csF.id; patch.estagio=((csF.stages||[])[0]||{}).id||'onboarding';
+    if(csSeller)patch.owner=csSeller.id;
+  }else{ patch.funnelId='closer'; patch.estagio='ganho'; }
+  DB.update(T(),"leads",id,patch);
+  /* marca na Base como cliente */
+  var base=DB.get(T(),"base");var b=base.find(function(x){return x.id===l.baseId;})||base.find(function(x){return x.crmLeadId===id;});
+  if(b){b.membro='sim';DB.set(T(),"base",base);}
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🎉 GANHO! "+((csF&&csSeller)?("Repassado para o CS ("+csSeller.nome+"), etapa "+(((csF.stages||[])[0]||{}).name||'')):"Marcado como ganho")+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
+  toast((csF&&csSeller)?("🎉 Ganho! Repassado pro CS: "+csSeller.nome):("🎉 Ganho! "+lx('cliente')+" ativo"));
+  if(isAdmin())CRM_SELLER="all";
+  try{renderSidebar();}catch(e){}
+  leadDetail(id);
+}
 function loseLead(id){
   openModal(`<h3>Por que perdemos?</h3>
    <p class="mut" style="font-size:13px">O motivo real ajuda o time a vender melhor, e o lead não some da base.</p>
@@ -3105,7 +3128,7 @@ function baseResps(){const s=new Set();DB.get(T(),"base").forEach(b=>b.oldResp&&
 function baseYears(b){const t=String(b.obs||"")+" "+String(b.oldStatus||"");const ys=new Set();(t.match(/20\d{2}/g)||[]).forEach(y=>ys.add(y));(t.match(/\d{1,2}\/\d{1,2}\/(\d{2})(?!\d)/g)||[]).forEach(m=>{const yy=m.slice(-2);ys.add((yy>="90"?"19":"20")+yy);});return ys;}
 function baseMaxYear(b){let mx="";baseYears(b).forEach(y=>{if(y>mx)mx=y;});return mx;}
 function baseAllYears(){const s=new Set();DB.get(T(),"base").forEach(b=>baseYears(b).forEach(y=>s.add(y)));return[...s].sort().reverse();}
-function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
+function baseClearFilters(){["bSearch","bOrigem","bRamo","bStatus","bResp","bPeriodo","bTel","bMembro","bCrm","bResultado","bSort"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});vBaseRows();}
 function baseReativar(){const e=document.getElementById("bSearch");if(e){e.value="perdido";vBaseRows();e.scrollIntoView({behavior:"smooth",block:"center"});}}
 let BASE_SEL=new Set();
 function vBase(){
@@ -3126,6 +3149,7 @@ function vBase(){
        ${baseRamos().length?`<select class="in" id="bRamo" style="max-width:160px" onchange="vBaseRows()"><option value="">Todos os ramos</option>${baseRamos().map(o=>`<option>${esc(o)}</option>`).join("")}</select>`:''}
        <select class="in" id="bMembro" style="max-width:140px" onchange="vBaseRows()"><option value="">${lx('Cliente')}: todos</option><option value="sim">Só ${lx('clientes')}</option><option value="nao">Não-${lx('clientes')}</option></select>
        <select class="in" id="bCrm" style="max-width:140px" onchange="vBaseRows()"><option value="">CRM: todos</option><option value="fora">Fora do CRM</option><option value="dentro">Já no CRM</option></select>
+       <select class="in" id="bResultado" style="max-width:150px" onchange="vBaseRows()"><option value="">Resultado: todos</option><option value="ganho">🏆 Ganhos</option><option value="perdido">✕ Perdidos</option></select>
        <select class="in" id="bSort" style="max-width:150px" onchange="vBaseRows()"><option value="">Ordem: nome</option><option value="recent">Mais recente</option><option value="empresa">Empresa</option></select>
        <button class="btn ghost sm" onclick="baseClearFilters()">✕ Limpar filtros</button>
      </div>
@@ -3148,6 +3172,11 @@ function baseFiltered(){
   const per=document.getElementById("bPeriodo")?.value||"",tel=document.getElementById("bTel")?.value||"";
   const tmp=document.getElementById("bTemp")?.value||"";
   const sort=document.getElementById("bSort")?.value||"";
+  const res=document.getElementById("bResultado")?.value||"";
+  /* resultado (ganho/perdido) vem do lead vinculado no CRM */
+  var _leadsAll=DB.get(T(),"leads"),_lById={},_lByBase={};
+  _leadsAll.forEach(function(l){_lById[l.id]=l;if(l.baseId)_lByBase[l.baseId]=l;});
+  function _resultOf(b){var l=(b.crmLeadId&&_lById[b.crmLeadId])||_lByBase[b.id]||null;if(!l)return'';if(l.won===true||l.estagio==='ganho')return'ganho';if(l.estagio==='perdido')return'perdido';return'';}
   const out=DB.get(T(),"base").filter(b=>{
     /* time (não-gestor) vê: base de treino + os contatos que ELE criou/é dono (ex.: novo lead que ele cadastrou) */
     var _mine=(b.owner&&b.owner===SESSION.sellerId)||(b.createdBy&&b.createdBy===(SESSION.name||""));
@@ -3168,6 +3197,7 @@ function baseFiltered(){
     if(mem==="nao" && b.membro==="sim")return false;
     if(crm==="fora" && b.inCrm)return false;
     if(crm==="dentro" && !b.inCrm)return false;
+    if(res && _resultOf(b)!==res)return false;
     return true;});
   if(sort==="empresa")out.sort((a,b)=>(a.empresa||"~").localeCompare(b.empresa||"~","pt"));
   else if(sort==="recent")out.sort((a,b)=>(baseMaxYear(b)||"").localeCompare(baseMaxYear(a)||""));
@@ -3176,12 +3206,14 @@ function baseFiltered(){
 }
 function vBaseRows(){
   const list=baseFiltered(),CAP=400,show=list.slice(0,CAP);
+  var _la=DB.get(T(),"leads"),_lbi={},_lbb={};_la.forEach(function(l){_lbi[l.id]=l;if(l.baseId)_lbb[l.baseId]=l;});
+  function _rOf(b){var l=(b.crmLeadId&&_lbi[b.crmLeadId])||_lbb[b.id]||null;if(!l)return'';if(l.won===true||l.estagio==='ganho')return'ganho';if(l.estagio==='perdido')return'perdido';return'';}
   document.getElementById("baseRows").innerHTML=show.map(b=>`<tr>
     <td><input type="checkbox" ${BASE_SEL.has(b.id)?'checked':''} onclick="baseSel('${b.id}',this.checked)"></td>
     <td><b>${esc(b.nome)}</b> ${tempBadgeMini(b)}${b.oldResp?`<br><small class="mut">👤 ${esc(b.oldResp)}</small>`:''}</td><td>${esc(b.empresa||'—')}</td><td><small class="mut">${esc(b.ramo||'')}</small></td>
     <td><small>${esc(b.tel||'')}</small></td><td><small class="mut">${esc(b.email||'')}</small></td>
     <td>${(b.origens||[]).map(o=>`<span class="pill" style="font-size:10px;padding:1px 7px">${esc(o)}</span>`).join(" ")}${b.oldStatus?`<br><span class="pill warn" style="font-size:9.5px;padding:1px 6px">${esc(b.oldStatus)}</span>`:''}</td>
-    <td>${b.membro==="sim"?'<span class="pill ok">'+lx('cliente')+'</span>':'—'}</td>
+    <td>${b.membro==="sim"?'<span class="pill ok">'+lx('cliente')+'</span>':'—'}${_rOf(b)==='ganho'?' <span class="pill ok" style="font-size:9.5px;padding:1px 6px">🏆 Ganho</span>':_rOf(b)==='perdido'?' <span class="pill bad" style="font-size:9.5px;padding:1px 6px">✕ Perdido</span>':''}</td>
     <td>${b.inCrm?'<span class="pill ok">no CRM</span>':'—'}</td>
     <td><button class="btn xs" onclick="baseSend('${b.id}')">➡️ CRM</button></td></tr>`).join("")||`<tr><td colspan="10"><small class="mut">Nenhum contato encontrado.</small></td></tr>`;
   const el=document.getElementById("bCount");if(el)el.textContent=`${list.length} contato(s)${list.length>CAP?` · mostrando ${CAP}, refine a busca`:""} · ${BASE_SEL.size} selecionado(s)`;
@@ -6288,7 +6320,7 @@ function vRelatorio(){
   var callsAnswered=allDone.filter(function(a){return a.tipo==='ligação'&&a.atendida===true;}).length;
   var pctAns=callsDone?Math.round(callsAnswered/callsDone*100):0;
   var reunioesP=leadsAll.filter(function(l){return l.reuniaoData&&l.reuniaoData>=from&&l.reuniaoData<=to;}).length;
-  var ganhosP=leadsAll.filter(function(l){return l.estagio==='ganho';}).length;
+  var ganhosP=leadsAll.filter(function(l){return l.won===true||l.estagio==='ganho';}).length;
   var nSdr=(_scoped?_selS:sellers).filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
   var metaCallsTeam=META_LIG_SDR*Math.max(1,bizN)*Math.max(1,nSdr);
   var pctCalls=Math.round(callsDone/metaCallsTeam*100);
