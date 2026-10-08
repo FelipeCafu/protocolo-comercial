@@ -5199,7 +5199,17 @@ function roteiroCloserWithOrigin(base){
 }
 function roteiroCopy(n){var arr=roteiroArr(ROTEIRO_TAB);var x=arr.find(function(y){return y.n===n;});if(!x)return;var txt=rSub(x.s).replace(/\*\*/g,'');try{navigator.clipboard.writeText(txt);toast('Frase copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}
 function vRoteiro(){
- var allowed=isAdmin()?['sdr','closer']:myRoles().filter(function(r){return r==='sdr'||r==='closer';});
+ var _roles=isAdmin()?['sdr','closer']:myRoles();
+ var allowed=_roles.filter(function(r){return r==='sdr'||r==='closer';});
+ /* CS (ex.: Jéssica e Luiz do Líderes) vê SÓ o roteiro do CS, que é o próprio Script de Vendas do CS.
+    Nada de SDR/Closer. Vale p/ todas as empresas. */
+ if(!allowed.length && _roles.indexOf('cs')>=0){
+   var _scCS=(T()==="treino"?(typeof scCS_TR==='function'?scCS_TR:scCS):(T()==="b2if"?scCS_B2:(T()==="icbari"?scCS_ICB:scCS)));
+   M().innerHTML=srToggle('roteiro')+'<div class="view-title"><h1>Roteiro Comercial</h1><span class="pill pri">💚 CS · Pós-venda</span></div>'
+     +'<p class="view-sub">O roteiro do CS: relacionamento, satisfação e NPS. É o mesmo conteúdo do seu Script de Vendas do CS.</p>'
+     +_scCS();
+   return;
+ }
  if(!allowed.length)allowed=['sdr','closer'];
  if(allowed.indexOf(ROTEIRO_TAB)<0)ROTEIRO_TAB=allowed[0];
  var data=roteiroData(),tab=ROTEIRO_TAB,arr=roteiroArr(tab);
