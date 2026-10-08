@@ -2444,7 +2444,7 @@ function crmBadgeCount(){
   }).length;
 }
 function vCRM(){
-  healLeadStages();healSingleOpenPerLead();
+  healLeadStages();/* multiplas atividades por lead são permitidas: não podamos mais (healSingleOpenPerLead desativado) */
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   /* mostra o funil do papel + QUALQUER funil onde o vendedor tem lead (evita lead "sumido":
@@ -2490,10 +2490,11 @@ function actStatus(leadId){
   return"future";
 }
 function reassignActs(leadId,ownerId){var acts=DB.get(T(),"activities");var ch=false;acts.forEach(function(a){if(a.leadId===leadId&&!a.done&&a.owner!==ownerId){a.owner=ownerId;ch=true;}});if(ch)DB.set(T(),"activities",acts);}
-/* ===== Etapas "fechadas" (saem do CRM ativo) e regra de 1 atividade aberta por lead ===== */
+/* ===== Etapas "fechadas" (saem do CRM ativo) ===== */
+/* NOTA: um lead pode ter VÁRIAS atividades abertas (mensagem, e-mail, ligação, reunião...). Não há mais limite de 1. */
 var CLOSED_STAGES=["ganho","perdido","churn"];
 function _openNormalActs(leadId,exceptId){return DB.get(T(),"activities").filter(function(a){return a.leadId===leadId&&!a.done&&!a.meetingReminder&&!a.isMeeting&&a.id!==exceptId;});}
-/* Garante no máximo UMA atividade "normal" aberta por lead: mantém a mais próxima (próximo passo) e remove as sobras (pile-up). Lembretes de reunião não contam. */
+/* [DESATIVADA] Antes limitava a 1 atividade aberta por lead. Mantida só por compatibilidade; não é mais chamada. */
 function healSingleOpenPerLead(){
   var acts=DB.get(T(),"activities");var byLead={};
   acts.forEach(function(a){if(a.done||a.meetingReminder||a.isMeeting)return;(byLead[a.leadId]=byLead[a.leadId]||[]).push(a);});
@@ -2572,7 +2573,7 @@ function iniciarCadencia(id){
   var lead=DB.get(T(),"leads").find(function(x){return x.id===id;});if(!lead)return;
   var cad=DB.getObj(T(),"cadences",{});var sdr=cad.sdr||[];
   if(!sdr.length){toast("Sem cadência configurada","warn");return;}
-  if(_openNormalActs(id).length){alert("Este lead já tem uma atividade em aberto. Conclua ela primeiro; a cadência cria um toque de cada vez.");return;}
+  /* Pode ter outras atividades abertas: a cadência apenas acrescenta o próximo toque, sem bloquear. */
   var now=Date.now();var acts=DB.get(T(),"activities");
   /* 1 atividade por vez: cria só o PRIMEIRO toque da cadência; os próximos entram ao concluir */
   var day0=sdr[0]||{};var t=(day0.toques||[])[0];
@@ -2611,8 +2612,7 @@ function scheduleMeetingReminders(id,dateStr,timeStr){
   if(!dateStr||!timeStr){toast("Informe data e hora da reunião","warn");return false;}
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var own=l.owner||SESSION.sellerId||"";
   clearMeetingReminders(id);
-  /* a reunião substitui a tarefa que estava em aberto (ex.: "ligar pra agendar"): conclui as abertas pra o card não ficar vermelho */
-  DB.set(T(),"activities",DB.get(T(),"activities").filter(function(x){return !(x.leadId===id&&!x.done&&!x.meetingReminder&&!x.isMeeting);}));
+  /* As atividades abertas do lead PERMANECEM ao marcar a reunião (pode ter várias agendadas). */
   var acts=DB.get(T(),"activities");
   var nowMs=Date.now();
   function _push(data,hora,tipo,tit){var when=new Date(data+'T'+(hora||'09:00')+':00').getTime();if(when<=nowMs)return;/* não cria lembrete no passado (evita "atrasada") */
@@ -2858,7 +2858,7 @@ function addActivity(id){
   const hora=((document.getElementById("ac_hora")||{}).value||"").trim();
   const obs=((document.getElementById("ac_obs")||{}).value||"").trim();
   if(!hora){alert("Informe a HORA da atividade, pra você saber a que horas falar com o cliente.");return;}
-  if(_openNormalActs(id).length){alert("Este lead já tem uma atividade em aberto. Conclua a atividade atual (ela pede a observação e já cria a próxima) antes de agendar outra, pra não acumular vários agendamentos no mesmo cliente.");return;}
+  /* Pode ter várias atividades agendadas no mesmo lead (mensagem, e-mail, ligação, reunião...). Não bloqueia mais. */
   DB.push(T(),"activities",{id:DB.uid(),leadId:id,tipo:LD_ATYPE,titulo:tit,data,hora:hora,done:false,owner:l_owner(id),obsAg:obs});
   DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"atividade",txt:"Agendado: "+tit+" ("+data.split("-").reverse().join("/")+(hora?" "+hora:"")+")"+(obs?", "+obs:""),ts:Date.now()});
   var mm=pushMentions(id,obs);
@@ -2903,9 +2903,7 @@ function concludeActDo(aid,ctx){
   DB.update(T(),"activities",aid,_patch);
   if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
   if(lid){var mm=pushMentions(lid,obs);}
-  if(lid){ /* 1 atividade por lead: remove sobras abertas (não-reunião) antes de criar o próximo passo */
-    DB.set(T(),"activities",DB.get(T(),"activities").filter(function(x){return !(x.leadId===lid&&!x.done&&!x.meetingReminder&&!x.isMeeting);}));
-  }
+  /* As outras atividades abertas do lead PERMANECEM (pode ter várias agendadas). Só concluímos esta. */
   if(!enc&&lid){
     DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,hora:nhora,done:false,owner:a?a.owner:l_owner(lid)});
     DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+(nhora?" "+nhora:"")+")",ts:Date.now()});
