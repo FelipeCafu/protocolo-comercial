@@ -1359,7 +1359,7 @@ function scSDR_ICB(){
      "↓ Ele quer resolver? Converta para a consulta (passo 4).")+
     STEP(4,"Converter para a CONSULTA (o objetivo do SDR)",
      '<div class="script">"<b>[nome]</b>, pelo que você me contou, o passo certo agora é uma <b>consulta de avaliação com o nosso cirurgião</b>. É nela que ele te examina, tira suas dúvidas e, se for o caso, indica o procedimento e explica a jornada. E aqui a clínica marca todos os exames e a cirurgia pra você. <b>Prefere amanhã 10h ou 16h?</b>"</div>'+
-     '<p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Consulta Agendada"</b> no CRM, o sistema cria sozinho as tarefas anti-falta.</p>',
+     '<p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Depois de agendar, confirme perto da data (mensagem + ligação) pra reduzir a falta.</p>',
      "↓ Feche o loop no WhatsApp (passo 5).")+
     STEP(5,"Confirmar e blindar o falta (WhatsApp)",
      '<p class="mut" style="font-size:12.5px;margin:0 0 8px">Mande na hora: (1) confirmação com dia/hora + endereço/mapa; (2) o que levar (exames antigos, carteirinha, documento).</p>'+
@@ -2598,29 +2598,20 @@ function scheduleMeetingReminders(id,dateStr,timeStr){
   if(!dateStr||!timeStr){toast("Informe data e hora da reunião","warn");return false;}
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};var own=l.owner||SESSION.sellerId||"";
   clearMeetingReminders(id);
-  /* As atividades abertas do lead PERMANECEM ao marcar a reunião (pode ter várias agendadas). */
+  /* NÃO cria mais os lembretes/cadência automáticos (6h/3h/2h/30min). Regra do Felipe: o sistema não gera
+     atividade automática, NEM na reunião agendada. Só registra a REUNIÃO em si (p/ aparecer na agenda)
+     e grava a data/hora no lead. Quem quiser lembretes, cria manualmente. */
   var acts=DB.get(T(),"activities");
-  var nowMs=Date.now();
-  function _push(data,hora,tipo,tit){var when=new Date(data+'T'+(hora||'09:00')+':00').getTime();if(when<=nowMs)return;/* não cria lembrete no passado (evita "atrasada") */
-    acts.push({id:DB.uid(),leadId:id,tipo:tipo,titulo:tit,data:data,hora:hora,done:false,owner:own,meetingReminder:true});}
-  var touches=[
-    {h:6,tipo:"wa",     tit:"Lembrete da reunião: mandar mensagem (6h úteis antes)"},
-    {h:3,tipo:"ligação",tit:"Ligar pra lembrar da reunião (3h úteis antes)"},
-    {h:2,tipo:"wa",     tit:"Mandar áudio: 'estamos prontos, só aguardando o horário' (2h úteis antes)"}
-  ];
-  touches.forEach(function(t){var w=subtractBizHours(dateStr,timeStr,t.h);_push(w.data,w.hora,t.tipo,t.tit);});
-  var d30=new Date(new Date(dateStr+'T'+timeStr+':00').getTime()-30*60000);
-  _push(d30.toISOString().slice(0,10),_hhmm2(d30),"wa","WhatsApp com gif/figurinha: 'estamos prontos, em 30 min começamos' (30min antes)");
   acts.push({id:DB.uid(),leadId:id,tipo:"reuniao",titulo:"REUNIÃO com "+(l.nome||"o lead"),data:dateStr,hora:timeStr,done:false,owner:own,isMeeting:true});
   DB.set(T(),"activities",acts);
   DB.update(T(),"leads",id,{reuniaoData:dateStr,reuniaoHora:timeStr});
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"📅 Reunião agendada p/ "+dateStr.split('-').reverse().join('/')+" "+timeStr+" · lembretes criados (6h, 3h, 2h e 30min antes)",ts:Date.now()});
-  toast("Reunião agendada ✅ · 4 lembretes criados");return true;
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"📅 Reunião agendada p/ "+dateStr.split('-').reverse().join('/')+" "+timeStr,ts:Date.now()});
+  toast("Reunião agendada ✅");return true;
 }
 function meetingModal(id){
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
   var d=l.reuniaoData||new Date().toISOString().slice(0,10);var h=l.reuniaoHora||'';
-  openModal('<h3>📅 Reunião agendada</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Defina a data e a hora. O sistema cria sozinho os lembretes em horas úteis: <b>6h</b> mensagem, <b>3h</b> ligação, <b>2h</b> áudio e <b>30min</b> gif/figurinha antes.</p>'
+  openModal('<h3>📅 Reunião agendada</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Defina a data e a hora. A reunião entra na agenda do lead. Nenhum lembrete é criado sozinho: você cria quando quiser, do seu jeito.</p>'
    +'<div class="row"><div style="flex:1"><label class="fl">Data</label><input class="in" id="mtData" type="date" value="'+d+'"></div><div style="flex:1"><label class="fl">Hora</label><input class="in" id="mtHora" type="time" value="'+h+'"></div></div>'
    +'<div class="flex mt" style="justify-content:flex-end;gap:8px"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="meetingModalDo(\''+id+'\')">Agendar reunião</button></div>');
 }
@@ -4979,7 +4970,7 @@ function acadBolso(){
    Vou te colocar com o [Closer] numa conversa de 30 minutos, sem compromisso, ele te mostra como funciona e vocês veem juntos se faz sentido.<br><br>
    <b>Prefere terça às 9h ou quinta às 16h?</b>"
   </div>
-  <p style="font-size:12.5px;margin:8px 0 0;color:var(--brand-ok)">✅ <b>Sempre duas opções de horário.</b> Ao mover o lead para "Reunião Agendada" no CRM, o sistema cria sozinho as tarefas anti-falta.</p>
+  <p style="font-size:12.5px;margin:8px 0 0;color:var(--brand-ok)">✅ <b>Sempre duas opções de horário.</b> Depois de agendar, confirme perto da data (mensagem + ligação) pra reduzir a falta.</p>
  </div>
 
  <div class="card"><span class="pill pri">6</span> <b style="font-size:15px">Feche no WhatsApp, na hora, sem esperar</b>
@@ -5652,7 +5643,7 @@ function scSDR(){
 
    <div class="step" data-n="5"><h3>Ponte + Agendamento (retome tudo que ele disse)</h3>
      <div class="script">"<b>[nome]</b>, deixa eu te falar por que faz TANTO sentido: você é <b>dono</b> <i>(P)</i>, me disse que sofre com <b>[dor]</b> <i>(D)</i> e que agora é a hora de resolver <i>(M)</i>. É exatamente pra isso que o Líderes existe <i>(F)</i>, uma comunidade de donos que decide junto e faz negócio entre si. Vou te reservar <b>30 min com o [Closer]</b>, que te mostra como isso se aplica à sua empresa. <b>Prefere amanhã 10h ou 16h?</b>"</div>
-     <p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Ao mover o lead para <b>"Reunião Agendada"</b> no CRM, o sistema <b>cria sozinho</b> as tarefas anti-falta (confirmar hoje + ligar antes).</p>
+     <p class="mut" style="font-size:12.5px;margin:6px 0 0">✅ Sempre <b>2 opções de horário</b>. Depois de agendar, confirme perto da data (mensagem + ligação) pra reduzir a falta.</p>
      <span class="go">↓ Feche o loop no WhatsApp (passo 6).</span></div>
 
    <div class="step" data-n="6"><h3>Feche o loop no WhatsApp (objetivo do passagem)</h3>
