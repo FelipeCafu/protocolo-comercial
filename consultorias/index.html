@@ -571,7 +571,7 @@ small.mut{color:var(--brand-muted)}
     <div class="searchbox" id="searchWrap"><span>🔎</span><input id="globalSearch" placeholder="Buscar clientes, leads, produtos…" oninput="globalSearch(this.value)"></div>
     <span id="cloudBadge" title="Status do banco de dados" style="font-size:11px;color:var(--brand-muted);font-family:var(--mono)">☁</span>
     <button class="iconbtn" id="bellBtn" onclick="showAlerts()" title="Alertas">🔔<span class="dot hidden" id="bellDot">0</span></button>
-    <button class="btn ghost sm hidden" id="backBtn" onclick="openConsultoria()" title="Voltar para Empresas / Biblioteca">← Empresas</button>
+    <button class="btn ghost sm hidden" id="backBtn" onclick="backHome()" title="Voltar para Empresas / Biblioteca">← Empresas</button>
     <div class="userchip"><span class="avatar" id="uAv">P</span><span id="uName">—</span><button class="btn ghost sm" onclick="logout()">Sair</button></div>
   </div>
   <div class="sidebar" id="sidebar"></div>
@@ -1989,7 +1989,7 @@ async function doLogin(){
   const u=document.getElementById("lgUser").value.trim().toLowerCase();
   const p=document.getElementById("lgPass").value;let acc=null;
   if(USERS[u]&&USERS[u].pass===p){acc=USERS[u];}
-  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,roles:dba.roles,tenant:dba.tenant,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
+  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,roles:dba.roles,tenant:dba.tenant,tenants:dba.tenants,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
   if(!acc){toast("Usuário ou senha inválidos","bad");return;}
   SESSION=acc;
   try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);localStorage.setItem('pc_sso_pass',p);}catch(e){}
@@ -1998,7 +1998,39 @@ async function doLogin(){
   document.getElementById("app").classList.remove("hidden");
   document.getElementById("uAv").textContent=acc.initials;
   document.getElementById("uName").textContent=acc.name;
-  if(acc.tenant==="all"){openConsultoria();}else{openTenant(acc.tenant);}
+  if(acc.tenant==="all"){openConsultoria();}else if(acc.tenant==="multi"){openMultiPicker();}else{openTenant(acc.tenant);}
+}
+/* Gestor com acesso a MAIS DE UMA empresa (ex.: Pedro Fávero na B2 + Líderes): seletor limitado às empresas dele. */
+function backHome(){if(SESSION&&SESSION.tenant==="multi"){openMultiPicker();}else{openConsultoria();}}
+function openMultiPicker(){
+  if(REAL_SESSION){SESSION=REAL_SESSION;REAL_SESSION=null;}
+  CURRENT_TENANT=null;applyBrand("protocolo");
+  document.getElementById("tbMark").innerHTML=`<img src="${PC_LOCKUP}" alt="O Protocolo Comercial" style="height:26px;width:auto;display:block">`;
+  document.getElementById("tbName").textContent="";
+  document.getElementById("searchWrap").style.visibility="hidden";
+  document.getElementById("bellBtn").classList.add("hidden");
+  document.getElementById("backBtn").classList.add("hidden");
+  document.getElementById("crumbs").innerHTML="";
+  document.getElementById("sidebar").innerHTML=`<div class="sb-group">Protocolo</div><div class="nav-item active"><span class="ic">🏢</span> Minhas empresas</div>`;
+  var ts=(SESSION&&SESSION.tenants)||[];
+  var nm=((SESSION&&SESSION.name)||'Gestor').split(' ')[0];
+  var cards=ts.map(function(t){
+    var leads=DB.get(t,"leads").length, membros=DB.get(t,"members").length;
+    return `<div class="card co-card brk card-hover" onclick="enterAs('${t}')">
+       <div class="logo" style="background:${t==='b2if'?'#002333':'#354B9C'}">${BRANDS[t].mark(30)}</div>
+       <div style="font-weight:800;font-size:16px">${esc(BRANDS[t].name)}</div>
+       <small class="mut">${t==='b2if'?'Planejamento financeiro pessoal':'Comunidade de empresários · Brasília-DF'}</small>
+       <div class="st"><div><b>${leads}</b>leads</div><div><b>${membros}</b>${t==='b2if'?'clientes':'membros'}</div><div><b>4</b>funis</div></div>
+       <div class="mt"><span class="pill ok">● Gestor</span></div></div>`;
+  }).join('');
+  document.getElementById("main").innerHTML=`
+   <div class="flex anim" style="gap:14px;align-items:center;margin-bottom:8px">
+     <div class="logo" style="width:54px;height:54px;border-radius:50%;background:var(--brand-primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px">${esc((SESSION&&SESSION.initials)||'PF')}</div>
+     <div><div class="eyebrow">GESTOR · O PROTOCOLO COMERCIAL</div><h1 style="margin:2px 0 0;font-size:20px">Olá, ${esc(nm)} 👋</h1></div>
+   </div>
+   <p class="view-sub">Escolha a empresa que você quer gerir. Cada uma abre com a identidade visual e os dados dela.</p>
+   <div class="co-grid anim d1">${cards}</div>`;
+  ts.forEach(function(t){if(!CLOUD_SYNCED[t])syncTenant(t);});
 }
 function logout(){try{['pc_sso','pc_sso_user','pc_content'].forEach(k=>localStorage.removeItem(k));}catch(e){}SESSION=null;CURRENT_TENANT=null;location.reload();}
 function enterAs(tenant){openTenant(tenant);}
@@ -2138,7 +2170,7 @@ function openTenant(tenant){
   document.getElementById("tbName").textContent=BRANDS[tenant].name;
   document.getElementById("searchWrap").style.visibility="visible";
   document.getElementById("bellBtn").classList.remove("hidden"); /* sininho pra TODOS (atividades atrasadas/hoje) */
-  document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor");
+  document.getElementById("backBtn").classList.toggle("hidden", SESSION.role!=="consultor"&&SESSION.tenant!=="multi");
   renderSidebar();updateBell();go(SESSION.role==="ceo"?"exec":(["sdr","closer","cs","planejador"].includes(SESSION.role)?"meudia":"painel"));
   if(!CLOUD_SYNCED[tenant])syncTenant(tenant);
   try{setTimeout(reminderTick,2600);}catch(e){}
@@ -2147,6 +2179,7 @@ const canSee=i=>!i.roles||i.roles.includes(SESSION.role);
 function renderSidebar(){
   let html="";
   if(SESSION.role==="consultor")html+=`<div class="nav-item" onclick="openConsultoria()"><span class="ic">←</span> Todas as empresas</div>`;
+  else if(SESSION.tenant==="multi")html+=`<div class="nav-item" onclick="backHome()"><span class="ic">←</span> Minhas empresas</div>`;
   if(canPreview()){
     var _cur=previewingRole()||'self';
     var _opts=[['self','👤 Eu'],['gestor','👔 Gestor'],['sdr','📞 SDR'],['closer','🤝 Closer']];
