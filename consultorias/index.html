@@ -1844,33 +1844,46 @@ function quizBankB2(){return [
  {tag:"objecao",q:"Na ancoragem de preço, você apresenta primeiro:",a:["o Essencial","o Plano Bússola/Wealth (âncora alta)","o mais barato","nenhum"],c:1},
  {tag:"script",q:"Regra de ouro no fechamento após a pergunta:",a:["falar sem parar","fazer silêncio, quem falar primeiro, perde","dar desconto","remarcar"],c:1}
 ];}
+var CAD_V=2; /* versão da cadência padrão; sobe quando a estrutura muda (dispara migração) */
+/* Cadência de PROSPECÇÃO padrão, IGUAL p/ SDR, Closer e Planejador (mesmos pontos de contato).
+   10 dias num ciclo de 5 que se repete:
+   D1 3 ligações+1 WhatsApp · D2 2+1 · D3 3+2 · D4 2+1 · D5 2+2 · D6=D1 · D7=D2 · D8=D3 · D9=D4 · D10=D5.
+   Horários espaçados ~1h/1h30, variando o início de um dia pro outro. */
+function _buildProspCad(){
+ var PAT=[
+   {lig:3,wa:1,start:"09:00"},
+   {lig:2,wa:1,start:"09:30"},
+   {lig:3,wa:2,start:"08:30"},
+   {lig:2,wa:1,start:"10:00"},
+   {lig:2,wa:2,start:"09:00"}
+ ];
+ var ligMsg="Ligação seguindo o Script de Vendas (aba Script & Roteiro), abertura pela origem do lead. Ao concluir, registre o que aconteceu.";
+ var waMsg="Reconexão simples, sem material: 'Oi [nome], te liguei agora e não consegui falar. Qual o melhor horário pra gente conversar, de manhã ou à tarde?'";
+ function hhmm(mins){var h=Math.floor(mins/60),m=mins%60;return (''+h).padStart(2,'0')+':'+(''+m).padStart(2,'0');}
+ function buildDay(diaNum,spec){
+   var L=spec.lig,W=spec.wa,total=L+W,waPos={};
+   for(var k=0;k<W;k++){waPos[Math.round((k+1)*total/(W+1))]=true;} /* espalha os WhatsApp entre as ligações */
+   var seq=[],li=0,wi=0;
+   for(var p=0;p<total;p++){
+     if(waPos[p]&&wi<W){seq.push("wa");wi++;}
+     else if(li<L){seq.push("ligação");li++;}
+     else {seq.push("wa");wi++;}
+   }
+   var cur=parseInt(spec.start.slice(0,2),10)*60+parseInt(spec.start.slice(3),10),nL=0,nW=0,toques=[];
+   for(var i=0;i<seq.length;i++){
+     var canal=seq[i];
+     toques.push({h:hhmm(cur),canal:canal,cond:(canal==="ligação"?("Ligação "+(++nL)):("WhatsApp "+(++nW))),texto:(canal==="ligação"?ligMsg:waMsg)});
+     cur+=(i%2===0?60:90); /* alterna 1h e 1h30 */
+   }
+   return {dia:diaNum,toques:toques};
+ }
+ var arr=[];for(var d=0;d<10;d++){arr.push(buildDay(d+1,PAT[d%5]));}
+ return arr;
+}
 function defaultCadences(){
- const sdr=[
-  {dia:0,toques:[
-    {h:"09:00",canal:"ligação",cond:"1º toque, Ligação",texto:"Siga o Script de Vendas (aba Script & Roteiro), abertura pela origem. Qualifica e tenta agendar a reunião. Registre o resultado no lead."},
-    {h:"+1h",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"Só reconexão: 'Oi [nome], aqui é a [SDR] do Líderes. Te liguei agora e não consegui falar. Te ligo de novo mais tarde, tá? Abraço.'"},
-    {h:"+3h",canal:"ligação",cond:"Não atendeu → 2ª ligação",texto:"Ligue de novo em horário diferente. Ainda NÃO envie material."}]},
-  {dia:1,toques:[
-    {h:"10:00",canal:"ligação",cond:"Ligação (novo horário)",texto:"Tentativa em janela diferente da véspera."},
-    {h:"15:00",canal:"wa",cond:"Não atendeu → WhatsApp simples (SEM conteúdo)",texto:"'Oi [nome], continuo tentando falar com você. Qual o melhor horário, de manhã ou à tarde?' Nada de material ainda."}]},
-  {dia:2,toques:[
-    {h:"11:00",canal:"ligação",cond:"Ligação",texto:"Nova tentativa. A partir do 3º dia já dá pra agregar valor."},
-    {h:"15:00",canal:"wa",cond:"WhatsApp com valor (só a partir do 3º dia)",texto:"Agora sim: convite pro próximo Encontro das Comunidades + 1 prova social (pertencimento)."}]},
-  {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Ligação",texto:"Retomar case enviado."},{h:"16:00",canal:"wa",cond:"WhatsApp",texto:"Vídeo curto do presidente / bastidor do encontro."}]},
-  {dia:6,toques:[{h:"11:00",canal:"ligação",cond:"3ª ligação forte",texto:"'Vou parar de te incomodar, mas antes…' (última tentativa quente)."},{h:"15:00",canal:"insta",cond:"Instagram",texto:"Reagir a story + DM leve."}]},
-  {dia:9,toques:[{h:"10:00",canal:"wa",cond:"Reaquecimento",texto:"Enviar convite aberto p/ visitante em 1 encontro."}]},
-  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Encerramento amigável",texto:"'Vou encerrar seu cadastro por ora. Quando fizer sentido, me chama.' (reativa ~40%)."}]}
- ];
- const closer=[
-  {dia:0,toques:[
-    {h:"na reunião",canal:"visita",cond:"Reunião de diagnóstico",texto:"Retoma dor do SPIN, apresenta por valor, ancoragem Premium→Master, pede o fechamento."},
-    {h:"+2h",canal:"wa",cond:"Pós-reunião",texto:"Resumo + proposta formal + prazo da vaga no próximo grupo."}]},
-  {dia:1,toques:[{h:"10:00",canal:"ligação",cond:"Retorno da proposta",texto:"Tirar dúvidas, tratar objeção de preço/tempo/sócio."}]},
-  {dia:2,toques:[{h:"11:00",canal:"wa",cond:"Prova + urgência",texto:"Depoimento de membro do mesmo setor + vagas limitadas do grupo."}]},
-  {dia:4,toques:[{h:"10:00",canal:"ligação",cond:"Fechamento assistido",texto:"'Bora garantir sua vaga hoje?' Assumir a venda, pedir dados."}]},
-  {dia:7,toques:[{h:"11:00",canal:"ligação",cond:"Última chamada",texto:"Escassez real: próximo encontro é dia X, fecha agora p/ entrar."}]},
-  {dia:12,toques:[{h:"10:00",canal:"wa",cond:"Nutrição/retorno",texto:"Se não fechou, devolve pro SDR nutrir e reabordar em 30 dias."}]}
- ];
+ const prosp=_buildProspCad();
+ const clone=function(a){return JSON.parse(JSON.stringify(a));};
+ const sdr=prosp, closer=clone(prosp), planejador=clone(prosp);
  const cs=[
   {dia:0,toques:[
     {h:"imediato",canal:"wa",cond:"Boas-vindas",texto:"Vídeo do presidente + entrada no grupo da Sociedade dos 12 + agenda dos encontros."},
@@ -1882,7 +1895,29 @@ function defaultCadences(){
   {dia:90,toques:[{h:"11:00",canal:"visita",cond:"Marco 90 dias + NPS",texto:"NPS + plano de expansão (Master → Premium)."}]},
   {dia:12,toques:[{h:"—",canal:"msg",cond:"Recorrente",texto:"A partir daqui: contato mensal + acompanhamento de valor gerado."}]}
  ];
- return {sdr,closer,cs};
+ return {_v:CAD_V,sdr,closer,planejador,cs};
+}
+/* Lê a cadência do tenant e MIGRA pro padrão novo se estiver velha (vale p/ todas as empresas).
+   Preserva o CS que o tenant já tiver; só os 3 papéis de prospecção (SDR/Closer/Planejador) são padronizados. */
+function loadCads(){
+ var c=DB.getObj(T(),"cadences",null);
+ if(!c||c._v!==CAD_V){
+   var base=defaultCadences();
+   if(c&&c.cs&&c.cs.length)base.cs=c.cs;
+   DB.set(T(),"cadences",base);
+   c=base;
+ }
+ return c;
+}
+function cadRoleForLead(l){
+ var cads=loadCads();var r=(SESSION&&SESSION.role)||'';
+ if(cads[r])return r;
+ var s=DB.get(T(),"sellers").find(function(x){return x.id===(l&&l.owner);})||{};
+ var p=((s.papel||'')+'').toLowerCase();
+ if(p.indexOf('sdr')>=0&&cads.sdr)return 'sdr';
+ if(p.indexOf('planej')>=0&&cads.planejador)return 'planejador';
+ if((p.indexOf('clos')>=0||p.indexOf('fech')>=0)&&cads.closer)return 'closer';
+ return 'sdr';
 }
 function quizBank(){return [
  {tag:"empresa",q:"O que é o Líderes do Brasil?",a:["Um curso online","Um ecossistema/comunidade de empresários e empreendedores que acelera desenvolvimento e gera negócios","Uma consultoria financeira","Uma franquia"],c:1},
@@ -2616,9 +2651,40 @@ function autoScheduleNoShow(id){
   toast("Rotina anti-falta agendada ✅");
 }
 function iniciarCadencia(id){
-  /* DESATIVADO de propósito: a cadência será estruturada depois. O botão continua no CRM,
-     mas ao clicar NÃO cria atividade nem altera nada. Nenhum efeito. */
-  toast("Cadência em construção, em breve 👷");
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+  var role=cadRoleForLead(l);var cads=loadCads();var cad=cads[role]||cads.sdr||[];
+  if(!cad.length){toast("Sem cadência configurada","warn");return;}
+  var rotulo={sdr:"SDR",closer:(typeof lx==="function"?lx('closerRole'):"Closer"),planejador:"Planejador"}[role]||role;
+  openModal(`<h3>Iniciar cadência</h3>
+    <p class="mut" style="font-size:13px;margin:0 0 4px">Cadência do <b>${rotulo}</b> para <b>${esc(l.nome||"o lead")}</b>.</p>
+    <p class="mut" style="font-size:12.5px;margin:0 0 12px">Escolha o dia. As atividades (ligações e WhatsApp) já entram na agenda deste lead <b>para hoje</b>, com horários espaçados.</p>
+    <div class="flex" style="flex-direction:column;gap:8px;max-height:52vh;overflow:auto">
+    ${cad.map(function(day,di){
+       var nl=day.toques.filter(function(t){return t.canal==='ligação';}).length;
+       var nw=day.toques.filter(function(t){return t.canal==='wa';}).length;
+       var parts=[];if(nl)parts.push(nl+(nl>1?" ligações":" ligação"));if(nw)parts.push(nw+(nw>1?" WhatsApp":" WhatsApp"));
+       return `<button class="btn ghost" style="text-align:left;width:100%" onclick="iniciarCadenciaDia('${id}','${role}',${di})"><b>Dia ${day.dia}</b>&nbsp;&nbsp;·&nbsp;&nbsp;<span class="mut" style="font-size:12.5px">${parts.join(" + ")}</span></button>`;
+    }).join("")}
+    </div>
+    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button></div>`);
+}
+function iniciarCadenciaDia(id,role,di){
+  var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
+  var own=l.owner||(SESSION&&SESSION.sellerId)||"";
+  var cads=loadCads();var day=(cads[role]||[])[di];
+  if(!day){closeModal();return;}
+  var today=new Date().toISOString().slice(0,10);
+  var acts=DB.get(T(),"activities");var created=0;
+  day.toques.forEach(function(tk){
+    var hora=/^\d{1,2}:\d{2}$/.test(tk.h||"")?tk.h:"09:00";
+    var pre=(tk.canal==='ligação'?'📞 ':'🟢 ');
+    acts.push({id:DB.uid(),leadId:id,tipo:tk.canal,titulo:pre+(tk.cond||'Contato')+' · cadência D'+day.dia,data:today,hora:hora,done:false,owner:own,obsAg:(tk.texto||''),_rev:Date.now()+created});
+    created++;
+  });
+  DB.set(T(),"activities",acts);
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência do Dia "+day.dia+" iniciada: "+created+" atividade(s) criada(s) para hoje",ts:Date.now()});
+  closeModal();toast("Cadência do Dia "+day.dia+" criada ✓, "+created+" atividade(s)");
+  leadDetail(id);
 }
 /* ============================================================
    HORAS ÚTEIS + LEMBRETES DE REUNIÃO (todas as empresas)
@@ -2844,7 +2910,7 @@ function leadDetail(id){
          ${LD_TAB==='atividade'?ldActivityForm(l):LD_TAB==='anotacao'?ldNoteForm(l):ldFileForm(l)}
        </div>
        <div class="card mt"><div class="flex between" style="align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:14px">📋 Atividades em foco</h2>
-         <div class="flex" style="gap:8px;align-items:center"><button class="btn ghost xs" onclick="iniciarCadencia('${l.id}')" title="Dispara os toques do 1º e 2º dia na agenda">▶ Iniciar cadência</button><small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div></div>
+         <div class="flex" style="gap:8px;align-items:center"><button class="btn ghost xs" onclick="iniciarCadencia('${l.id}')" title="Escolha o dia da cadência; as ligações e WhatsApp entram na agenda de hoje">▶ Iniciar cadência</button><small class="mut">${DB.get(T(),"activities").filter(a=>a.leadId===l.id&&!a.done).length} pendente(s)</small></div></div>
          <div class="flex wrap mt8" style="gap:12px;font-size:11px"><span><span class="fdot today" style="display:inline-block"></span> hoje</span><span><span class="fdot future" style="display:inline-block"></span> futura</span><span><span class="fdot late" style="display:inline-block"></span> atrasada</span><span><span class="fdot none" style="display:inline-block"></span> sem atividade</span></div>
          ${ldFocus(l)}</div>
        <div class="card mt"><h2 style="margin:0 0 10px;font-size:14px">🕓 Histórico</h2><div id="ldHistBox">${ldHistory(l)}</div></div>
@@ -2873,7 +2939,7 @@ function ldFocus(l){
   const today=new Date().toISOString().slice(0,10);
   return acts.map(a=>{const late=actLate(a);const cls=a.done?"future":late?"late":a.data===today?"today":"future";
     return `<div class="foco"><span class="fdot ${cls}"></span>
-      <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">concluída</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
+      <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">✓ concluída'+(a.doneByName?' por '+esc(a.doneByName):'')+'</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
       <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small>${(a.tipo==='ligação'&&!a.done)?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div>
       ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button><button class="btn xs ghost" title="Excluir (não precisei fazer)" style="color:var(--brand-bad)" onclick="delActivity('${a.id}','lead')">🗑</button>`}</div>`;}).join("");
 }
@@ -2941,10 +3007,12 @@ function concludeActDo(aid,ctx){
   if(!skipNext&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
   var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
   if(a&&a.done){closeModal();return;} /* trava duplo-clique: já foi concluída */
-  var _patch={done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10),doneTs:Date.now()};
+  var _byId=(SESSION&&SESSION.sellerId)||"";
+  var _byNm=(DB.get(T(),"sellers").find(function(s){return s.id===_byId;})||{}).nome||((SESSION&&SESSION.name)||"").split(" · ")[0]||"";
+  var _patch={done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10),doneTs:Date.now(),doneBy:_byId,doneByName:_byNm};
   if(a&&a.tipo==='ligação'){var _at=document.getElementById("caAtendida");_patch.atendida=!!(_at&&_at.value==='sim');}
   DB.update(T(),"activities",aid,_patch);
-  if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
+  if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs+(_byNm?" (por "+_byNm+")":""),ts:Date.now()});
   if(lid){var mm=pushMentions(lid,obs);}
   /* As outras atividades abertas do lead PERMANECEM (pode ter várias agendadas). Só concluímos esta. */
   if(!skipNext&&lid){
@@ -3721,20 +3789,22 @@ function delStage(fid,sid){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.
 function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();if(!nm)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages.push({id:DB.uid(),name:nm,sla:24});DB.set(T(),"funnels",fs);vFunil();toast("Etapa adicionada");}
 
 /* ===== PROSPECÇÃO & CADÊNCIAS (por papel) ===== */
-function cadCopy(di,ti){var c=(DB.getObj(T(),"cadences",defaultCadences())[CAD_ROLE]||[]);var t=(((c[di]||{}).toques||[])[ti]||{});if(t.texto){try{navigator.clipboard.writeText(t.texto);toast('Mensagem copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}}
+function cadCopy(di,ti){var c=(loadCads()[CAD_ROLE]||[]);var t=(((c[di]||{}).toques||[])[ti]||{});if(t.texto){try{navigator.clipboard.writeText(t.texto);toast('Mensagem copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}}
 function vProspec(){
-  const cads=DB.getObj(T(),"cadences",defaultCadences());
+  const cads=loadCads();
   const allRoles=[["sdr","🎯 SDR"],["closer","🤝 "+lx('closerRole')],["planejador","🧭 Planejador"],["cs","💚 CS"]];
   const roles=isAdmin()?allRoles:allRoles.filter(r=>r[0]===effRole());
   if(!roles.find(r=>r[0]===CAD_ROLE))CAD_ROLE=roles[0][0];
   const cad=cads[CAD_ROLE]||[];
+  const prospRole=(CAD_ROLE==="sdr"||CAD_ROLE==="closer"||CAD_ROLE==="planejador");
   M().innerHTML=`
    <div class="view-title"><h1>Prospecção & Cadências</h1>${isAdmin()?'':`<span class="pill pri">Sua cadência: ${roleLabel(effRole())}</span>`}</div>
-   <p class="view-sub">Régua de relacionamento por papel, com <b>vários toques no mesmo dia</b> (atendeu / não atendeu), do 1º ao 12º dia. Ligada ao <b>Script</b> e ao <b>CRM</b>.</p>
+   <p class="view-sub">Ritmo de contato por papel, com <b>várias ligações e WhatsApp no mesmo dia</b>, em 10 dias. Abra o lead no CRM e clique <b>▶ Iniciar cadência</b> para escolher o dia e jogar as atividades na agenda.</p>
+   ${prospRole?`<div class="card" style="border:1px solid var(--brand-line);background:color-mix(in srgb,var(--brand-primary) 7%,transparent);margin-bottom:12px"><b style="font-size:13.5px">A cadência de SDR, Closer e Planejador é a mesma</b> <span class="mut" style="font-size:12.5px">— mesma quantidade de pontos de contato. 10 dias num ciclo de 5 que se repete (D6 repete o D1, D7 o D2, e assim por diante).</span></div>`:''}
    ${T()==="icbari"&&CAD_ROLE==="sdr"?`<div class="card" style="border:1px solid var(--brand-line);background:linear-gradient(160deg,color-mix(in srgb,var(--brand-primary) 10%,transparent),transparent);margin-bottom:12px">
      <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
      <ol class="mut" style="font-size:13px;line-height:1.7;margin:8px 0 0;padding-left:18px">
-       <li>Entrou lead <b>novo</b> no CRM (a maioria vem pelo WhatsApp do tráfego)? Abra o lead e clique em <b>▶ Iniciar cadência</b>, os toques do 1º e 2º dia já entram na sua Agenda.</li>
+       <li>Entrou lead <b>novo</b> no CRM (a maioria vem pelo WhatsApp do tráfego)? Abra o lead e clique em <b>▶ Iniciar cadência</b>, escolha o dia e as ligações e WhatsApp já entram na sua Agenda de hoje.</li>
        <li><b>Bombardeio nos 2 primeiros dias:</b> responda na hora, ligue, mande áudio. Quem responde rápido é quem agenda. Não desista no 1º "não atendeu".</li>
        <li><b>Atendeu e marcou a consulta?</b> Mova o lead para <b>Consulta Agendada</b>, a cadência para e entra a régua anti-falta.</li>
        <li><b>Não atendeu?</b> Cada toque é uma atividade: ao concluir, registre o que aconteceu e a próxima já é criada. Siga a régua até o 12º dia.</li>
@@ -3742,8 +3812,8 @@ function vProspec(){
      <b style="font-size:14px">Como usar esta cadência (leia antes)</b>
      <ol class="mut" style="font-size:13px;line-height:1.7;margin:8px 0 0;padding-left:18px">
        <li>Na ligação, <b>siga o Script de Vendas</b> (aba Script & Roteiro), abertura pela origem do lead. A cadência é o ritmo; o Script é o que falar.</li>
-       <li>Abra o lead no CRM e clique em <b>▶ Iniciar cadência</b>, cada toque vira uma <b>atividade na sua Agenda</b>. Ao concluir, registre o que aconteceu e a próxima é criada.</li>
-       <li><b>1º e 2º dia: sem enviar material.</b> Se não atender, só reconecte ("te liguei e não consegui, te ligo de novo"). Conteúdo/prova social só <b>a partir do 3º dia</b>.</li>
+       <li>Abra o lead no CRM e clique em <b>▶ Iniciar cadência</b> e escolha o dia, cada ligação e WhatsApp vira uma <b>atividade na sua Agenda de hoje</b>, com horário. Ao concluir, registre o que aconteceu.</li>
+       <li><b>No começo, sem enviar material.</b> Se não atender, só reconecte ("te liguei e não consegui, te ligo de novo"). Conteúdo/prova social só <b>mais pra frente</b>.</li>
        <li><b>Atendeu e agendou?</b> Mova o lead pra próxima etapa, a cadência para e entra a régua anti-falta.</li>
      </ol></div>`:'')}
    <div class="flex between wrap" style="margin-bottom:12px">
@@ -3751,7 +3821,7 @@ function vProspec(){
      ${isAdmin()?`<div class="flex"><button class="btn ghost sm" onclick="resetCad()">restaurar padrão</button><button class="btn sm" onclick="addCadDay()">+ Dia</button></div>`:""}</div>
    <div class="grid" style="grid-template-columns:1.5fr 1fr">
      <div class="card">
-       <h2 style="margin:0 0 12px;font-size:15px">Roteiro de cadência do ${roles.find(r=>r[0]===CAD_ROLE)[1]}, siga do D0 ao D${cad.length?cad[cad.length-1].dia:12}</h2>
+       <h2 style="margin:0 0 12px;font-size:15px">Roteiro de cadência do ${roles.find(r=>r[0]===CAD_ROLE)[1]}, do Dia 1 ao Dia ${cad.length?cad[cad.length-1].dia:10}</h2>
        <div class="rot">
        ${cad.map((day,di)=>`<div class="step" data-n="D${day.dia}">
          <div class="flex between" style="align-items:center"><h3 style="margin:0">Dia ${day.dia}${day.dia===0?" · primeiro contato":""}</h3>${isAdmin()?`<button class="btn xs ghost" onclick="addTouch(${di})">+ toque</button>`:""}</div>
@@ -3775,18 +3845,18 @@ function vProspec(){
 function chanLabel(c){return {ligação:"📞 Ligação",wa:"🟢 WhatsApp",email:"✉️ E-mail",insta:"📸 Instagram",visita:"📍 Visita",msg:"💬 Mensagem"}[c]||c;}
 function resetCad(){DB.set(T(),"cadences",defaultCadences());vProspec();toast("Cadências restauradas");}
 function saveCads(c){DB.set(T(),"cadences",c);}
-function addCadDay(){const c=DB.getObj(T(),"cadences",defaultCadences());const last=c[CAD_ROLE].length?c[CAD_ROLE][c[CAD_ROLE].length-1].dia:0;
+function addCadDay(){const c=loadCads();const last=c[CAD_ROLE].length?c[CAD_ROLE][c[CAD_ROLE].length-1].dia:0;
   c[CAD_ROLE].push({dia:last+1,toques:[{h:"10:00",canal:"ligação",cond:"Novo toque",texto:"Descreva a ação."}]});saveCads(c);vProspec();}
-function addTouch(di){const c=DB.getObj(T(),"cadences",defaultCadences());c[CAD_ROLE][di].toques.push({h:"+1h",canal:"wa",cond:"Não atendeu → ação",texto:"Descreva a ação."});saveCads(c);vProspec();}
-function delTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());c[CAD_ROLE][di].toques.splice(ti,1);if(!c[CAD_ROLE][di].toques.length)c[CAD_ROLE].splice(di,1);saveCads(c);vProspec();}
-function editTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());const tk=c[CAD_ROLE][di].toques[ti];
+function addTouch(di){const c=loadCads();c[CAD_ROLE][di].toques.push({h:"11:00",canal:"wa",cond:"Novo WhatsApp",texto:"Descreva a ação."});saveCads(c);vProspec();}
+function delTouch(di,ti){const c=loadCads();c[CAD_ROLE][di].toques.splice(ti,1);if(!c[CAD_ROLE][di].toques.length)c[CAD_ROLE].splice(di,1);saveCads(c);vProspec();}
+function editTouch(di,ti){const c=loadCads();const tk=c[CAD_ROLE][di].toques[ti];
   openModal(`<h3>Editar toque (D${c[CAD_ROLE][di].dia})</h3>
    <div class="row mt"><div><label class="fl">Horário</label><input class="in" id="t_h" value="${tk.h}"></div>
      <div><label class="fl">Canal</label><select class="in" id="t_canal">${["ligação","wa","email","insta","visita","msg"].map(x=>`<option ${tk.canal===x?'selected':''}>${x}</option>`).join("")}</select></div></div>
    <label class="fl mt8">Condição / título</label><input class="in" id="t_cond" value="${tk.cond.replace(/"/g,'&quot;')}">
    <label class="fl mt8">Texto</label><textarea class="in" id="t_txt" rows="3">${tk.texto}</textarea>
    <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="saveTouch(${di},${ti})">Salvar</button></div>`);}
-function saveTouch(di,ti){const c=DB.getObj(T(),"cadences",defaultCadences());c[CAD_ROLE][di].toques[ti]={h:t_h.value,canal:t_canal.value,cond:t_cond.value,texto:t_txt.value};saveCads(c);closeModal();vProspec();toast("Toque atualizado");}
+function saveTouch(di,ti){const c=loadCads();c[CAD_ROLE][di].toques[ti]={h:t_h.value,canal:t_canal.value,cond:t_cond.value,texto:t_txt.value};saveCads(c);closeModal();vProspec();toast("Toque atualizado");}
 
 /* ===== SCRIPTS (restrição por papel) ===== */
 function scriptTabsFor(){
