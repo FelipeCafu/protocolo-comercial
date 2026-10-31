@@ -697,11 +697,11 @@ function previewAs(role,sid){
 }
 const DB={
   key(t,c){return `pc.${t}.${c}`},
-  get(t,c){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??[]}catch(e){return []}},
+  get(t,c){try{var a=JSON.parse(localStorage.getItem(this.key(t,c)))??[];return (c==='activities'&&Array.isArray(a))?a.filter(function(x){return !x.deleted;}):a;}catch(e){return []}},
   set(t,c,v){localStorage.setItem(this.key(t,c),JSON.stringify(v));if(window.__cloudPush)window.__cloudPush(t,c,v);},
   getObj(t,c,d){try{return JSON.parse(localStorage.getItem(this.key(t,c)))??d}catch(e){return d}},
   push(t,c,i){const a=this.get(t,c);a.unshift(i);this.set(t,c,a);return i;},
-  update(t,c,id,p){const a=this.get(t,c);const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]={...a[i],...p,...(c==='leads'?{_rev:Date.now()}:{})};this.set(t,c,a);}return a[i];},
+  update(t,c,id,p){const a=this.get(t,c);const i=a.findIndex(x=>x.id===id);if(i>=0){a[i]={...a[i],...p,...((c==='leads'||c==='activities')?{_rev:Date.now()}:{})};this.set(t,c,a);}return a[i];},
   remove(t,c,id){this.set(t,c,this.get(t,c).filter(x=>x.id!==id));},
   uid(){return 'id'+Math.random().toString(36).slice(2,9)}
 };
@@ -723,12 +723,28 @@ function _mergeLeads(remote,local){var m={},order=[];
   var out=order.map(function(id){return m[id];});
   (local||[]).forEach(function(x){if(x&&x.id==null)out.push(x);});
   return out;}
+/* ATIVIDADES: fusão "último a mexer vence" (_rev) + REGRA DURA: concluída e excluída são IRREVERSÍVEIS.
+   Impede que uma aba velha (sistema multiusuário) reverta uma atividade concluída pra "atrasada" de novo. */
+function _actRev(x){return Math.max((x&&x._rev)||0,(x&&x.doneTs)||0,(x&&x.delTs)||0,0);}
+function _mergeActs(remote,local){var m={},order=[];
+  function take(x){if(!x||x.id==null)return;
+    if(!(x.id in m)){order.push(x.id);m[x.id]=x;return;}
+    var cur=m[x.id];var win=(_actRev(x)>=_actRev(cur))?x:cur,lose=(win===x)?cur:x;
+    /* concluída nunca volta a aberta: se qualquer lado concluiu, fica concluída */
+    if(lose.done&&!win.done){win=Object.assign({},win,{done:true,doneDate:win.doneDate||lose.doneDate,doneTs:win.doneTs||lose.doneTs,obs:win.obs||lose.obs});}
+    /* excluída nunca ressuscita */
+    if(lose.deleted&&!win.deleted){win=Object.assign({},win,{deleted:true,delTs:win.delTs||lose.delTs});}
+    m[x.id]=win;}
+  (remote||[]).forEach(take);(local||[]).forEach(take);
+  var out=order.map(function(id){return m[id];});
+  (local||[]).forEach(function(x){if(x&&x.id==null)out.push(x);});
+  return out;}
 function cloudPush(t,c,v){if(!CLOUD_ON||!SYNC_COLS.includes(c))return;
  if(!Array.isArray(v)){try{sb.from("pc_store").upsert({tenant:t,col:c,data:v,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r){if(r&&r.error)console.warn("push",c,r.error.message);});}catch(e){}return;}
  var key=t+"|"+c;
  var run=function(){return sb.from("pc_store").select("data").eq("tenant",t).eq("col",c).maybeSingle().then(function(r){
    var remote=(r&&r.data&&Array.isArray(r.data.data))?r.data.data:[];
-   var merged=(c==="leads")?_mergeLeads(remote,v):_mergeById(remote,v);
+   var merged=(c==="leads")?_mergeLeads(remote,v):(c==="activities")?_mergeActs(remote,v):_mergeById(remote,v);
    try{localStorage.setItem(DB.key(t,c),JSON.stringify(merged));}catch(e){}
    return sb.from("pc_store").upsert({tenant:t,col:c,data:merged,updated_at:new Date().toISOString()},{onConflict:"tenant,col"}).then(function(r2){if(r2&&r2.error)console.warn("push",c,r2.error.message);});
  }).catch(function(e){console.warn("push-skip: leitura remota falhou, NÃO sobrescrevo (anti-perda)",c,e&&e.message);setCloudBadge&&setCloudBadge("local");});};
@@ -2859,7 +2875,7 @@ function ldFocus(l){
     return `<div class="foco"><span class="fdot ${cls}"></span>
       <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">concluída</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
       <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small>${(a.tipo==='ligação'&&!a.done)?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div>
-      ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button>`}</div>`;}).join("");
+      ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button><button class="btn xs ghost" title="Excluir (não precisei fazer)" style="color:var(--brand-bad)" onclick="delActivity('${a.id}','lead')">🗑</button>`}</div>`;}).join("");
 }
 function ldHistory(l){
   const all=DB.get(T(),"history").filter(x=>x.leadId===l.id).sort((a,b)=>b.ts-a.ts);
@@ -2899,11 +2915,14 @@ function concludeAct(aid,ctx){
     ${(a&&a.tipo==='ligação')?`<label class="fl mt8">A ligação foi atendida? <b style="color:var(--brand-bad)">*</b></label>
     <select class="in" id="caAtendida"><option value="nao">Não atendida</option><option value="sim">Sim, foi atendida</option></select>`:''}
     <div style="border-top:1px solid var(--brand-line);margin:14px 0 10px"></div>
+    <label style="display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13.5px;cursor:pointer;color:var(--brand-text)"><input type="checkbox" id="caSemProx" onchange="var w=document.getElementById('caNextWrap');if(w)w.style.display=this.checked?'none':'';"> <b>Não quero criar próxima atividade</b> <span class="mut" style="font-size:12px">(só concluir esta)</span></label>
+    <div id="caNextWrap">
     <label class="fl">Próxima atividade <b style="color:var(--brand-bad)">*</b>, todo lead precisa de um próximo passo</label>
     <input class="in" id="caNextTit" placeholder="Ex.: Ligar de novo / Enviar WhatsApp / Consulta de avaliação" style="margin-top:6px">
     <div class="row mt8"><div style="flex:1"><label class="fl">Tipo</label><select class="in" id="caNextTipo">${_NEXT_TYPES.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>';}).join('')}</select></div>
       <div style="flex:1"><label class="fl">Data</label><input class="in" id="caNextData" type="date" value="${nx}"></div>
       <div style="flex:1"><label class="fl">Hora <b style="color:var(--brand-bad)">*</b></label><input class="in" id="caNextHora" type="time"></div></div>
+    </div>
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--brand-muted)"><input type="checkbox" id="caEncerrar"> Encerrar (ganho/perdido), sem próxima atividade</label>
     <div class="flex between mt"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button><button class="btn sm" onclick="concludeActDo('${aid}','${ctx}')">Concluir</button></div>`);
 }
@@ -2912,29 +2931,43 @@ function concludeActDo(aid,ctx){
   var obs=(_o.value||"").trim();
   if(!obs){alert("Descreva o que aconteceu nesta atividade. A observação é obrigatória.");return;}
   var enc=document.getElementById("caEncerrar").checked;
+  var semProxEl=document.getElementById("caSemProx");var semProx=!!(semProxEl&&semProxEl.checked);
+  var skipNext=enc||semProx; /* não cria próxima atividade */
   var nt=(document.getElementById("caNextTit").value||"").trim();
   var ntipo=document.getElementById("caNextTipo").value;
   var ndata=document.getElementById("caNextData").value||new Date().toISOString().slice(0,10);
   var nhora=(document.getElementById("caNextHora").value||"").trim();
-  if(!enc&&!nt){alert("Defina a próxima atividade (ou marque encerrar).");return;}
-  if(!enc&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
+  if(!skipNext&&!nt){alert("Defina a próxima atividade, ou marque \"Não quero criar próxima atividade\".");return;}
+  if(!skipNext&&!nhora){alert("Informe a HORA da próxima atividade, pra você saber a que horas falar com o cliente.");return;}
   var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});var lid=a?a.leadId:null;
   if(a&&a.done){closeModal();return;} /* trava duplo-clique: já foi concluída */
-  var _patch={done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10)};
+  var _patch={done:true,obs:obs,doneDate:new Date().toISOString().slice(0,10),doneTs:Date.now()};
   if(a&&a.tipo==='ligação'){var _at=document.getElementById("caAtendida");_patch.atendida=!!(_at&&_at.value==='sim');}
   DB.update(T(),"activities",aid,_patch);
   if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"✓ "+((a&&a.titulo)||"Atividade")+", "+obs,ts:Date.now()});
   if(lid){var mm=pushMentions(lid,obs);}
   /* As outras atividades abertas do lead PERMANECEM (pode ter várias agendadas). Só concluímos esta. */
-  if(!enc&&lid){
+  if(!skipNext&&lid){
     DB.push(T(),"activities",{id:DB.uid(),leadId:lid,tipo:ntipo,titulo:nt,data:ndata,hora:nhora,done:false,owner:a?a.owner:l_owner(lid)});
     DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"atividade",txt:"Próxima atividade: "+nt+" ("+ndata.split("-").reverse().join("/")+(nhora?" "+nhora:"")+")",ts:Date.now()});
   }
-  closeModal();toast(enc?"Concluída ✓":"Concluída ✓ · próxima agendada");
+  closeModal();toast(skipNext?"Concluída ✓":"Concluída ✓ · próxima agendada");
   if(ctx==="tarefas")vTarefas();else if(ctx==="meudia")vMeuDia();else if(lid)leadDetail(lid);
   renderSidebar();
 }
 function doneActivity(aid,lid){concludeAct(aid,"lead");}
+/* Excluir atividade que não precisou ser feita (sem concluir). Tombstone: some da agenda e propaga pra todos, não ressuscita. */
+function delActivity(aid,ctx){
+  var a=DB.get(T(),"activities").find(function(x){return x.id===aid;});if(!a)return;
+  if(a.done){toast("Atividade já concluída","warn");return;}
+  if(!confirm('Excluir a atividade "'+((a&&a.titulo)||'')+'"?\nEla some da agenda (não vira concluída). Use quando não precisou fazer.'))return;
+  var lid=a.leadId;
+  DB.update(T(),"activities",aid,{deleted:true,delTs:Date.now()});
+  if(lid)DB.push(T(),"history",{id:DB.uid(),leadId:lid,tipo:"sistema",txt:"🗑 Atividade excluída: "+((a&&a.titulo)||""),ts:Date.now()});
+  toast("Atividade excluída");
+  if(ctx==="tarefas")vTarefas();else if(ctx==="meudia")vMeuDia();else if(lid)leadDetail(lid);
+  try{renderSidebar();}catch(e){}
+}
 function addNote(id){const txt=document.getElementById("nt_txt").value.trim();if(!txt)return;
   var pin=!!(document.getElementById("nt_pin")&&document.getElementById("nt_pin").checked);
   if(pin){DB.update(T(),"leads",id,{pinnedNote:txt});DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"nota",txt:"📌 Anotação fixada: "+txt,ts:Date.now()});toast("Anotação fixada no topo 📌");}
@@ -3671,7 +3704,7 @@ function vTarefas(){
       <div class="flex" style="gap:10px"><span style="font-size:18px">${ATYPE_IC[a.tipo]||"•"}</span>
         <div><b style="font-size:13.5px">${a.titulo}</b> ${tempBadgeMini(l)}
           <div class="mut" style="font-size:12px">👤 <span style="cursor:pointer;text-decoration:underline" onclick="leadDetail('${a.leadId}')">${l.nome||"—"}</span>${l.fantasia?" · "+l.fantasia:""} · 📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 <b>"+a.hora+"</b>":""}${isAdmin()?" · "+sellerName(a.owner):""}</div>${a.tipo==='ligação'?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div></div>
-      <div class="flex"><button class="btn xs ghost" onclick="leadDetail('${a.leadId}')">abrir lead</button><button class="btn xs" onclick="doneTask('${a.id}')">✓ concluir</button></div></div></div>`;};
+      <div class="flex"><button class="btn xs ghost" onclick="leadDetail('${a.leadId}')">abrir lead</button><button class="btn xs ghost" title="Excluir (não precisei fazer)" style="color:var(--brand-bad)" onclick="delActivity('${a.id}','tarefas')">🗑</button><button class="btn xs" onclick="doneTask('${a.id}')">✓ concluir</button></div></div></div>`;};
   const sec=(title,arr,color,cls,emoji)=>`<div class="section-h"><h2>${emoji} ${title} <span class="pill ${cls}">${arr.length}</span></h2><div class="line"></div></div>
     ${arr.length?arr.map(a=>item(a,color)).join(""):'<small class="mut">Nada aqui. 🎉</small>'}`;
   M().innerHTML=`
