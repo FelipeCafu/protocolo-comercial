@@ -2871,6 +2871,7 @@ function leadDetail(id){
      <button class="btn bad sm" onclick="loseLead('${l.id}')">✕ Perdido</button>
    </div>
    ${(T()==='lideres'&&l.icp)?icpCard(l.icp):''}
+   ${l.won===true?`<div class="card" style="border:1px solid var(--brand-ok);background:color-mix(in srgb,var(--brand-ok) 12%,transparent);margin:0 0 10px;padding:11px 15px"><div style="font-size:13.5px;line-height:1.5"><b style="color:var(--brand-ok)">✅ Virou ${lx('cliente')}!</b> Saiu do funil de fechamento e está agora em <b>${funnel.name}</b>${curIdx>=0?` · etapa <b>${stageName(l.estagio)}</b>`:''}${l.owner?`, com <b>${esc(sellerName(l.owner)||'—')}</b>`:''}. <span class="mut">Pra achar na lista do CRM, escolha o funil <b>${funnel.name}</b> no seletor do topo.</span></div></div>`:''}
    ${l.estagio!=='perdido'?leadBriefing(l):''}
    ${l.estagio==='perdido'&&l.lossReason?('<div class="card" style="border-color:rgba(240,102,122,.4);background:rgba(240,102,122,.07);margin:0 0 10px"><b style="color:var(--brand-bad)">✕ Perdido · '+esc(l.lossReason)+'</b>'+(l.lossDetail?(', <span class="mut">'+esc(l.lossDetail)+'</span>'):'')+(l.winback?(' <span class="pill warn" style="font-size:10px">win-back</span>'):'')+'</div>'):''}
    <div class="ld-stages">${stages.map((s,i)=>`<div class="ld-stage ${i<curIdx?'done':''} ${i===curIdx?'cur':''}" onclick="moveLeadStage('${l.id}','${s.id}');leadDetail('${l.id}')">${s.name}</div>`).join("")}</div>
@@ -3077,11 +3078,15 @@ function winLead(id){
     if(csSeller)patch.owner=csSeller.id;
   }else{ patch.funnelId='closer'; patch.estagio='ganho'; }
   DB.update(T(),"leads",id,patch);
+  /* nome do destino, pra mostrar pra onde o lead foi (nunca some sem avisar) */
+  var destFunnel=fs.find(function(f){return f.id===patch.funnelId;})||csF||{};
+  var destFunnelName=destFunnel.name||"Pós-venda (CS)";
+  var destStageName=((destFunnel.stages||[]).find(function(s){return s.id===patch.estagio;})||{}).name||patch.estagio;
   /* marca na Base como cliente */
   var base=DB.get(T(),"base");var b=base.find(function(x){return x.id===l.baseId;})||base.find(function(x){return x.crmLeadId===id;});
   if(b){b.membro='sim';DB.set(T(),"base",base);}
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🎉 GANHO! "+((csF&&csSeller)?("Repassado para o CS ("+csSeller.nome+"), etapa "+(((csF.stages||[])[0]||{}).name||'')):"Marcado como ganho")+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
-  toast((csF&&csSeller)?("🎉 Ganho! Repassado pro CS: "+csSeller.nome):("🎉 Ganho! "+lx('cliente')+" ativo"));
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"🎉 GANHO! Virou "+lx('cliente')+", foi pro funil \""+destFunnelName+"\" · etapa "+destStageName+((csF&&csSeller)?(" · com "+csSeller.nome):"")+" · por "+((SESSION&&SESSION.name)||"sistema"),ts:Date.now()});
+  toast("🎉 Ganho! Virou "+lx('cliente')+", foi pro funil \""+destFunnelName+"\""+((csF&&csSeller)?(" (com "+csSeller.nome+")"):""));
   if(isAdmin())CRM_SELLER="all";
   try{renderSidebar();}catch(e){}
   leadDetail(id);
