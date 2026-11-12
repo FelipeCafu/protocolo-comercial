@@ -2672,7 +2672,7 @@ function iniciarCadencia(id){
   var rotulo={sdr:"SDR",closer:(typeof lx==="function"?lx('closerRole'):"Closer"),planejador:"Planejador"}[role]||role;
   openModal(`<h3>Iniciar cadência</h3>
     <p class="mut" style="font-size:13px;margin:0 0 4px">Cadência do <b>${rotulo}</b> para <b>${esc(l.nome||"o lead")}</b>.</p>
-    <p class="mut" style="font-size:12.5px;margin:0 0 12px">Escolha o dia. As atividades (ligações e WhatsApp) entram na agenda com horários espaçados, <b>começando de agora</b> até as 18h. Se já passou do meio-dia, o sistema oferece deixar pra amanhã (pra não cair tudo atrasado).</p>
+    <p class="mut" style="font-size:12.5px;margin:0 0 12px">Escolha o dia. A <b>1ª atividade entra 1 hora depois de você clicar</b>, e as próximas vão se espaçando (2h, 3h30, 4h30...), nunca passando das 18h. Se já passou do meio-dia, o sistema oferece deixar pra amanhã (pra não cair tudo atrasado).</p>
     <div class="flex" style="flex-direction:column;gap:8px;max-height:52vh;overflow:auto">
     ${cad.map(function(day,di){
        var nl=day.toques.filter(function(t){return t.canal==='ligação';}).length;
@@ -2710,7 +2710,7 @@ function iniciarCadenciaDia(id,role,di,when){
     startMin=base0; /* amanhã usa os horários normais (manhã), tem dia inteiro */
   }else{
     targetDate=now;
-    startMin=Math.max(Math.ceil(nowMin/30)*30, START); /* hoje: começa de agora (arredonda pros próximos 30min) */
+    startMin=nowMin+60; /* hoje: a 1ª atividade é 1h DEPOIS do clique; as próximas seguem o espaçamento da cadência (+1h, +2h, +3h30, +4h30...) */
   }
   var dateStr=targetDate.toISOString().slice(0,10);
   var acts=DB.get(T(),"activities");var created=0;
