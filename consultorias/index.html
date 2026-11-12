@@ -2732,6 +2732,7 @@ function iniciarCadenciaDia(id,role,di,when){
    ============================================================ */
 var BIZ_START=8, BIZ_END=18; /* horário útil 08:00–18:00 */
 var META_LIG_SDR=60; /* meta diária de ligações por SDR (todas as empresas) */
+var META_ATIV_SDR=120; /* meta diária de ATIVIDADES por SDR (todas as empresas) */
 function _isBizDay(d){var w=d.getDay();return w>=1&&w<=6;} /* seg a sáb (dia útil) */
 function _hhmm2(d){return (''+d.getHours()).padStart(2,'0')+':'+(''+d.getMinutes()).padStart(2,'0');}
 function subtractBizHours(dateStr,timeStr,hoursBack){
@@ -2840,6 +2841,9 @@ function dailyReportDue(){
 }
 function callsDoneOn(day){var me=SESSION.sellerId;return DB.get(T(),"activities").filter(function(a){return a.owner===me&&a.done&&a.tipo==='ligação'&&(a.doneDate===day||(!a.doneDate&&a.data===day));}).length;}
 function metaLigacoesDia(){return (SESSION.role==='sdr')?(META_LIG_SDR||60):0;}
+/* Meta diária de ATIVIDADES (todas as empresas). Default SDR=120 (Laura, Bruna...); configurável em goals.metaAtivDiaSDR. */
+function metaAtividadesDia(role){role=(role||effRole()||'').toLowerCase();if(role!=='sdr')return 0;var g=DB.getObj(T(),"goals",{})||{};return (+g.metaAtivDiaSDR)||META_ATIV_SDR;}
+function ativDoneOn(sellerId,day){return DB.get(T(),"activities").filter(function(a){return a.owner===sellerId&&a.done&&((a.doneDate||a.data)===day);}).length;}
 function dailyReportModal(day){
  var isCloser=SESSION.role==='closer';var q3=isCloser?'Quantos fechamentos?':'Quantas reuniões agendadas?';
  var hoje=_dLocal();
@@ -2982,7 +2986,7 @@ function ldFocus(l){
   return acts.map(a=>{const late=actLate(a);const cls=a.done?"future":late?"late":a.data===today?"today":"future";
     return `<div class="foco"><span class="fdot ${cls}"></span>
       <div style="flex:1"><div style="font-size:13px"><b>${a.titulo}</b> ${a.done?'<span class="pill ok">✓ concluída'+(a.doneByName?' por '+esc(a.doneByName):'')+'</span>':late?'<span class="pill bad">atrasada</span>':''}</div>
-      <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small>${(a.tipo==='ligação'&&!a.done)?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}</div>
+      <small class="mut">📅 ${a.data.split("-").reverse().join("/")}${a.hora?" · 🕐 "+a.hora:""} · ${a.tipo}</small>${(a.tipo==='ligação'&&!a.done)?'<div style="font-size:11.5px;color:var(--brand-warn);margin-top:2px">💡 Na ligação, não esqueça de pedir 3 indicações</div>':''}${a.done&&a.obs?`<div style="font-size:12.5px;line-height:1.45;margin-top:5px;padding:6px 10px;background:color-mix(in srgb,var(--brand-ok) 9%,transparent);border-left:2px solid var(--brand-ok);border-radius:4px"><b>📝 O que aconteceu:</b> ${esc(a.obs)}</div>`:(!a.done&&a.obsAg?`<div style="font-size:12px;line-height:1.4;margin-top:4px;color:var(--brand-muted)">📝 ${esc(a.obsAg)}</div>`:'')}</div>
       ${a.done?"":`<button class="btn xs ghost" onclick="doneActivity('${a.id}','${l.id}')">Concluir</button><button class="btn xs ghost" title="Excluir (não precisei fazer)" style="color:var(--brand-bad)" onclick="delActivity('${a.id}','lead')">🗑</button>`}</div>`;}).join("");
 }
 function ldHistory(l){
@@ -5624,6 +5628,7 @@ function vMeuDia(){
    <p class="view-sub">Sua fila do dia, de cima pra baixo. O sistema já te diz o que fazer agora.</p>
    ${(function(){try{if(localStorage.getItem('pc_onb_'+me))return '';}catch(e){}return `<div class="card" id="onbCard" style="background:linear-gradient(160deg,rgba(31,200,202,.10),transparent);border:1px solid rgba(201,162,75,.45);margin-bottom:12px"><div class="flex between" style="align-items:center"><b style="font-size:14px">👋 Bem-vindo(a), ${first||''}! Este é o seu dia.</b><button class="btn ghost sm" onclick="mdOnbClose()">Entendi ✓</button></div><p class="mut" style="font-size:12.5px;margin:7px 0 0;line-height:1.5">A fila já vem pronta, de cima pra baixo, ordenada por <b>quem tem mais chance de fechar</b>. Em cada cliente: <b>📞 Ligar</b> ou <b>💬 WhatsApp</b>, siga o <b>🎤 Roteiro</b>, e clique <b>✓ Feito</b> ao terminar, a barra "🔥 Seu dia" enche. Simples assim.</p></div>`;})()}
    ${(function(){var pend=hot.length;var tot=doneToday+pend;var pc=tot?Math.round(doneToday/tot*100):0;return `<div class="card" style="margin-bottom:12px;padding:13px 18px"><div class="flex between" style="align-items:center"><b style="font-size:13.5px">🔥 Seu dia</b><span class="mut" style="font-size:12.5px">${doneToday} feito(s) · ${pend} na fila${tot&&pc===100?' · 🎉 zerou!':''}</span></div><div style="height:9px;margin-top:8px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:var(--brand-primary,#C9A24B);transition:width .4s"></i></div></div>`;})()}
+   ${(function(){var meta=metaAtividadesDia();if(!meta)return '';var pc=Math.min(100,Math.round(doneToday/meta*100));var falta=Math.max(0,meta-doneToday);var bateu=doneToday>=meta;return `<div class="card" style="margin-bottom:12px;padding:13px 18px;border:1px solid ${bateu?'rgba(46,204,113,.55)':'rgba(201,162,75,.5)'}"><div class="flex between wrap" style="align-items:center;gap:8px"><b style="font-size:13.5px">🎯 Meta de atividades de hoje</b><span style="font-size:12.5px;color:var(--brand-muted)"><b style="color:var(--brand-text);font-size:14px">${doneToday}</b> de <b>${meta}</b> · <b style="color:${bateu?'var(--brand-ok)':'var(--brand-text)'}">${pc}%</b>${bateu?' · 🎉 bateu a meta!':' · faltam '+falta}</span></div><div style="height:11px;margin-top:9px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.08)"><i style="display:block;height:100%;width:${pc}%;background:${bateu?'var(--brand-ok)':'var(--brand-primary,#C9A24B)'};transition:width .4s"></i></div></div>`;})()}
    ${compromissoCard()}
    <div class="card" style="background:linear-gradient(160deg,rgba(201,162,75,.10),transparent);border:1px solid rgba(201,162,75,.4);margin-bottom:14px"><div class="flex" style="align-items:center;gap:12px;flex-wrap:wrap"><div style="font-size:24px">🎓</div><div style="flex:1;min-width:180px"><b style="font-size:14px">Treino de 3 minutos</b><p class="mut" style="font-size:12.5px;margin:2px 0 0">Aqueça antes da 1ª ligação treinando o Script de Vendas do seu papel.</p></div><button class="btn sm" onclick="go('scripts')">Treinar agora →</button></div></div>
    ${(function(){var ok=quizPassedToday();return '<div class="card" style="margin-bottom:14px;border:1px solid '+(ok?'rgba(46,204,113,.4)':'rgba(201,162,75,.5)')+'"><div class="flex between wrap" style="align-items:center;gap:8px"><div><b style="font-size:14px">📝 Prova do dia</b><p class="mut" style="font-size:12.5px;margin:3px 0 0">'+(ok?'Você já fez a prova de hoje ✓':'Faça a prova rápida, antes dos vídeos e das tarefas.')+'</p></div>'+(ok?'<span class="pill ok">feita</span>':'<button class="btn sm" onclick="go(\'treino\')">Fazer a prova →</button>')+'</div></div>';})()}
@@ -6549,7 +6554,8 @@ function vRelatorio(){
     var ligDone=byType["ligação"]||0;
     var ligAtend=mine.filter(function(a){return a.tipo==='ligação'&&a.atendida===true;}).length;
     var metaLig=((s.papel||'').toLowerCase()==='sdr')?(META_LIG_SDR*Math.max(1,bizN)):0;
-    return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,ligAtend:ligAtend,metaLig:metaLig};
+    var metaAtiv=metaAtividadesDia(s.papel)*Math.max(1,bizN);
+    return {s:s,total:mine.length,byType:byType,pend:pendingOf(s.id),ligDone:ligDone,ligAtend:ligAtend,metaLig:metaLig,metaAtiv:metaAtiv};
   }).filter(function(r){var p=(r.s.papel||'').toLowerCase();return _scoped||r.total>0||r.pend>0||p==='sdr'||p==='closer';});
   var types=["ligação","wa","reuniao","visita","email","msg"];
   var TC={"ligação":"#e7b53c","wa":"#28b46e","reuniao":"#5fd3d8","visita":"#8e7bef","email":"#e8792e","msg":"#5b74d6"};
@@ -6569,6 +6575,11 @@ function vRelatorio(){
   var nSdr=(_scoped?_selS:sellers).filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).length;
   var metaCallsTeam=META_LIG_SDR*Math.max(1,bizN)*Math.max(1,nSdr);
   var pctCalls=Math.round(callsDone/metaCallsTeam*100);
+  /* meta de ATIVIDADES do time SDR (ex.: 120/dia por SDR) */
+  var _sdrIds=new Set(sellers.filter(function(s){return (s.papel||'').toLowerCase()==='sdr';}).map(function(s){return s.id;}));
+  var sdrActDone=allDone.filter(function(a){return _sdrIds.has(a.owner);}).length;
+  var metaAtivTeam=metaAtividadesDia('sdr')*Math.max(1,bizN)*Math.max(1,nSdr);
+  var pctAtiv=metaAtivTeam?Math.round(sdrActDone/metaAtivTeam*100):0;
   /* dados dos gráficos */
   var barTipos=types.filter(function(t){return (byTypeTotal[t]||0)>0;}).map(function(t){return {label:(ATYPE_LABEL[t]||t),value:byTypeTotal[t]||0,color:TC[t]};});
   if(!barTipos.length)barTipos=[{label:"Sem atividades",value:0,color:"var(--brand-primary)"}];
@@ -6599,6 +6610,7 @@ function vRelatorio(){
    </div></div>
    <div class="grid kpis">
      ${kpi("⚡","Atividades executadas",totalDone,"no período",totalDone>0?"up":"down")}
+     ${metaAtivTeam?kpi("🎯","Meta de atividades (SDR)",sdrActDone,"meta "+metaAtivTeam+" · "+pctAtiv+"%",pctAtiv>=100?"up":"down"):''}
      ${kpi("📞","Ligações feitas",callsDone,"meta "+metaCallsTeam+" · "+pctCalls+"%",pctCalls>=100?"up":"down")}
      ${kpi("✅","Ligações atendidas",callsAnswered,pctAns+"% atendidas · "+(callsDone-callsAnswered)+" não",callsAnswered>0?"up":"down")}
      ${kpi("🤝","Reuniões agendadas",reunioesP,"no período","up")}
@@ -6612,11 +6624,11 @@ function vRelatorio(){
      <div class="card"><h2 style="margin:0 0 10px;font-size:14px">Leads por etapa (ativos)</h2>${_relBars(barStage)}</div>
    </div>
    <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 10px;font-size:14px">Detalhe por pessoa</h2>
-     <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>Lig. atendidas</th><th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
+     <table class="tbl"><thead><tr><th>Pessoa</th><th>Função</th><th>Executadas</th><th>Meta atividades</th>${types.map(t=>`<th>${(ATYPE_LABEL[t]||t).replace(/^..\s/,'')}</th>`).join("")}<th>Lig. atendidas</th><th>A vencer</th><th>Meta lig. (SDR)</th></tr></thead><tbody>
      ${rows.length?rows.map(function(r){
-        var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;var pa=r.ligDone?Math.round((r.ligAtend||0)/r.ligDone*100):0;
-        return `<tr><td><b>${esc(r.s.nome)}</b></td><td class="mut">${esc(r.s.papel||'')}</td><td><b>${r.total}</b></td>${types.map(t=>`<td>${r.byType[t]||0}</td>`).join("")}<td><b style="color:var(--brand-ok)">${r.ligAtend||0}</b>${r.ligDone?` <span class="mut" style="font-size:11px">de ${r.ligDone} · ${pa}%</span>`:''}</td><td><span class="pill ${r.pend?'warn':''}">${r.pend}</span></td><td>${r.metaLig?(`<b style="color:${pct>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.ligDone}/${r.metaLig}</b> · ${pct}%`):'—'}</td></tr>`;
-      }).join(""):`<tr><td colspan="${types.length+6}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
+        var pct=r.metaLig?Math.round(r.ligDone/r.metaLig*100):0;var pa=r.ligDone?Math.round((r.ligAtend||0)/r.ligDone*100):0;var pctA=r.metaAtiv?Math.round(r.total/r.metaAtiv*100):0;
+        return `<tr><td><b>${esc(r.s.nome)}</b></td><td class="mut">${esc(r.s.papel||'')}</td><td><b>${r.total}</b></td><td>${r.metaAtiv?(`<b style="color:${pctA>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.total}/${r.metaAtiv}</b> · ${pctA}%`):'—'}</td>${types.map(t=>`<td>${r.byType[t]||0}</td>`).join("")}<td><b style="color:var(--brand-ok)">${r.ligAtend||0}</b>${r.ligDone?` <span class="mut" style="font-size:11px">de ${r.ligDone} · ${pa}%</span>`:''}</td><td><span class="pill ${r.pend?'warn':''}">${r.pend}</span></td><td>${r.metaLig?(`<b style="color:${pct>=100?'var(--brand-ok)':'var(--brand-bad)'}">${r.ligDone}/${r.metaLig}</b> · ${pct}%`):'—'}</td></tr>`;
+      }).join(""):`<tr><td colspan="${types.length+7}" class="mut" style="text-align:center;padding:20px">Sem atividades no período.</td></tr>`}
      </tbody></table>
    </div>
    <div class="card mt" style="overflow:auto"><h2 style="margin:0 0 8px;font-size:14px">📝 Fechamentos do dia (autoinformados)</h2>
