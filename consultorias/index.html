@@ -1694,12 +1694,12 @@ function seed(){
   DB.set(t,"alerts",[]);
   localStorage.setItem("pc.lideres.seeded","v4");
 }
+/* B2: funil ÚNICO (SDR + Closer juntos), porque o mesmo vendedor costuma fazer a venda de ponta a ponta. */
 const FUNNELS_B2=[
- {id:"sdr",name:"Funil do SDR",papel:"SDR",stages:[
+ {id:"closer",name:"Closer",papel:"Closer",stages:[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
    {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
-   {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"Falta / Remarcar",sla:12}]},
- {id:"closer",name:"Fechamento (Closer)",papel:"Closer",stages:[
+   {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"Falta / Remarcar",sla:12},
    {id:"reuniao",name:"Sessão Realizada (R0)",sla:24},{id:"apresent",name:"Diagnóstico Apresentado",sla:48},
    {id:"proposta",name:"Proposta do Plano",sla:48},{id:"negoc",name:"Em Negociação",sla:48},
    {id:"ganho",name:"Cliente (Ganho)",sla:0},{id:"perdido",name:"Perdido",sla:0}]},
@@ -1918,6 +1918,14 @@ function cadRoleForLead(l){
  if(p.indexOf('planej')>=0&&cads.planejador)return 'planejador';
  if((p.indexOf('clos')>=0||p.indexOf('fech')>=0)&&cads.closer)return 'closer';
  return 'sdr';
+}
+/* B2: funil ÚNICO. O SDR e o Closer viraram um funil só ('closer'). Se sobrou lead no antigo funil 'sdr',
+   remapeia pro 'closer' (etapas são as mesmas ids, nada se perde). Idempotente, safe. */
+function migrateB2Funnels(){
+ if(T()!=='b2if')return;
+ var leads=DB.get('b2if','leads');var ch=false;
+ leads.forEach(function(l){if(l&&l.funnelId==='sdr'){l.funnelId='closer';l._rev=Date.now();ch=true;}});
+ if(ch)DB.set('b2if','leads',leads);
 }
 function quizBank(){return [
  {tag:"empresa",q:"O que é o Líderes do Brasil?",a:["Um curso online","Um ecossistema/comunidade de empresários e empreendedores que acelera desenvolvimento e gera negócios","Uma consultoria financeira","Uma franquia"],c:1},
@@ -2529,6 +2537,7 @@ function crmBadgeCount(){
 }
 function vCRM(){
   healLeadStages();/* multiplas atividades por lead são permitidas: não podamos mais (healSingleOpenPerLead desativado) */
+  migrateB2Funnels();/* B2: funil único, remapeia leads do antigo 'sdr' pro 'closer' */
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   /* mostra o funil do papel + QUALQUER funil onde o vendedor tem lead (evita lead "sumido":
@@ -2657,7 +2666,7 @@ function iniciarCadencia(id){
   var rotulo={sdr:"SDR",closer:(typeof lx==="function"?lx('closerRole'):"Closer"),planejador:"Planejador"}[role]||role;
   openModal(`<h3>Iniciar cadência</h3>
     <p class="mut" style="font-size:13px;margin:0 0 4px">Cadência do <b>${rotulo}</b> para <b>${esc(l.nome||"o lead")}</b>.</p>
-    <p class="mut" style="font-size:12.5px;margin:0 0 12px">Escolha o dia. As atividades (ligações e WhatsApp) já entram na agenda deste lead <b>para hoje</b>, com horários espaçados.</p>
+    <p class="mut" style="font-size:12.5px;margin:0 0 12px">Escolha o dia. As atividades (ligações e WhatsApp) entram na agenda com horários espaçados, <b>começando de agora</b> até as 18h. Se já passou do meio-dia, o sistema oferece deixar pra amanhã (pra não cair tudo atrasado).</p>
     <div class="flex" style="flex-direction:column;gap:8px;max-height:52vh;overflow:auto">
     ${cad.map(function(day,di){
        var nl=day.toques.filter(function(t){return t.canal==='ligação';}).length;
@@ -2668,22 +2677,48 @@ function iniciarCadencia(id){
     </div>
     <div class="flex mt" style="justify-content:flex-end"><button class="btn ghost sm" onclick="closeModal()">Cancelar</button></div>`);
 }
-function iniciarCadenciaDia(id,role,di){
+function _parseHM(s){if(!/^\d{1,2}:\d{2}$/.test(s||""))return null;var p=String(s).split(":");return (+p[0])*60+(+p[1]);}
+function iniciarCadenciaDia(id,role,di,when){
   var l=DB.get(T(),"leads").find(function(x){return x.id===id;})||{};
   var own=l.owner||(SESSION&&SESSION.sellerId)||"";
   var cads=loadCads();var day=(cads[role]||[])[di];
   if(!day){closeModal();return;}
-  var today=new Date().toISOString().slice(0,10);
+  var toques=day.toques||[];if(!toques.length){closeModal();return;}
+  var now=new Date();var nowMin=now.getHours()*60+now.getMinutes();
+  var NOON=12*60, START=(typeof BIZ_START!=='undefined'?BIZ_START:8)*60, END=(typeof BIZ_END!=='undefined'?BIZ_END:18)*60;
+  /* Regra (todas as empresas): a cadência não pode criar atividade atrasada.
+     Até meio-dia: cria HOJE, a partir de agora, até as 18h. Depois do meio-dia: oferece jogar pra amanhã. */
+  if(!when){
+    if(nowMin<=NOON){when='today';}
+    else{
+      openModal(`<h3>Começar a cadência amanhã?</h3>
+        <p class="mut" style="font-size:13px;line-height:1.55">Já passou do meio-dia e essa cadência tem <b>${toques.length} atividade(s)</b> (ligações e WhatsApp). Não dá tempo de fazer todas hoje dentro do horário comercial (até as 18h), ficariam atrasadas.<br><br>Posso deixar as atividades para <b>amanhã de manhã</b>?</p>
+        <div class="flex between mt"><button class="btn ghost sm" onclick="closeModal();toast('Cadência não iniciada','warn')">Não, agora não</button><button class="btn sm" onclick="iniciarCadenciaDia('${id}','${role}',${di},'tomorrow')">Sim, agendar pra amanhã</button></div>`);
+      return;
+    }
+  }
+  var base0=_parseHM(toques[0].h); if(base0==null)base0=START;
+  var targetDate, startMin;
+  if(when==='tomorrow'){
+    targetDate=new Date(now.getTime()+864e5);
+    startMin=base0; /* amanhã usa os horários normais (manhã), tem dia inteiro */
+  }else{
+    targetDate=now;
+    startMin=Math.max(Math.ceil(nowMin/30)*30, START); /* hoje: começa de agora (arredonda pros próximos 30min) */
+  }
+  var dateStr=targetDate.toISOString().slice(0,10);
   var acts=DB.get(T(),"activities");var created=0;
-  day.toques.forEach(function(tk){
-    var hora=/^\d{1,2}:\d{2}$/.test(tk.h||"")?tk.h:"09:00";
+  toques.forEach(function(tk){
+    var off=(_parseHM(tk.h)!=null?_parseHM(tk.h):base0)-base0; /* mantém o espaçamento relativo da cadência */
+    var mm=Math.min(startMin+off, END); /* nunca passa das 18h */
+    var h=Math.floor(mm/60), m=mm%60; var hora=(''+h).padStart(2,'0')+':'+(''+m).padStart(2,'0');
     var pre=(tk.canal==='ligação'?'📞 ':'🟢 ');
-    acts.push({id:DB.uid(),leadId:id,tipo:tk.canal,titulo:pre+(tk.cond||'Contato')+' · cadência D'+day.dia,data:today,hora:hora,done:false,owner:own,obsAg:(tk.texto||''),_rev:Date.now()+created});
+    acts.push({id:DB.uid(),leadId:id,tipo:tk.canal,titulo:pre+(tk.cond||'Contato')+' · cadência D'+day.dia,data:dateStr,hora:hora,done:false,owner:own,obsAg:(tk.texto||''),_rev:Date.now()+created});
     created++;
   });
   DB.set(T(),"activities",acts);
-  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência do Dia "+day.dia+" iniciada: "+created+" atividade(s) criada(s) para hoje",ts:Date.now()});
-  closeModal();toast("Cadência do Dia "+day.dia+" criada ✓, "+created+" atividade(s)");
+  DB.push(T(),"history",{id:DB.uid(),leadId:id,tipo:"sistema",txt:"▶ Cadência do Dia "+day.dia+" iniciada: "+created+" atividade(s) para "+(when==='tomorrow'?'amanhã':'hoje'),ts:Date.now()});
+  closeModal();toast("Cadência do Dia "+day.dia+" criada ✓, "+created+" atividade(s) "+(when==='tomorrow'?'pra amanhã':'pra hoje'));
   leadDetail(id);
 }
 /* ============================================================
