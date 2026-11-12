@@ -648,7 +648,7 @@ const USERS={
   "pedro.b2":  {pass:"pedrob2",   role:"gestor",tenant:"b2if",name:"Pedro (Gestor)",        initials:"PE"},
   "priscila.b2":{pass:"priscilab2",role:"gestor",tenant:"b2if",name:"Priscila (Gestora)",   initials:"PR"},
   "bruna.b2":  {pass:"brunab2",   role:"sdr",   tenant:"b2if",name:"Bruna (SDR)",           initials:"BR",sellerId:"bruna"},
-  "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Closer)", initials:"ME",sellerId:"melissab2",seeSdr:true},
+  "melissa.b2":{pass:"melissab2", role:"closer",tenant:"b2if",name:"Melissa (Closer)", initials:"ME",sellerId:"melissab2",seeSdr:true,funnelAdmin:true},
   "planejador.b2":{pass:"velo2026", role:"planejador",tenant:"b2if",name:"Planejador (a definir)",initials:"PL",sellerId:"planb2"},
   /* ===== ICBARI, Clínica (cirurgia digestiva/bariátrica) ===== */
   icbari:       {pass:"1234",           role:"gestor", tenant:"icbari",name:"ICBARI (Clínica)",         initials:"IC"},
@@ -665,6 +665,8 @@ let VIEW_AS='gestor'; /* gestor+closer (Daher/Cláudia): alternam entre "ver com
 function dualRole(){return !!(SESSION&&SESSION.role==='gestor'&&SESSION.sellerId);} /* gestor que TAMBÉM é vendedor (Daher/Cláudia) */
 function effRole(){return (dualRole()&&VIEW_AS==='closer')?'closer':((SESSION&&SESSION.role)||"");}
 const isAdmin=()=>["consultor","gestor","ceo"].includes(SESSION.role)&&!(dualRole()&&VIEW_AS==='closer');
+/* Pode editar funis/etapas: gestores (todas as empresas) + quem tem "função de gestor" (flag funnelAdmin, ex.: Melissa na B2). */
+function canEditFunnels(){return isAdmin()||!!(SESSION&&SESSION.funnelAdmin);}
 const myRoles=()=>(dualRole()&&VIEW_AS==='closer')?['closer']:((SESSION&&SESSION.roles&&SESSION.roles.length)?SESSION.roles:[(SESSION&&SESSION.role)||""]);
 function setViewAs(m){VIEW_AS=m;renderSidebar();go(m==='closer'?'meudia':'painel');}
 /* ===== "Ver como", Felipe/gestor inspeciona o ambiente como Gestor/SDR/Closer/CS sem trocar senha ===== */
@@ -2048,7 +2050,7 @@ async function doLogin(){
   const u=document.getElementById("lgUser").value.trim().toLowerCase();
   const p=document.getElementById("lgPass").value;let acc=null;
   if(USERS[u]&&USERS[u].pass===p){acc=USERS[u];}
-  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,roles:dba.roles,tenant:dba.tenant,tenants:dba.tenants,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,pass:p};}}catch(e){}}}
+  else{const dba=accList().find(a=>a.u===u);if(dba){try{if(await hashPass(p)===dba.pass){acc={role:dba.role,roles:dba.roles,tenant:dba.tenant,tenants:dba.tenants,name:dba.name,initials:dba.initials,sellerId:dba.sellerId,funnelAdmin:dba.funnelAdmin,seeSdr:dba.seeSdr,pass:p};}}catch(e){}}}
   if(!acc){toast("Usuário ou senha inválidos","bad");return;}
   SESSION=acc;
   try{localStorage.setItem('pc_sso','1');localStorage.setItem('pc_sso_user',u);localStorage.setItem('pc_sso_pass',p);}catch(e){}
@@ -2275,6 +2277,10 @@ function renderSidebar(){
     var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
     html+=`<div class="nav-item ${_av===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
   });
+  /* "função de gestor" (ex.: Melissa na B2): ganha o atalho de Config. dos Funis mesmo sendo vendedor */
+  if(canEditFunnels()&&!activeNav().some(function(n){return n.id==='funil';})){
+    html+=`<div class="nav-item ${CURRENT_VIEW==='funil'?'active':''}" data-view="funil" onclick="go('funil')"><span class="ic">⚙️</span> Config. dos Funis</div>`;
+  }
   document.getElementById("sidebar").innerHTML=html;
 }
 function go(view){
@@ -2561,7 +2567,7 @@ function vCRM(){
        <input class="in" id="crmSearch" placeholder="🔎 buscar no funil…" style="width:200px" oninput="renderKanban()">
        <button class="btn sm" onclick="leadModal()">+ Novo lead</button></div></div>
    <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${crmVisibleCount(f.id)})</small></span>`).join("")}
-     ${isAdmin()?`<span class="chip" onclick="go('funil')">⚙️ editar funis</span>`:""}</div>
+     ${canEditFunnels()?`<span class="chip" onclick="go('funil')">⚙️ editar funis</span>`:""}</div>
    <div class="kanban" id="kanban"></div>`;
   renderKanban();
 }
@@ -2611,7 +2617,7 @@ function renderKanban(){
   const _visStages=funnel.stages.filter(s=>!CLOSED_STAGES.includes(s.id));
   document.getElementById("kanban").innerHTML=_visStages.map((s,_idx)=>{
     const ls=leads.filter(l=>l.estagio===s.id||(_idx===0&&!_allStageIds.has(l.estagio)));const val=ls.reduce((a,l)=>a+(l.valor||0),0);
-    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${isAdmin()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
+    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${canEditFunnels()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const as=actStatus(l.id);
         const cls=as==="late"?"late":as==="today"?"today":as==="none"?"noact":"future"; /* COR do card = SÓ atividade */
@@ -3771,18 +3777,20 @@ function trafImport(){
 
 /* ===== CONFIG DOS FUNIS ===== */
 function vFunil(){
+  if(!canEditFunnels()){M().innerHTML=`<div class="view-title"><h1>Configuração dos Funis</h1></div><p class="view-sub">Você não tem permissão para editar os funis. Fale com um gestor.</p>`;return;}
   const funnels=DB.getObj(T(),"funnels",FUNNELS);
+  const _full=isAdmin(); /* criar/excluir funil inteiro: só gestor. Renomear e mexer nas etapas: todos com permissão. */
   M().innerHTML=`
    <div class="view-title"><h1>Configuração dos Funis</h1></div>
-   <p class="view-sub">Crie, renomeie, reordene e exclua funis e etapas. Edite o nome do funil e o SLA de cada etapa. Tudo salva no banco automaticamente.</p>
-   <div class="card" style="border:1px dashed var(--brand-line)"><div class="flex wrap" style="gap:8px"><b style="font-size:13px">➕ Criar novo funil:</b>
+   <p class="view-sub">${_full?`Crie, renomeie, reordene e exclua funis e etapas. Edite o nome do funil e o SLA de cada etapa. Tudo salva no banco automaticamente.`:`Renomeie os funis e as etapas, e adicione ou remova etapas. Tudo salva no banco automaticamente.`}</p>
+   ${_full?`<div class="card" style="border:1px dashed var(--brand-line)"><div class="flex wrap" style="gap:8px"><b style="font-size:13px">➕ Criar novo funil:</b>
      <input class="in" id="nf_name" placeholder="nome (ex.: Parcerias / Indicações)" style="max-width:280px">
      <input class="in" id="nf_papel" placeholder="papel (ex.: SDR, Closer, CS)" style="max-width:170px">
-     <button class="btn sm" onclick="addFunnel()">+ Novo funil</button></div></div>
+     <button class="btn sm" onclick="addFunnel()">+ Novo funil</button></div></div>`:''}
    ${funnels.map(f=>`<div class="card mt"><div class="flex between wrap" style="gap:8px">
        <div class="flex" style="gap:8px"><input class="in" style="max-width:260px;font-weight:800" value="${f.name}" onchange="renameFunnel('${f.id}','name',this.value)">
          <input class="in" style="max-width:130px" value="${f.papel||''}" onchange="renameFunnel('${f.id}','papel',this.value)" placeholder="papel"></div>
-       <div class="flex"><span class="pill">${f.stages.length} etapas</span><button class="btn xs ghost" onclick="delFunnel('${f.id}')">🗑 excluir funil</button></div></div>
+       <div class="flex"><span class="pill">${f.stages.length} etapas</span>${_full?`<button class="btn xs ghost" onclick="delFunnel('${f.id}')">🗑 excluir funil</button>`:''}</div></div>
      <table class="mt8"><thead><tr><th>#</th><th>Etapa</th><th>Prazo (SLA)</th><th></th></tr></thead><tbody>
      ${f.stages.map((s,i)=>`<tr><td class="mut">${i+1}</td>
        <td><input class="in" value="${s.name}" onchange="editStage('${f.id}','${s.id}','name',this.value)"></td>
