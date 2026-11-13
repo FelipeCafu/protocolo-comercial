@@ -2170,7 +2170,6 @@ function openConsultoria(){
 const NAV=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego",roles:["consultor","gestor"]},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Clientes"},
- {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},{id:"relatorio",ic:"📈",t:"Relatório de Atividades",roles:["consultor","gestor"]},
@@ -2180,7 +2179,6 @@ const NAV=[
 const NAV_B2=[
  {g:"Visão"},{id:"painel",ic:"🧭",t:"Painel do Planejamento",roles:["consultor","gestor"]},
  {g:"Jornada Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego",roles:["consultor","gestor"]},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
- {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"scripts",ic:"💬",t:"Script & Roteiro"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
  {id:"metas",ic:"🎖️",t:"Metas & Comissões",roles:["consultor","gestor"]},{id:"relatorio",ic:"📈",t:"Relatório de Atividades",roles:["consultor","gestor"]},
@@ -2192,7 +2190,7 @@ const NAV_CEO=[
  {g:"Resultado"},{id:"perf",ic:"🏆",t:"Performance do Time"},{id:"metas",ic:"🎖️",t:"Metas & Comissões"},
  {id:"recorrencia",ic:"🔁",t:"Recorrência & Expansão"},{id:"fidelidade",ic:"💚",t:"Carteira & NPS"},
  {g:"Comercial"},{id:"crm",ic:"🗺️",t:"CRM & Jornadas"},{id:"tarefas",ic:"📅",t:"Agenda & Tarefas"},{id:"base",ic:"👤",t:"Base de Clientes"},
- {id:"funil",ic:"⚙️",t:"Config. dos Funis"},{id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Playbook de Vendas"},
+ {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Playbook de Vendas"},
  {g:"Time"},{id:"treino",ic:"🎓",t:"Treinamento & Prova"},{id:"relatorio",ic:"📈",t:"Relatório de Atividades"}
 ];
 const NAV_SELLER=[{g:"Meu trabalho"},{id:"meudia",ic:"⚡",t:"Meu Dia"},{id:"roteiro",ic:"🎤",t:"Roteiro & Treino"},{id:"placar",ic:"🏆",t:"Meu Placar"}];
@@ -2209,7 +2207,6 @@ const NAV_GESTOR_DUAL=[{g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial"}
 const NAV_ICB=[
  {g:"Visão"},{id:"painel",ic:"📊",t:"Painel Comercial",roles:["consultor","gestor"]},
  {g:"Comercial"},{id:"crm",ic:"🗂️",t:"CRM & Funis"},{id:"importtrafego",ic:"📥",t:"Importar Leads de Tráfego"},{id:"tarefas",ic:"✅",t:"Tarefas / Agenda"},{id:"base",ic:"👥",t:"Base de Pacientes"},
- {id:"funil",ic:"⚙️",t:"Config. dos Funis",roles:["consultor","gestor"]},
  {id:"prospec",ic:"🎯",t:"Prospecção & Cadências"},{id:"scripts",ic:"💬",t:"Script & Roteiro"},
  {g:"Jornada do Paciente"},{id:"jornada",ic:"🧭",t:"Jornada do Paciente"},{id:"cirmodelos",ic:"🩺",t:"Modelos de Cirurgia & Exames",roles:["consultor","gestor"]},
  {g:"Time"},{id:"academy",ic:"🎓",t:"Academia & Treino"},{id:"perf",ic:"🏆",t:"Performance"},
@@ -2294,10 +2291,7 @@ function renderSidebar(){
     var _av=(CURRENT_VIEW==="roteiro"?"scripts":(CURRENT_VIEW==="treino"?"academy":CURRENT_VIEW));
     html+=`<div class="nav-item ${_av===n.id?'active':''}" data-view="${n.id}" onclick="go('${n.id}')"><span class="ic">${n.ic}</span> ${n.t} ${badge}</div>`;
   });
-  /* "função de gestor" (ex.: Melissa na B2): ganha o atalho de Config. dos Funis mesmo sendo vendedor */
-  if(canEditFunnels()&&!activeNav().some(function(n){return n.id==='funil';})){
-    html+=`<div class="nav-item ${CURRENT_VIEW==='funil'?'active':''}" data-view="funil" onclick="go('funil')"><span class="ic">⚙️</span> Config. dos Funis</div>`;
-  }
+  /* edição de funis agora é INLINE no quadro do CRM (lápis/excluir/+ etapa); sem tela separada */
   document.getElementById("sidebar").innerHTML=html;
 }
 function go(view){
@@ -2584,7 +2578,7 @@ function vCRM(){
        <input class="in" id="crmSearch" placeholder="🔎 buscar no funil…" style="width:200px" oninput="renderKanban()">
        <button class="btn sm" onclick="leadModal()">+ Novo lead</button></div></div>
    <div class="funsel" id="funsel">${funnels.map(f=>`<span class="chip ${CRM_FUNNEL===f.id?'on':''}" onclick="CRM_FUNNEL='${f.id}';vCRM()">${f.name} <small style="opacity:.7">(${crmVisibleCount(f.id)})</small></span>`).join("")}
-     ${canEditFunnels()?`<span class="chip" onclick="go('funil')">⚙️ editar funis</span>`:""}</div>
+     ${canEditFunnels()?`<span class="chip" title="Renomear este funil" onclick="renameFunnelInline('${(funnels.find(f=>f.id===CRM_FUNNEL)||funnels[0]).id}')">✏️ nome do funil</span>${isAdmin()?`<span class="chip" title="Criar um novo funil" onclick="addFunnelInline()">➕ funil</span><span class="chip" title="Excluir este funil" onclick="delFunnelInline('${(funnels.find(f=>f.id===CRM_FUNNEL)||funnels[0]).id}')">🗑️ funil</span>`:""}`:""}</div>
    <div class="kanban" id="kanban"></div>`;
   renderKanban();
 }
@@ -2634,7 +2628,7 @@ function renderKanban(){
   const _visStages=funnel.stages.filter(s=>!CLOSED_STAGES.includes(s.id));
   document.getElementById("kanban").innerHTML=_visStages.map((s,_idx)=>{
     const ls=leads.filter(l=>l.estagio===s.id||(_idx===0&&!_allStageIds.has(l.estagio)));const val=ls.reduce((a,l)=>a+(l.valor||0),0);
-    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span>${canEditFunnels()?`<span class="stgname" contenteditable="true" spellcheck="false" title="Clique para renomear a etapa" style="cursor:text;border-bottom:1px dashed var(--line2,rgba(255,255,255,.25));outline:none" onblur="renameStage('${funnel.id}','${s.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${s.name}</span>`:s.name}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
+    return `<div class="kcol"><h4><span class="temp" style="background:${s.id==='ganho'?'var(--brand-ok)':(s.id==='perdido'||s.id==='churn')?'var(--brand-bad)':'var(--brand-primary-2)'}"></span><span class="stgname">${esc(s.name)}</span>${canEditFunnels()?`<span class="stgtool" title="Renomear etapa" onclick="event.stopPropagation();renameStageInline('${funnel.id}','${s.id}')" style="cursor:pointer;margin-left:4px;opacity:.7;font-size:12px">✏️</span><span class="stgtool" title="Excluir etapa" onclick="event.stopPropagation();delStageInline('${funnel.id}','${s.id}')" style="cursor:pointer;margin-left:2px;opacity:.7;font-size:12px">🗑️</span>`:''}<span class="cnt">${ls.length} · ${money(val)}</span></h4>
       <div class="drop" data-stage="${s.id}">
       ${ls.map(l=>{const as=actStatus(l.id);
         const cls=as==="late"?"late":as==="today"?"today":as==="none"?"noact":"future"; /* COR do card = SÓ atividade */
@@ -2644,7 +2638,7 @@ function renderKanban(){
         return `<div class="kcard ${cls}" draggable="true" data-id="${l.id}" onclick="leadDetail('${l.id}')">
           <span class="actdot ${as}"></span><div class="nm">${l.nome}</div><div style="margin:2px 0;display:flex;flex-wrap:wrap;gap:4px">${tempBadgeMini(l)}${slaLate?slaTag(_bz):''}</div><div class="co">${esc(l.procedimento||l.plano||"")}</div>
           <div class="ft"><span class="temp ${tc}"></span><small class="mut" style="font-size:10.5px"><b style="color:${scc}">${sc}%</b> · ${esc(sellerName(l.owner))}</small><span class="val">${money(l.valor)}</span></div></div>`;}).join("")||`<small class="mut" style="padding:8px">vazio</small>`}
-      </div></div>`;}).join("");
+      </div></div>`;}).join("")+(canEditFunnels()?`<div class="kcol kcol-add"><h4 style="opacity:.6">Nova etapa</h4><div class="drop" style="display:flex;align-items:center;justify-content:center"><button class="btn sm" onclick="addStageInline('${funnel.id}')" style="width:100%">➕ adicionar etapa</button></div></div>`:"");
   bindDrag();
 }
 function bindDrag(){
@@ -3860,6 +3854,77 @@ function editStage(fid,sid,k,v){const fs=DB.getObj(T(),"funnels",FUNNELS);const 
 function renameStage(fid,sid,val){val=(val||"").trim();if(!val)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);if(!f)return;const s=f.stages.find(x=>x.id===sid);if(!s||s.name===val)return;s.name=val;DB.set(T(),"funnels",fs);toast("Etapa renomeada ✓");}
 function delStage(fid,sid){const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages=f.stages.filter(x=>x.id!==sid);DB.set(T(),"funnels",fs);vFunil();toast("Etapa removida");}
 function addStage(fid){const nm=document.getElementById("ns_"+fid).value.trim();if(!nm)return;const fs=DB.getObj(T(),"funnels",FUNNELS);const f=fs.find(x=>x.id===fid);f.stages.push({id:DB.uid(),name:nm,sla:24});DB.set(T(),"funnels",fs);vFunil();toast("Etapa adicionada");}
+
+/* ===== Edição de funil INLINE no quadro do CRM (todas as empresas) ===== */
+function renameStageInline(fid,sid){
+  if(!canEditFunnels())return;
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var f=fs.find(function(x){return x.id===fid;});if(!f)return;
+  var s=f.stages.find(function(x){return x.id===sid;});if(!s)return;
+  var nv=prompt("Novo nome da etapa:",s.name);
+  if(nv===null)return;nv=nv.trim();if(!nv||nv===s.name)return;
+  s.name=nv;DB.set(T(),"funnels",fs);renderKanban();toast("Etapa renomeada ✓");
+}
+function addStageInline(fid){
+  if(!canEditFunnels())return;
+  var nm=prompt("Nome da nova etapa:","");
+  if(nm===null)return;nm=nm.trim();if(!nm)return;
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var f=fs.find(function(x){return x.id===fid;});if(!f)return;
+  var ns={id:DB.uid(),name:nm,sla:24};
+  var ci=f.stages.findIndex(function(x){return CLOSED_STAGES.includes(x.id);});/* entra ANTES de ganho/perdido, no fim do quadro visível */
+  if(ci<0)f.stages.push(ns);else f.stages.splice(ci,0,ns);
+  DB.set(T(),"funnels",fs);renderKanban();toast("Etapa adicionada ✓");
+}
+function delStageInline(fid,sid){
+  if(!canEditFunnels())return;
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var f=fs.find(function(x){return x.id===fid;});if(!f)return;
+  var abertas=f.stages.filter(function(x){return !CLOSED_STAGES.includes(x.id);});
+  if(abertas.length<=1){toast("O funil precisa de pelo menos 1 etapa","bad");return;}
+  var s=f.stages.find(function(x){return x.id===sid;});if(!s)return;
+  var leadsAqui=DB.get(T(),"leads").filter(function(l){return !l.deleted&&l.funnelId===fid&&l.estagio===sid&&!CLOSED_STAGES.includes(l.estagio);});
+  if(!leadsAqui.length){
+    if(!confirm('Excluir a etapa "'+s.name+'"? (ela está vazia)'))return;
+    f.stages=f.stages.filter(function(x){return x.id!==sid;});DB.set(T(),"funnels",fs);renderKanban();toast("Etapa excluída ✓");return;
+  }
+  var outras=abertas.filter(function(x){return x.id!==sid;});
+  openModal('<h3 style="margin:0 0 6px">Excluir "'+esc(s.name)+'"</h3>'
+    +'<p class="mut" style="margin:0 0 12px">Esta etapa tem <b>'+leadsAqui.length+' lead(s)</b> dentro. Antes de excluir, escolha pra qual etapa eles vão:</p>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +outras.map(function(x){return '<button class="btn" onclick="delStageMove(\''+fid+'\',\''+sid+'\',\''+x.id+'\')">Mover os '+leadsAqui.length+' lead(s) para “'+esc(x.name)+'” e excluir</button>';}).join("")
+    +'</div><div style="margin-top:12px"><button class="btn sm ghost" onclick="closeModal()">Cancelar</button></div>');
+}
+function delStageMove(fid,sid,toStage){
+  var leads=DB.get(T(),"leads");var moved=0;var now=Date.now();
+  leads.forEach(function(l){if(!l.deleted&&l.funnelId===fid&&l.estagio===sid&&!CLOSED_STAGES.includes(l.estagio)){l.estagio=toStage;l.movedAt=now;l._rev=now;moved++;}});
+  if(moved)DB.set(T(),"leads",leads);
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var f=fs.find(function(x){return x.id===fid;});
+  if(f){f.stages=f.stages.filter(function(x){return x.id!==sid;});DB.set(T(),"funnels",fs);}
+  closeModal();renderKanban();toast(moved+" lead(s) movido(s); etapa excluída ✓");
+}
+function renameFunnelInline(fid){
+  if(!canEditFunnels())return;
+  var fs=DB.getObj(T(),"funnels",FUNNELS);var f=fs.find(function(x){return x.id===fid;});if(!f)return;
+  var nv=prompt("Novo nome do funil:",f.name);
+  if(nv===null)return;nv=nv.trim();if(!nv||nv===f.name)return;
+  f.name=nv;DB.set(T(),"funnels",fs);vCRM();toast("Funil renomeado ✓");
+}
+function addFunnelInline(){
+  if(!isAdmin())return;/* criar funil inteiro: só gestor de verdade */
+  var nm=prompt("Nome do novo funil:","");
+  if(nm===null)return;nm=nm.trim();if(!nm)return;
+  var fs=DB.getObj(T(),"funnels",FUNNELS);
+  var nf={id:DB.uid(),name:nm,papel:"—",stages:[{id:DB.uid(),name:"Nova etapa",sla:24}]};
+  fs.push(nf);DB.set(T(),"funnels",fs);CRM_FUNNEL=nf.id;vCRM();toast("Funil criado ✓");
+}
+function delFunnelInline(fid){
+  if(!isAdmin())return;/* excluir funil inteiro: só gestor de verdade */
+  var fs=DB.getObj(T(),"funnels",FUNNELS);if(fs.length<=1){toast("Precisa ter ao menos 1 funil","bad");return;}
+  var f=fs.find(function(x){return x.id===fid;});if(!f)return;
+  var n=DB.get(T(),"leads").filter(function(l){return !l.deleted&&l.funnelId===fid&&!CLOSED_STAGES.includes(l.estagio);}).length;
+  if(n>0){toast("Esse funil ainda tem "+n+" lead(s) ativos. Mova/transfira eles antes de excluir o funil.","bad");return;}
+  if(!confirm('Excluir o funil "'+f.name+'"?'))return;
+  DB.set(T(),"funnels",fs.filter(function(x){return x.id!==fid;}));
+  CRM_FUNNEL=DB.getObj(T(),"funnels",FUNNELS)[0].id;vCRM();toast("Funil excluído ✓");
+}
 
 /* ===== PROSPECÇÃO & CADÊNCIAS (por papel) ===== */
 function cadCopy(di,ti){var c=(loadCads()[CAD_ROLE]||[]);var t=(((c[di]||{}).toques||[])[ti]||{});if(t.texto){try{navigator.clipboard.writeText(t.texto);toast('Mensagem copiada ✓');}catch(e){toast('Não consegui copiar','warn');}}}
