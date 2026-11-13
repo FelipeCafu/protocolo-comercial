@@ -619,7 +619,6 @@ const USERS={
   protocolo:{pass:"1234",role:"consultor",tenant:"all",name:"Consultor Protocolo",initials:"PC"},
   lideres:  {pass:"1234",role:"gestor",   tenant:"lideres",name:"Líderes do Brasil",initials:"LB"},
   "liz.lid":     {pass:"lizlideres",     role:"sdr",    tenant:"lideres",name:"Liz (SDR)",        initials:"LZ",sellerId:"liz"},
-  "melissa.lid": {pass:"melissalideres", role:"sdr",    tenant:"lideres",name:"Melissa (SDR)",    initials:"ME",sellerId:"melissa"},
   "laura.lid":   {pass:"lauralideres",   role:"sdr",    tenant:"lideres",name:"Laura (SDR)",       initials:"LA",sellerId:"laura"},
   "jessica.lid": {pass:"jessicalideres", role:"cs",     tenant:"lideres",name:"Jéssica (CS)",      initials:"JE",sellerId:"jessica"},
   "daher.lid":   {pass:"daherlideres",   role:"gestor", tenant:"lideres",name:"Daher (Closer/Gestor)",   initials:"DA",sellerId:"daher"},
@@ -1698,6 +1697,12 @@ function seed(){
 }
 /* B2: funil ÚNICO (SDR + Closer juntos), porque o mesmo vendedor costuma fazer a venda de ponta a ponta. */
 const FUNNELS_B2=[
+ /* Bruna (SDR): funil parcial, vai só até o ponto de passar pro Closer */
+ {id:"sdr",name:"Funil do SDR",papel:"SDR",stages:[
+   {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
+   {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
+   {id:"agendou",name:"Sessão Estratégica Agendada",sla:24},{id:"noshow",name:"Falta / Remarcar",sla:12}]},
+ /* Melissa (Closer): funil completo, ponta a ponta */
  {id:"closer",name:"Closer",papel:"Closer",stages:[
    {id:"novo",name:"Novo Lead",sla:12},{id:"tentativa",name:"Tentativa de Contato",sla:24},
    {id:"contato",name:"Contato Realizado",sla:24},{id:"qualif",name:"Qualificado",sla:24},
@@ -1924,9 +1929,21 @@ function cadRoleForLead(l){
 /* B2: funil ÚNICO. O SDR e o Closer viraram um funil só ('closer'). Se sobrou lead no antigo funil 'sdr',
    remapeia pro 'closer' (etapas são as mesmas ids, nada se perde). Idempotente, safe. */
 function migrateB2Funnels(){
+ /* B2: SDR (Bruna) tem funil parcial 'sdr'; Closer (Melissa) tem funil completo 'closer'.
+    O funil de prospecção/fechamento acompanha o DONO: dono SDR->'sdr', dono Closer->'closer'.
+    Só remapeia entre esses dois (não encosta em planejador/cs). Idempotente. */
  if(T()!=='b2if')return;
- var leads=DB.get('b2if','leads');var ch=false;
- leads.forEach(function(l){if(l&&l.funnelId==='sdr'){l.funnelId='closer';l._rev=Date.now();ch=true;}});
+ var leads=DB.get('b2if','leads');
+ var papelOf={};
+ (DB.get('b2if','sellers')||[]).forEach(function(s){if(s)papelOf[s.id]=(s.papel||'').toLowerCase();});
+ var ch=false;
+ leads.forEach(function(l){
+   if(!l||l.deleted)return;
+   if(l.funnelId!=='sdr'&&l.funnelId!=='closer')return; /* deixa planejador/cs quietos */
+   var pap=papelOf[l.owner];
+   var want=(pap==='sdr')?'sdr':(pap==='closer')?'closer':null;
+   if(want&&l.funnelId!==want){l.funnelId=want;l._rev=Date.now();ch=true;}
+ });
  if(ch)DB.set('b2if','leads',leads);
 }
 function quizBank(){return [
@@ -2543,7 +2560,7 @@ function crmBadgeCount(){
 }
 function vCRM(){
   healLeadStages();/* multiplas atividades por lead são permitidas: não podamos mais (healSingleOpenPerLead desativado) */
-  migrateB2Funnels();/* B2: funil único, remapeia leads do antigo 'sdr' pro 'closer' */
+  migrateB2Funnels();/* B2: funil acompanha o dono (SDR->sdr parcial / Closer->closer completo) */
   var allF=DB.getObj(T(),"funnels",FUNNELS);
   var _pap={sdr:"SDR",closer:lx("closerRole"),cs:"CS",planejador:"Planejador"}[effRole()];
   /* mostra o funil do papel + QUALQUER funil onde o vendedor tem lead (evita lead "sumido":
